@@ -17,14 +17,19 @@ const countryCoords = {
     "Australia": [-25.2744, 133.7751]
 };
 
-// Global Chart settings
-Chart.defaults.color = '#8b949e';
+// Colors
+const COLOR_GREEN = '#3fb950';
+const COLOR_WHITE = '#ffffff';
+const COLOR_DIM = '#8b949e';
+const COLOR_BORDER = '#30363d';
+
+Chart.defaults.color = COLOR_DIM;
 Chart.defaults.font.family = "'JetBrains Mono', monospace";
-Chart.defaults.font.size = 10;
-Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.size = 9;
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
 
 let mapInstance = null;
-let charts = {}; // To store chart instances for updates
+let charts = {};
 
 function logSystem(msg) {
     const log = document.getElementById('system-log');
@@ -32,23 +37,34 @@ function logSystem(msg) {
     const time = new Date().toLocaleTimeString().toLowerCase();
     log.innerHTML += `[${time}] ${msg}<br>`;
     log.scrollTop = log.scrollHeight;
-    
-    // Keep log short
     if (log.innerHTML.split('<br>').length > 20) {
         log.innerHTML = log.innerHTML.split('<br>').slice(-20).join('<br>');
     }
 }
 
+function formatDate(isoStr) {
+    if (!isoStr) return "--:--";
+    try {
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) {
+            // Fallback for GDELT format: 20260505T130000Z
+            const parts = isoStr.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);
+            if (parts) return `${parts[4]}:${parts[5]} ${parts[3]}/${parts[2]}`;
+            return isoStr.substring(0, 10);
+        }
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " + d.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+    } catch { return "--:--" }
+}
+
 async function updateDashboard() {
-    logSystem("syncing telemetry...");
+    logSystem("syncing signal...");
     try {
         const response = await fetch('../data/latest.json?t=' + new Date().getTime());
         const payload = await response.json();
         const data = payload.data;
         const signature = payload.signature;
 
-        document.getElementById('last-updated').textContent = `last sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()} // sig: ${signature.substring(0,8)}`;
-        document.getElementById('query-title').textContent = `system status: scanning_war_and_finance`;
+        document.getElementById('last-updated').textContent = `sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()} // sig: ${signature.substring(0,6)}`;
 
         renderTimeline(data.timeline_vol);
         renderDomains(data.stats.top_domains);
@@ -58,18 +74,18 @@ async function updateDashboard() {
         renderQuickStats(data);
         renderContrast(data.articles);
 
-        logSystem(`handshake ok. ${data.articles.length} nodes active.`);
+        logSystem(`handshake success. ${data.articles.length} nodes verified.`);
     } catch (error) {
-        logSystem("sync failed: packet loss detected");
-        console.error("system failure:", error);
+        logSystem("sync failed: packet loss");
+        console.error(error);
     }
 }
 
 function renderTimeline(timeline) {
     const ctx = document.getElementById('timelineChart').getContext('2d');
     const hasData = timeline && timeline.length > 0;
-    const labels = hasData ? timeline.map(item => `${item.datetime.substring(9,11)}:00`) : Array(24).fill("--:00");
-    const values = hasData ? timeline.map(item => item.value) : Array(24).fill(0);
+    const labels = hasData ? timeline.map(item => `${item.datetime.substring(9,11)}:00`) : Array(12).fill("--");
+    const values = hasData ? timeline.map(item => item.value) : Array(12).fill(0);
 
     if (charts.timeline) charts.timeline.destroy();
     charts.timeline = new Chart(ctx, {
@@ -78,23 +94,20 @@ function renderTimeline(timeline) {
             labels: labels,
             datasets: [{
                 data: values,
-                borderColor: '#58a6ff',
-                backgroundColor: 'rgba(88, 166, 255, 0.05)',
+                borderColor: COLOR_GREEN,
+                backgroundColor: 'rgba(63, 185, 80, 0.05)',
                 fill: true,
                 tension: 0.4,
                 pointRadius: 0,
-                borderWidth: 1.5
+                borderWidth: 1
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                title: { display: !hasData, text: 'awaiting signal data...', color: '#8b949e' }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { display: false }, ticks: { maxRotation: 0 } },
+                x: { grid: { display: false } },
                 y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, beginAtZero: true }
             }
         }
@@ -104,7 +117,7 @@ function renderTimeline(timeline) {
 function renderDomains(domains) {
     const ctx = document.getElementById('domainsChart').getContext('2d');
     const hasData = domains && Object.keys(domains).length > 0;
-    const labels = hasData ? Object.keys(domains).map(d => d.toLowerCase()) : ["no data"];
+    const labels = hasData ? Object.keys(domains).map(d => d.toLowerCase()) : ["none"];
     const values = hasData ? Object.values(domains) : [0];
 
     if (charts.domains) charts.domains.destroy();
@@ -114,18 +127,15 @@ function renderDomains(domains) {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: '#3fb950',
-                borderRadius: 2
+                backgroundColor: COLOR_GREEN,
+                borderRadius: 1
             }]
         },
         options: {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                title: { display: !hasData, text: 'no domains detected', color: '#8b949e' }
-            },
+            plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false } },
                 y: { grid: { display: false } }
@@ -137,7 +147,7 @@ function renderDomains(domains) {
 function renderLanguages(languages) {
     const ctx = document.getElementById('languagesChart').getContext('2d');
     const hasData = languages && Object.keys(languages).length > 0;
-    const labels = hasData ? Object.keys(languages).map(l => l.toLowerCase()) : ["no data"];
+    const labels = hasData ? Object.keys(languages).map(l => l.toLowerCase()) : ["none"];
     const values = hasData ? Object.values(languages) : [1];
 
     if (charts.languages) charts.languages.destroy();
@@ -147,17 +157,16 @@ function renderLanguages(languages) {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: hasData ? ['#58a6ff', '#3fb950', '#d29922', '#f85149', '#30363d'] : ['#30363d'],
+                backgroundColor: hasData ? [COLOR_GREEN, COLOR_WHITE, '#2ea043', '#238636', COLOR_BORDER] : [COLOR_BORDER],
                 borderWidth: 0,
-                cutout: '80%'
+                cutout: '85%'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 8, padding: 10 } },
-                title: { display: !hasData, text: 'awaiting language data', color: '#8b949e' }
+                legend: { position: 'bottom', labels: { boxWidth: 6, padding: 8, font: { size: 8 } } }
             }
         }
     });
@@ -173,9 +182,9 @@ function renderMap(countries) {
         if (countryCoords[country]) {
             const count = countries[country];
             L.circleMarker(countryCoords[country], {
-                radius: Math.min(Math.sqrt(count) * 2 + 2, 15),
-                fillColor: "#58a6ff",
-                color: "#58a6ff",
+                radius: Math.min(Math.sqrt(count) * 2 + 2, 12),
+                fillColor: COLOR_GREEN,
+                color: COLOR_GREEN,
                 weight: 1,
                 fillOpacity: 0.3
             }).addTo(mapInstance);
@@ -192,19 +201,15 @@ function renderArticles(articles) {
         item.className = 'article-item';
         const score = art.manipulation_score || 0;
         const isHighRisk = score > 60;
-        const platforms = [];
-        if (art.reddit_shares > 0) platforms.push(`reddit(${art.reddit_shares})`);
-        if (art.mastodon_shares > 0) platforms.push(`mastodon(${art.mastodon_shares})`);
-        const platformString = platforms.length > 0 ? platforms.join(' + ') : 'no social activity';
 
         item.innerHTML = `
             <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
             <div class="article-meta">
-                ${isHighRisk ? '<span class="tag tag-danger">anomaly detected</span>' : ''}
-                <span class="tag">${art.source || 'unknown'}</span>
-                <span>domain: ${art.domain.toLowerCase()}</span> // 
-                <span class="text-accent">spread: ${platformString}</span> // 
-                <span class="text-accent">risk: ${score}%</span>
+                ${isHighRisk ? '<span class="tag tag-danger">anomaly</span>' : ''}
+                <span class="tag">${art.source || 'rss'}</span>
+                <span>${art.domain.toLowerCase()}</span> // 
+                <span class="text-success">${formatDate(art.seendate)}</span> // 
+                <span class="text-success">risk: ${score}%</span>
             </div>
         `;
         list.appendChild(item);
@@ -214,16 +219,16 @@ function renderArticles(articles) {
 function renderContrast(articles) {
     const list = document.getElementById('contrast-list');
     list.innerHTML = '';
-    articles.slice(0, 6).forEach(art => {
+    articles.slice(0, 8).forEach(art => {
         const card = document.createElement('div');
-        card.className = 'contrast-card mb-4';
-        const bias = art.manipulation_score > 60 ? 'high bias detected' : 'neutral framing';
+        card.className = 'contrast-card';
+        const bias = art.manipulation_score > 60 ? 'bias detected' : 'neutral';
         card.innerHTML = `
             <span class="source-tag">${art.domain.toLowerCase()}</span>
-            <div class="article-title" style="font-size: 0.8rem; margin-bottom: 5px;">"${art.title.toLowerCase()}"</div>
-            <div class="text-dim" style="font-size: 0.65rem;">
-                >> semantic analysis: <span class="${art.manipulation_score > 60 ? 'text-danger' : 'text-success'}">${bias}</span> // 
-                tone: ${ (Math.random() * 10 - 5).toFixed(2) }
+            <div class="article-title">"${art.title.toLowerCase()}"</div>
+            <div class="text-dim" style="font-size: 0.6rem;">
+                >> analysis: <span class="${art.manipulation_score > 60 ? 'text-danger' : 'text-success'}">${bias}</span> // 
+                time: ${formatDate(art.seendate)}
             </div>
         `;
         list.appendChild(card);
@@ -235,19 +240,14 @@ function renderQuickStats(data) {
     const stats = data.stats;
     const avgScore = stats.avg_manipulation_score || 0;
     container.innerHTML = `
-        <div class="mb-2">// signal nodes: <span class="text-success">${data.articles.length}</span></div>
-        <div class="mb-2">// avg risk index: <span class="${avgScore > 50 ? 'text-danger' : 'text-accent'}">${avgScore.toFixed(1)}%</span></div>
-        <div class="mb-2">// social engines: <span class="text-dim">reddit + mastodon</span></div>
-        <div class="mt-3 pt-2 border-top border-secondary text-dim" style="font-size: 0.65rem;">
-            system monitoring global conflicts and finance. multi-layer anomaly detection active.
-        </div>
+        <div class="mb-1">// nodes: <span class="text-success">${data.articles.length}</span></div>
+        <div class="mb-1">// risk: <span class="${avgScore > 50 ? 'text-danger' : 'text-success'}">${avgScore.toFixed(1)}%</span></div>
+        <div class="mb-1">// layer: <span class="text-dim">multi_platform</span></div>
     `;
 }
 
-// Main Boot
 document.addEventListener('DOMContentLoaded', () => {
-    logSystem("initiating boot sequence...");
+    logSystem("booting engine...");
     updateDashboard();
-    // Auto refresh every 45 seconds
-    setInterval(updateDashboard, 45000);
+    setInterval(updateDashboard, 30000); // 30s refresh
 });

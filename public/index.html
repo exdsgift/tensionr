@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tensionr // system_v1</title>
+    <title>tensionr // system_v1.0.5</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,11 +11,11 @@
         :root {
             --bg: #0d1117;
             --surface: #161b22;
-            --accent: #58a6ff;
+            --accent: #ffffff;
             --success: #3fb950;
             --warning: #d29922;
             --danger: #f85149;
-            --text-main: #c9d1d9;
+            --text-main: #ffffff;
             --text-dim: #8b949e;
             --border: #30363d;
         }
@@ -23,39 +23,62 @@
             background-color: var(--bg); 
             color: var(--text-main);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             letter-spacing: -0.01em;
         }
-        .container { max-width: 1100px; }
-        .nav-bar { border-bottom: 1px solid var(--border); padding: 1rem 0; margin-bottom: 2rem; }
+        .container { max-width: 1240px; }
+        .nav-bar { border-bottom: 1px solid var(--border); padding: 0.75rem 0; margin-bottom: 1.5rem; }
         .card { 
             background-color: var(--surface); 
             border: 1px solid var(--border); 
-            border-radius: 6px;
+            border-radius: 4px;
             padding: 1.25rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            height: 100%;
         }
-        h2, h5 { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main); }
-        .chart-desc { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem; line-height: 1.4; }
-        .text-dim { color: var(--text-dim); }
-        .text-accent { color: var(--accent); }
-        .text-success { color: var(--success) !important; }
-        #map { height: 350px; border-radius: 4px; border: 1px solid var(--border); filter: grayscale(100%) invert(90%) brightness(90%); }
-        .chart-container { position: relative; height: 240px; }
+        h2, h5 { font-size: 0.8rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--success); text-transform: lowercase; }
+        .chart-desc { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.8rem; line-height: 1.4; text-transform: lowercase; }
+        
+        .terminal-box {
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--success);
+            font-size: 0.6rem;
+            padding: 8px;
+            height: 110px;
+            overflow-y: auto;
+            margin-top: 10px;
+            box-shadow: inset 0 0 10px rgba(63, 185, 80, 0.05);
+        }
+        .contrast-card {
+            border-left: 1px solid var(--success);
+            padding-left: 10px;
+            margin-bottom: 12px;
+        }
+        .source-tag {
+            font-size: 0.55rem;
+            text-transform: lowercase;
+            padding: 1px 3px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            margin-bottom: 3px;
+            display: inline-block;
+            color: var(--success);
+        }
+        #map { height: 320px; border-radius: 4px; border: 1px solid var(--border); filter: grayscale(100%) invert(90%) brightness(80%); }
+        .chart-container { position: relative; height: 180px; }
         .article-item { 
-            padding: 1rem; 
+            padding: 0.6rem 0; 
             border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
         }
-        .article-item:last-child { border-bottom: none; }
-        .article-item:hover { background: rgba(255, 255, 255, 0.02); }
-        .article-title { color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.25rem; font-weight: 400; }
-        .article-title:hover { color: var(--accent); }
-        .article-meta { font-size: 0.7rem; color: var(--text-dim); }
-        .tag { font-size: 0.65rem; padding: 1px 4px; border: 1px solid var(--border); border-radius: 3px; margin-right: 4px; }
+        .article-title { color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.2rem; font-size: 0.75rem; line-height: 1.3; }
+        .article-title:hover { color: var(--success); }
+        .article-meta { font-size: 0.6rem; color: var(--text-dim); }
+        .tag { font-size: 0.55rem; padding: 0px 2px; border: 1px solid var(--border); border-radius: 2px; margin-right: 3px; text-transform: lowercase; }
+        .tag-success { color: var(--success); border-color: var(--success); }
         .tag-danger { color: var(--danger); border-color: var(--danger); }
-        .footer { border-top: 1px solid var(--border); padding: 2rem 0; margin-top: 3rem; text-align: center; font-size: 0.7rem; color: var(--text-dim); }
-        ::-webkit-scrollbar { width: 4px; }
+        .footer { border-top: 1px solid var(--border); padding: 1.5rem 0; margin-top: 2rem; text-align: center; font-size: 0.65rem; color: var(--text-dim); text-transform: lowercase; }
+        ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-thumb { background: var(--border); }
     </style>
 </head>
@@ -63,7 +86,7 @@
 
 <div class="nav-bar">
     <div class="container d-flex justify-content-between align-items-center">
-        <span>tensionr // <span class="text-dim">system_v1.0.4</span></span>
+        <span>tensionr // <span class="text-dim">system_v1.0.5</span></span>
         <span class="text-dim" id="clock">00:00:00</span>
     </div>
 </div>
@@ -71,14 +94,14 @@
 <div class="container">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="d-flex justify-content-between align-items-end">
+            <div class="card" style="height: auto; min-height: 60px; padding: 0.75rem 1.25rem;">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 id="query-title" style="margin: 0;">system_status: scanning_nodes</h2>
-                        <p class="text-dim mb-0" style="font-size: 0.7rem;">// data source: gdelt_doc_api // analysis: reddit_praw_v2</p>
+                        <h2 id="query-title" style="margin: 0; font-size: 0.85rem;">system status: listening</h2>
+                        <p class="text-dim mb-0" style="font-size: 0.6rem;">// source matrix: gdelt + rss feeds // engine: multi-platform anomaly detection</p>
                     </div>
-                    <div class="text-end" style="font-size: 0.7rem;">
-                        <span class="text-success">system_online</span><br>
+                    <div class="text-end" style="font-size: 0.6rem;">
+                        <span class="text-success">engine_online</span><br>
                         <span id="last-updated" class="text-dim">-</span>
                     </div>
                 </div>
@@ -87,10 +110,10 @@
     </div>
 
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-4">
             <div class="card">
                 <h5>news volume pulse</h5>
-                <p class="chart-desc">tracks the frequency of news reports over the last 24 hours. spikes often correlate with high-impact diplomatic or military events.</p>
+                <p class="chart-desc">24h signal frequency.</p>
                 <div class="chart-container">
                     <canvas id="timelineChart"></canvas>
                 </div>
@@ -99,91 +122,64 @@
         <div class="col-md-4">
             <div class="card">
                 <h5>top domains</h5>
-                <p class="chart-desc">distribution of news by primary domains. identifies which outlets are dominating the narrative.</p>
+                <p class="chart-desc">primary outlet distribution.</p>
                 <div class="chart-container">
                     <canvas id="domainsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <h5>language distribution</h5>
+                <p class="chart-desc">linguistic diversity matrix.</p>
+                <div class="chart-container">
+                    <canvas id="languagesChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-12">
+        <div class="col-md-8">
             <div class="card">
                 <h5>geo distribution matrix</h5>
-                <p class="chart-desc">visualizes the physical origin of the news sources. enables the detection of regional bias and influence hubs.</p>
+                <p class="chart-desc">global signal origin visualization.</p>
                 <div id="map"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <h5>system telemetry</h5>
+                <div id="quick-stats" style="font-size: 0.65rem;"></div>
+                <div class="terminal-box" id="system-log"></div>
             </div>
         </div>
     </div>
 
-    <style>
-        /* Nuovi stili per il terminale e contrast */
-        .terminal-box {
-            background: #000;
-            border: 1px solid var(--border);
-            color: var(--success);
-            font-size: 0.7rem;
-            padding: 10px;
-            height: 150px;
-            overflow-y: auto;
-            margin-top: 10px;
-            box-shadow: inset 0 0 10px rgba(63, 185, 80, 0.1);
-        }
-        .contrast-card {
-            border-left: 2px solid var(--accent);
-            padding-left: 15px;
-            margin-bottom: 20px;
-        }
-        .source-tag {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            padding: 2px 5px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            margin-bottom: 5px;
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
-...
     <div class="row mt-2">
-        <div class="col-md-4">
-            <div class="card">
-                <h5>language distribution</h5>
-                <div class="chart-container" style="height: 180px;">
-                    <canvas id="languagesChart"></canvas>
-                </div>
-            </div>
-            <div class="card">
-                <h5>system telemetry</h5>
-                <div id="quick-stats" style="font-size: 0.75rem;"></div>
-                <div class="terminal-box" id="system-log">
-                    [system] initiating boot sequence...<br>
-                    [system] security handshake verified...<br>
-                    [system] listening for global signal...<br>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-8">
+        <div class="col-md-6">
             <div class="card">
                 <h5>narrative contrast engine</h5>
-                <p class="chart-desc">analyzing title variations across different nodes to detect framing manipulation.</p>
-                <div id="contrast-list" style="max-height: 400px; overflow-y: auto;">
+                <p class="chart-desc">framing variations detection.</p>
+                <div id="contrast-list" style="max-height: 450px; overflow-y: auto; padding-right: 8px;">
                     <!-- dynamic -->
                 </div>
             </div>
+        </div>
+        <div class="col-md-6">
             <div class="card">
                 <h5>detected signal feed</h5>
-                <div id="articles-list" style="max-height: 400px; overflow-y: auto;"></div>
+                <p class="chart-desc">real-time article stream.</p>
+                <div id="articles-list" style="max-height: 450px; overflow-y: auto; padding-right: 8px;">
+                    <!-- dynamic -->
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="footer">
-    tensionr © 2026 // gabriele durante // secure node id: 8x-92
+    tensionr © 2026 // gabriele durante // secure node: 8x-92
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
