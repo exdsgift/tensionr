@@ -76,7 +76,7 @@ function setTheme(themeName) {
         safeRender('wordcloud', () => renderWordCloud(window.lastData.stats.top_keywords));
         // Force refresh feed to update colors
         const dedupedArticles = deduplicateArticles(window.lastData.articles);
-        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 6));
+        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
     }
 }
 
@@ -130,7 +130,7 @@ async function updateDashboard() {
         safeRender('emotions', () => renderEmotions(data.articles));
         safeRender('map', () => renderMap(data.stats.source_countries, data.articles));
         
-        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 6));
+        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
         safeRender('stats', () => renderQuickStats(data));
         safeRender('wordcloud', () => renderWordCloud(data.stats.top_keywords));
         logSystem(`handshake success. ${data.articles.length} nodes active.`);
@@ -309,10 +309,8 @@ function initRotatingFeed(containerId, articles, maxVisible) {
             item.className = 'article-item';
             if (index === 0 && buffer.length > 0) item.classList.add('feed-item-enter');
 
-            const score = art.manipulation_score || 0;
             const emotion = art.narrative_emotion && art.narrative_emotion !== 'unknown' ? art.narrative_emotion : '';
             const domainsHtml = art.domain.split(', ').map(d => `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-dim)">${d}</span>`).join('');
-            const riskLabel = score > 60 ? 'high' : (score > 30 ? 'moderate' : 'baseline');
             const emotionTag = emotion ? `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-bright)">${emotion}</span>` : '';
             item.innerHTML = `
                 <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
@@ -320,9 +318,7 @@ function initRotatingFeed(containerId, articles, maxVisible) {
                     <span class="text-dim" style="font-size: 0.55rem; white-space: nowrap;">${formatDate(art.seendate)}</span>
                 </div>
                 <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:2px;">
-                    ${score > 60 ? '<span class="tag" style="color:#ff5555; border-color:#ff5555">anomaly</span>' : ''}
-                    ${emotionTag} ${domainsHtml} 
-                <span style="color:var(--theme-mid); margin-left: 4px;">  risk: <span style="color:${score > 60 ? '#ff5555' : 'var(--theme-bright)'}">${riskLabel} (${score}%)</span></span>
+                    ${emotionTag} ${domainsHtml}
                 </div>
             `;
             container.appendChild(item);
@@ -342,21 +338,12 @@ function initRotatingFeed(containerId, articles, maxVisible) {
 function renderQuickStats(data) {
     const container = document.getElementById('top-telemetry-ticker');
     if (!container) return;
-    const stats = data.stats;
-    const avgScore = stats.avg_risk || 0;
-    const criticalCount = stats.critical_anomalies || 0;
     
     container.innerHTML = `
-        <div title="Total number of unique intelligence nodes currently stored in local memory (max 500).">
-            monitored_signals: <span style="color:var(--theme-bright)">${data.articles.length}</span>
+        <div title="Total unique nodes in memory (max 500)" style="cursor:help">
+            signals: <span style="color:var(--theme-bright)">${data.articles.length}</span>
         </div>
-        <div title="Number of intercepted nodes with a narrative bias risk score exceeding 60%.">
-            critical_anomalies: <span style="color:${criticalCount > 0 ? '#ff5555' : 'var(--theme-bright)'}">${criticalCount}</span>
-        </div>
-        <div title="The average manipulation and bias risk across all monitored signals.">
-            average_risk: <span style="color:${avgScore > 50 ? '#ff5555' : 'var(--theme-bright)'}">${avgScore.toFixed(1)}%</span>
-        </div>
-        <div title="Digital integrity verification status for the current telemetry packet.">
+        <div title="Digital integrity verification status" style="cursor:help">
             integrity: <span style="color: #3fb950">verified</span>
         </div>
     `;

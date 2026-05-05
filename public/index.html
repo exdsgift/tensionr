@@ -151,13 +151,15 @@
 <body>
 
 <div class="nav-bar">
-    <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span>tensionr</span>
-        <div id="top-telemetry-ticker" class="d-flex justify-content-center align-items-center gap-4" style="font-size: 0.75rem; font-weight: 500;"></div>
-        <div class="d-flex align-items-center">
-            <span class="text-dim me-3" id="last-updated" style="font-size: 0.6rem;">sync: --</span>
-            <span class="me-3" style="font-size: 0.6rem; color: var(--theme-bright);" id="live-indicator">● live_feed</span>
-            <span class="text-dim" id="clock">00:00:00</span>
+    <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
+        <span style="font-weight: bold;">tensionr</span>
+        <div class="d-flex align-items-center gap-4" style="font-size: 0.7rem;">
+            <div id="top-telemetry-ticker" class="d-flex align-items-center gap-4"></div>
+            <div class="d-flex align-items-center gap-4" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
+                <span class="text-dim" id="last-updated">sync: --</span>
+                <span style="color: var(--theme-bright);" id="live-indicator">● live_feed</span>
+                <span class="text-dim" id="clock">00:00:00</span>
+            </div>
         </div>
     </div>
 </div>
@@ -173,7 +175,7 @@
         </div>
         <div class="card" style="display: flex; flex-direction: column;">
             <h5>live intercept telemetry feed</h5>
-            <p class="chart-desc">real-time stream of anomalies and events. scores > 60% trigger anomaly warnings based on narrative bias and sentiment risk. tags show origin domain and extracted narrative emotion.</p>
+            <p class="chart-desc">real-time stream of intercepted intelligence events. tags show origin domain and the extracted narrative emotion (e.g. fear, surprise).</p>
             <div id="articles-list" style="flex: 1; min-height: 350px; overflow-y: auto;"></div>
         </div>
     </div>

@@ -337,8 +337,6 @@ def fetch_gdelt_data():
     df = pd.DataFrame(final_articles)
     stats = {
         "total_nodes": len(final_articles),
-        "avg_risk": float(df["manipulation_score"].mean()) if not df.empty else 0,
-        "critical_anomalies": int(len(df[df["manipulation_score"] > 60])) if not df.empty else 0,
         "top_domains": df["domain"].value_counts().head(8).to_dict() if not df.empty else {},
         "source_countries": df["sourcecountry"].value_counts().to_dict() if not df.empty else {},
         "top_keywords": extract_keywords(final_articles),
