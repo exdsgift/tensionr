@@ -17,26 +17,38 @@ const countryCoords = {
     "Australia": [-25.2744, 133.7751]
 };
 
+// Global Chart settings
 Chart.defaults.color = '#8b949e';
 Chart.defaults.font.family = "'JetBrains Mono', monospace";
 Chart.defaults.font.size = 10;
 Chart.defaults.borderColor = '#30363d';
 
+let mapInstance = null;
+let charts = {}; // To store chart instances for updates
+
 function logSystem(msg) {
     const log = document.getElementById('system-log');
+    if (!log) return;
     const time = new Date().toLocaleTimeString().toLowerCase();
     log.innerHTML += `[${time}] ${msg}<br>`;
     log.scrollTop = log.scrollHeight;
+    
+    // Keep log short
+    if (log.innerHTML.split('<br>').length > 20) {
+        log.innerHTML = log.innerHTML.split('<br>').slice(-20).join('<br>');
+    }
 }
 
-async function initDashboard() {
-    logSystem("querying local data node...");
+async function updateDashboard() {
+    logSystem("syncing telemetry...");
     try {
-        const response = await fetch('../data/latest.json');
+        const response = await fetch('../data/latest.json?t=' + new Date().getTime());
         const payload = await response.json();
         const data = payload.data;
-        
-        logSystem(`handshake success. nodes_detected: ${data.articles.length}`);
+        const signature = payload.signature;
+
+        document.getElementById('last-updated').textContent = `last sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()} // sig: ${signature.substring(0,8)}`;
+        document.getElementById('query-title').textContent = `system status: scanning_war_and_finance`;
 
         renderTimeline(data.timeline_vol);
         renderDomains(data.stats.top_domains);
@@ -46,48 +58,21 @@ async function initDashboard() {
         renderQuickStats(data);
         renderContrast(data.articles);
 
-        logSystem("anomaly detection engine: active");
-        logSystem("integrity check: verified");
-
+        logSystem(`handshake ok. ${data.articles.length} nodes active.`);
     } catch (error) {
-        logSystem("critical error: dataset not found");
-        console.error("system_failure:", error);
+        logSystem("sync failed: packet loss detected");
+        console.error("system failure:", error);
     }
-}
-
-function renderContrast(articles) {
-    const list = document.getElementById('contrast-list');
-    list.innerHTML = '';
-    
-    // Raggruppiamo articoli simili o prendiamo campioni per il contrasto
-    const samples = articles.slice(0, 6);
-    samples.forEach((art, i) => {
-        const card = document.createElement('div');
-        card.className = 'contrast-card mb-4';
-        
-        // Similiamo un'analisi di "framing"
-        const bias = art.manipulation_score > 60 ? 'high_bias_detected' : 'neutral_framing';
-        
-        card.innerHTML = `
-            <span class="source-tag">${art.domain.toLowerCase()}</span>
-            <div class="article-title" style="font-size: 0.8rem; margin-bottom: 5px;">"${art.title.toLowerCase()}"</div>
-            <div class="text-dim" style="font-size: 0.65rem;">
-                >> semantic_analysis: <span class="${art.manipulation_score > 60 ? 'text-danger' : 'text-success'}">${bias}</span> // 
-                sentiment_tone: ${ (Math.random() * 10 - 5).toFixed(2) }
-            </div>
-        `;
-        list.appendChild(card);
-    });
 }
 
 function renderTimeline(timeline) {
     const ctx = document.getElementById('timelineChart').getContext('2d');
     const hasData = timeline && timeline.length > 0;
-    
     const labels = hasData ? timeline.map(item => `${item.datetime.substring(9,11)}:00`) : Array(24).fill("--:00");
     const values = hasData ? timeline.map(item => item.value) : Array(24).fill(0);
 
-    new Chart(ctx, {
+    if (charts.timeline) charts.timeline.destroy();
+    charts.timeline = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -106,7 +91,7 @@ function renderTimeline(timeline) {
             maintainAspectRatio: false,
             plugins: { 
                 legend: { display: false },
-                title: { display: !hasData, text: 'awaiting_signal_data...', color: '#8b949e' }
+                title: { display: !hasData, text: 'awaiting signal data...', color: '#8b949e' }
             },
             scales: {
                 x: { grid: { display: false }, ticks: { maxRotation: 0 } },
@@ -119,10 +104,11 @@ function renderTimeline(timeline) {
 function renderDomains(domains) {
     const ctx = document.getElementById('domainsChart').getContext('2d');
     const hasData = domains && Object.keys(domains).length > 0;
-    const labels = hasData ? Object.keys(domains).map(d => d.toLowerCase()) : ["no_data"];
+    const labels = hasData ? Object.keys(domains).map(d => d.toLowerCase()) : ["no data"];
     const values = hasData ? Object.values(domains) : [0];
 
-    new Chart(ctx, {
+    if (charts.domains) charts.domains.destroy();
+    charts.domains = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
@@ -138,7 +124,7 @@ function renderDomains(domains) {
             maintainAspectRatio: false,
             plugins: { 
                 legend: { display: false },
-                title: { display: !hasData, text: 'no_domains_detected', color: '#8b949e' }
+                title: { display: !hasData, text: 'no domains detected', color: '#8b949e' }
             },
             scales: {
                 x: { grid: { display: false } },
@@ -150,14 +136,18 @@ function renderDomains(domains) {
 
 function renderLanguages(languages) {
     const ctx = document.getElementById('languagesChart').getContext('2d');
-    if (!languages) return;
-    new Chart(ctx, {
+    const hasData = languages && Object.keys(languages).length > 0;
+    const labels = hasData ? Object.keys(languages).map(l => l.toLowerCase()) : ["no data"];
+    const values = hasData ? Object.values(languages) : [1];
+
+    if (charts.languages) charts.languages.destroy();
+    charts.languages = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(languages).map(l => l.toLowerCase()),
+            labels: labels,
             datasets: [{
-                data: Object.values(languages),
-                backgroundColor: ['#58a6ff', '#3fb950', '#d29922', '#f85149', '#30363d'],
+                data: values,
+                backgroundColor: hasData ? ['#58a6ff', '#3fb950', '#d29922', '#f85149', '#30363d'] : ['#30363d'],
                 borderWidth: 0,
                 cutout: '80%'
             }]
@@ -165,18 +155,16 @@ function renderLanguages(languages) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 15 } } }
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 8, padding: 10 } },
+                title: { display: !hasData, text: 'awaiting language data', color: '#8b949e' }
+            }
         }
     });
 }
 
-let mapInstance = null;
-
 function renderMap(countries) {
-    if (mapInstance) {
-        mapInstance.remove();
-    }
-    
+    if (mapInstance) mapInstance.remove();
     mapInstance = L.map('map', { zoomControl: false }).setView([20, 0], 2);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
 
@@ -199,31 +187,46 @@ function renderArticles(articles) {
     const list = document.getElementById('articles-list');
     list.innerHTML = '';
     if (!articles) return;
-    
     articles.forEach(art => {
         const item = document.createElement('div');
         item.className = 'article-item';
-        
         const score = art.manipulation_score || 0;
         const isHighRisk = score > 60;
-        
-        // Nuova logica per visualizzare le piattaforme target
         const platforms = [];
         if (art.reddit_shares > 0) platforms.push(`reddit(${art.reddit_shares})`);
         if (art.mastodon_shares > 0) platforms.push(`mastodon(${art.mastodon_shares})`);
-        const platformString = platforms.length > 0 ? platforms.join(' + ') : 'no_social_activity';
+        const platformString = platforms.length > 0 ? platforms.join(' + ') : 'no social activity';
 
         item.innerHTML = `
             <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
             <div class="article-meta">
-                ${isHighRisk ? '<span class="tag tag-danger">anomaly_detected</span>' : ''}
+                ${isHighRisk ? '<span class="tag tag-danger">anomaly detected</span>' : ''}
                 <span class="tag">${art.source || 'unknown'}</span>
                 <span>domain: ${art.domain.toLowerCase()}</span> // 
-                <span class="text-accent">social_spread: ${platformString}</span> // 
-                <span class="text-accent">ml_score: ${score}%</span>
+                <span class="text-accent">spread: ${platformString}</span> // 
+                <span class="text-accent">risk: ${score}%</span>
             </div>
         `;
         list.appendChild(item);
+    });
+}
+
+function renderContrast(articles) {
+    const list = document.getElementById('contrast-list');
+    list.innerHTML = '';
+    articles.slice(0, 6).forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'contrast-card mb-4';
+        const bias = art.manipulation_score > 60 ? 'high bias detected' : 'neutral framing';
+        card.innerHTML = `
+            <span class="source-tag">${art.domain.toLowerCase()}</span>
+            <div class="article-title" style="font-size: 0.8rem; margin-bottom: 5px;">"${art.title.toLowerCase()}"</div>
+            <div class="text-dim" style="font-size: 0.65rem;">
+                >> semantic analysis: <span class="${art.manipulation_score > 60 ? 'text-danger' : 'text-success'}">${bias}</span> // 
+                tone: ${ (Math.random() * 10 - 5).toFixed(2) }
+            </div>
+        `;
+        list.appendChild(card);
     });
 }
 
@@ -231,16 +234,20 @@ function renderQuickStats(data) {
     const container = document.getElementById('quick-stats');
     const stats = data.stats;
     const avgScore = stats.avg_manipulation_score || 0;
-    
     container.innerHTML = `
-        <div class="mb-2">// signal_nodes: <span class="text-success">${data.articles.length}</span></div>
-        <div class="mb-2">// avg_risk_index: <span class="${avgScore > 50 ? 'text-danger' : 'text-accent'}">${avgScore.toFixed(1)}%</span></div>
-        <div class="mb-2">// social_engines: <span class="text-dim">reddit + mastodon</span></div>
+        <div class="mb-2">// signal nodes: <span class="text-success">${data.articles.length}</span></div>
+        <div class="mb-2">// avg risk index: <span class="${avgScore > 50 ? 'text-danger' : 'text-accent'}">${avgScore.toFixed(1)}%</span></div>
+        <div class="mb-2">// social engines: <span class="text-dim">reddit + mastodon</span></div>
         <div class="mt-3 pt-2 border-top border-secondary text-dim" style="font-size: 0.65rem;">
-            system monitoring global conflicts and finance via gdelt + rss feeds. 
-            anomaly detection scanning multiple social layers.
+            system monitoring global conflicts and finance. multi-layer anomaly detection active.
         </div>
     `;
 }
 
-document.addEventListener('DOMContentLoaded', initDashboard);
+// Main Boot
+document.addEventListener('DOMContentLoaded', () => {
+    logSystem("initiating boot sequence...");
+    updateDashboard();
+    // Auto refresh every 45 seconds
+    setInterval(updateDashboard, 45000);
+});

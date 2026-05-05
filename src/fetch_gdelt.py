@@ -68,18 +68,17 @@ def analyze_social_spread(reddit, url):
     score = min(total_shares * 8 + platform_diversity * 20, 100)
     metrics["bot_probability"] = score
     return metrics
-
 def fetch_rss_news(query):
     print("scanning rss feeds for global signal...")
     articles = []
     headers = {"User-Agent": "tensionr_cyber_node/1.0"}
     rss_metadata = {
-        "feeds.bbci.co.uk": "United Kingdom",
-        "www.aljazeera.com": "Qatar",
-        "www.theguardian.com": "United Kingdom",
-        "feeds.a.dj.com": "United States",
-        "www.reutersagency.com": "United Kingdom",
-        "cnnespanol.cnn.com": "United States"
+        "feeds.bbci.co.uk": {"country": "United Kingdom", "lang": "English"},
+        "www.aljazeera.com": {"country": "Qatar", "lang": "English"},
+        "www.theguardian.com": {"country": "United Kingdom", "lang": "English"},
+        "feeds.a.dj.com": {"country": "United States", "lang": "English"},
+        "www.reutersagency.com": {"country": "United Kingdom", "lang": "English"},
+        "cnnespanol.cnn.com": {"country": "United States", "lang": "Spanish"}
     }
     for url in RSS_FEEDS:
         try:
@@ -87,6 +86,7 @@ def fetch_rss_news(query):
             resp = requests.get(url, headers=headers, timeout=10)
             if resp.status_code != 200: continue
             feed = feedparser.parse(resp.text)
+            meta = rss_metadata.get(domain, {"country": "Global", "lang": "English"})
             for entry in feed.entries[:10]:
                 articles.append({
                     "url": entry.get('link'),
@@ -94,10 +94,12 @@ def fetch_rss_news(query):
                     "domain": domain,
                     "seendate": datetime.now().strftime("%Y%m%dT%H%M%SZ"),
                     "source": "rss",
-                    "sourcecountry": rss_metadata.get(domain, "Global")
+                    "sourcecountry": meta["country"],
+                    "language": meta["lang"]
                 })
         except: continue
     return articles
+
 
 def fetch_gdelt_data():
     base_url = "https://api.gdeltproject.org/api/v2/doc/doc"
@@ -144,7 +146,8 @@ def fetch_gdelt_data():
             "avg_risk": float(df['bot_probability'].mean()) if not df.empty else 0,
             "top_domains": df['domain'].value_counts().head(8).to_dict() if not df.empty else {},
             "source_distribution": df['source'].value_counts().to_dict() if 'source' in df.columns else {},
-            "source_countries": df['sourcecountry'].value_counts().to_dict() if 'sourcecountry' in df.columns else {}
+            "source_countries": df['sourcecountry'].value_counts().to_dict() if 'sourcecountry' in df.columns else {},
+            "languages": df['language'].value_counts().to_dict() if 'language' in df.columns else {}
         }
 
         try:
