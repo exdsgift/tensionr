@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tensionr // system_v1</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --text-main: #c9d1d9;
+            --text-dim: #8b949e;
+            --border: #30363d;
+        }
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            letter-spacing: -0.01em;
+        }
+        .container { max-width: 1100px; }
+        .nav-bar { border-bottom: 1px solid var(--border); padding: 1rem 0; margin-bottom: 2rem; }
+        .card { 
+            background-color: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        h2, h5 { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main); }
+        .chart-desc { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem; line-height: 1.4; }
+        .text-dim { color: var(--text-dim); }
+        .text-accent { color: var(--accent); }
+        .text-success { color: var(--success) !important; }
+        #map { height: 350px; border-radius: 4px; border: 1px solid var(--border); filter: grayscale(100%) invert(90%) brightness(90%); }
+        .chart-container { position: relative; height: 240px; }
+        .article-item { 
+            padding: 1rem; 
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .article-item:last-child { border-bottom: none; }
+        .article-item:hover { background: rgba(255, 255, 255, 0.02); }
+        .article-title { color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.25rem; font-weight: 400; }
+        .article-title:hover { color: var(--accent); }
+        .article-meta { font-size: 0.7rem; color: var(--text-dim); }
+        .tag { font-size: 0.65rem; padding: 1px 4px; border: 1px solid var(--border); border-radius: 3px; margin-right: 4px; }
+        .tag-danger { color: var(--danger); border-color: var(--danger); }
+        .footer { border-top: 1px solid var(--border); padding: 2rem 0; margin-top: 3rem; text-align: center; font-size: 0.7rem; color: var(--text-dim); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <span>tensionr // <span class="text-dim">system_v1.0.4</span></span>
+        <span class="text-dim" id="clock">00:00:00</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="d-flex justify-content-between align-items-end">
+                    <div>
+                        <h2 id="query-title" style="margin: 0;">system_status: scanning_nodes</h2>
+                        <p class="text-dim mb-0" style="font-size: 0.7rem;">// data source: gdelt_doc_api // analysis: reddit_praw_v2</p>
+                    </div>
+                    <div class="text-end" style="font-size: 0.7rem;">
+                        <span class="text-success">system_online</span><br>
+                        <span id="last-updated" class="text-dim">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <h5>news_volume_pulse</h5>
+                <p class="chart-desc">tracks the frequency of news reports over the last 24 hours. spikes often correlate with high-impact diplomatic or military events.</p>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <h5>top_domains</h5>
+                <p class="chart-desc">distribution of news by primary domains. identifies which outlets are dominating the narrative.</p>
+                <div class="chart-container">
+                    <canvas id="domainsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <h5>geo_distribution_matrix</h5>
+                <p class="chart-desc">visualizes the physical origin of the news sources. enables the detection of regional bias and influence hubs.</p>
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-4">
+            <div class="card">
+                <h5>language_distribution</h5>
+                <p class="chart-desc">shows the linguistic diversity of the reports. can indicate internal vs external propaganda efforts.</p>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="languagesChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h5>ml_engine_output</h5>
+                <p class="chart-desc">real-time analysis of the current data batch. probability scores for artificial influence campaigns.</p>
+                <div id="quick-stats" style="font-size: 0.75rem;">
+                    <!-- dynamic -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <h5>detected_signal_feed</h5>
+                <p class="chart-desc">raw feed of analyzed articles. signal-to-noise ratio: <span id="snr-ratio" class="text-accent">94.2%</span></p>
+                <div id="articles-list" style="max-height: 520px; overflow-y: auto;">
+                    <!-- dynamic -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    tensionr system // secure_node_id: 8X-92 // global_monitoring_active
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+<script>
+    setInterval(() => {
+        document.getElementById('clock').textContent = new Date().toTimeString().split(' ')[0];
+    }, 1000);
+</script>
+</body>
+</html>
