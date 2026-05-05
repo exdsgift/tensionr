@@ -43,13 +43,15 @@ function logSystem(msg) {
 function formatDate(isoStr) {
     if (!isoStr) return "--:--";
     try {
+        // Handle GDELT formats like 20260505T130000Z or ISO
+        const parts = isoStr.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);
+        if (parts) return `${parts[4]}:${parts[5]} ${parts[3]}/${parts[2]}`;
+        
         const d = new Date(isoStr);
-        if (isNaN(d.getTime())) {
-            const parts = isoStr.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);
-            if (parts) return `${parts[4]}:${parts[5]} ${parts[3]}/${parts[2]}`;
-            return isoStr.substring(0, 10);
+        if (!isNaN(d.getTime())) {
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " + d.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
         }
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " + d.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+        return isoStr.substring(0, 10);
     } catch { return "--:--" }
 }
 
@@ -63,14 +65,15 @@ async function updateDashboard() {
 
         document.getElementById('last-updated').textContent = `sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()} // sig: ${signature.substring(0,6)}`;
 
-        renderTimeline(data.timeline_vol);
-        renderDomains(data.stats.top_domains);
-        renderLanguages(data.stats.languages);
-        renderMap(data.stats.source_countries, data.articles);
-        renderArticles(data.articles);
-        renderQuickStats(data);
-        renderContrast(data.articles);
-        renderWordCloud(data.stats.top_keywords);
+        // Safe execution of all renders
+        safeRender('timeline', () => renderTimeline(data.timeline_vol));
+        safeRender('domains', () => renderDomains(data.stats.top_domains));
+        safeRender('languages', () => renderLanguages(data.stats.languages));
+        safeRender('map', () => renderMap(data.stats.source_countries, data.articles));
+        safeRender('articles', () => renderArticles(data.articles));
+        safeRender('stats', () => renderQuickStats(data));
+        safeRender('contrast', () => renderContrast(data.articles));
+        safeRender('wordcloud', () => renderWordCloud(data.stats.top_keywords));
 
         logSystem(`handshake success. ${data.articles.length} nodes active.`);
     } catch (error) {
@@ -79,11 +82,31 @@ async function updateDashboard() {
     }
 }
 
+function safeRender(name, fn) {
+    try {
+        fn();
+    } catch (e) {
+        logSystem(`warning: component_${name} failure`);
+        console.warn(`render error in ${name}:`, e);
+    }
+}
+
 function renderTimeline(timeline) {
     const ctx = document.getElementById('timelineChart').getContext('2d');
-    const hasData = timeline && timeline.length > 0;
-    const labels = hasData ? timeline.map(item => `${item.datetime.substring(9,11)}:00`) : Array(12).fill("--");
-    const values = hasData ? timeline.map(item => item.value) : Array(12).fill(0);
+    
+    // GDELT returns nested data: timeline[0].data
+    let points = [];
+    if (timeline && timeline.length > 0) {
+        if (timeline[0].data) points = timeline[0].data;
+        else points = timeline;
+    }
+    
+    const hasData = points.length > 0;
+    const labels = hasData ? points.map(item => {
+        const dateStr = item.date || item.datetime || "";
+        return dateStr.includes('T') ? dateStr.substring(9,11) + ":00" : "--";
+    }) : Array(12).fill("--");
+    const values = hasData ? points.map(item => item.value) : Array(12).fill(0);
 
     if (charts.timeline) charts.timeline.destroy();
     charts.timeline = new Chart(ctx, {
@@ -172,8 +195,13 @@ function renderLanguages(languages) {
 
 function renderWordCloud(keywords) {
     const container = document.getElementById('word-cloud');
-    if (!container || !keywords) return;
+    if (!container) return;
     container.innerHTML = '';
+    
+    if (!keywords || Object.keys(keywords).length === 0) {
+        container.innerHTML = '<span class="text-dim">no tokens detected</span>';
+        return;
+    }
     
     const entries = Object.entries(keywords);
     const max = Math.max(...entries.map(e => e[1]));
@@ -188,6 +216,7 @@ function renderWordCloud(keywords) {
         span.style.fontSize = `${size}rem`;
         span.style.opacity = opacity;
         span.style.color = color;
+        span.style.margin = '2px';
         span.textContent = word.toLowerCase();
         container.appendChild(span);
     });
@@ -198,28 +227,32 @@ function renderMap(countries, articles) {
     mapInstance = L.map('map', { zoomControl: false }).setView([20, 0], 2);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
 
-    if (!countries) return;
+    if (!countries || !articles) return;
     Object.keys(countries).forEach(country => {
         if (countryCoords[country]) {
             const count = countries[country];
-            // Get a random snippet for this country if available
-            const snippet = articles.find(a => a.sourcecountry === country)?.title.toLowerCase() || 'no snippet available';
+            const snippet = articles.find(a => a.sourcecountry === country)?.title.toLowerCase() || 'multi-node activity';
             
             L.circleMarker(countryCoords[country], {
-                radius: Math.min(Math.sqrt(count) * 2 + 2, 12),
+                radius: Math.min(Math.sqrt(count) * 2 + 3, 12),
                 fillColor: LIME_BRIGHT,
                 color: LIME_BRIGHT,
                 weight: 1,
                 fillOpacity: 0.3
-            }).addTo(mapInstance).bindPopup(`<div style="font-family:'JetBrains Mono'; font-size: 0.7rem; color: #000;"><b>${country.toLowerCase()}</b><br>${count} nodes<br><hr style="margin:5px 0;">"${snippet}"</div>`);
+            }).addTo(mapInstance).bindPopup(`<div style="font-family:'JetBrains Mono'; font-size: 0.7rem; color: #000; background:#fff; padding:5px; border:1px solid #000;"><b>${country.toLowerCase()}</b><br>${count} nodes<br><hr style="margin:5px 0;">"${snippet}"</div>`);
         }
     });
 }
 
 function renderArticles(articles) {
     const list = document.getElementById('articles-list');
+    if (!list) return;
     list.innerHTML = '';
-    if (!articles) return;
+    if (!articles || articles.length === 0) {
+        list.innerHTML = '<div class="text-dim text-center py-5">no articles detected in stream</div>';
+        return;
+    }
+    
     articles.forEach(art => {
         const item = document.createElement('div');
         item.className = 'article-item';
@@ -242,7 +275,13 @@ function renderArticles(articles) {
 
 function renderContrast(articles) {
     const list = document.getElementById('contrast-list');
+    if (!list) return;
     list.innerHTML = '';
+    if (!articles || articles.length === 0) {
+        list.innerHTML = '<div class="text-dim text-center py-5">no narrative nodes available</div>';
+        return;
+    }
+
     articles.slice(0, 10).forEach(art => {
         const card = document.createElement('div');
         card.className = 'contrast-card';
@@ -261,6 +300,7 @@ function renderContrast(articles) {
 
 function renderQuickStats(data) {
     const container = document.getElementById('quick-stats');
+    if (!container) return;
     const stats = data.stats;
     const avgScore = stats.avg_manipulation_score || 0;
     container.innerHTML = `
