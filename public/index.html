@@ -3,211 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tensionr // system_v1.0.5</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>tensionr</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text y='70' x='50' font-family='monospace' font-size='80' font-weight='bold' fill='white' text-anchor='middle'>t</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root {
-            --bg: #0b0e14;
-            --surface: #161b22;
-            --lime-bright: #ccff00; /* Lime neon */
-            --lime-mid: #3fb950;    /* Standard green */
-            --lime-dim: #238636;    /* Dark green */
-            --accent: #ffffff;
-            --text-main: #ffffff;
-            --text-dim: #8b949e;
-            --border: #30363d;
-        }
-        body { 
-            background-color: var(--bg); 
-            color: var(--text-main);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
-            letter-spacing: -0.01em;
-        }
-        .container { max-width: 1300px; }
-        .nav-bar { border-bottom: 1px solid var(--border); padding: 0.75rem 0; margin-bottom: 1.5rem; }
-        .card { 
-            background-color: var(--surface); 
-            border: 1px solid var(--border); 
-            border-radius: 2px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            height: 100%;
-        }
-        h2, h5 { font-size: 0.8rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--lime-bright); text-transform: lowercase; }
-        .chart-desc { font-size: 0.62rem; color: var(--text-dim); margin-bottom: 0.8rem; line-height: 1.3; text-transform: lowercase; }
-        
-        .terminal-box {
-            background: #000;
-            border: 1px solid var(--border);
-            color: var(--lime-mid);
-            font-size: 0.6rem;
-            padding: 8px;
-            height: 110px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        .contrast-card {
-            border-left: 1px solid var(--lime-mid);
-            padding-left: 10px;
-            margin-bottom: 12px;
-        }
-        .source-tag {
-            font-size: 0.55rem;
-            text-transform: lowercase;
-            padding: 1px 3px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            margin-bottom: 3px;
-            display: inline-block;
-            color: var(--lime-bright);
-        }
-        
-        /* Word Map / Cloud Styles */
-        .word-cloud {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            align-content: center;
-            height: 160px;
-            padding: 5px;
-            overflow: hidden;
-        }
-        .word-item {
-            transition: color 0.2s, transform 0.2s;
-            cursor: default;
-            line-height: 1;
-        }
-        .word-item:hover {
-            color: var(--accent) !important;
-            transform: scale(1.1);
+        :root, [data-theme="phosphor"] {
+            --bg: #080c08;
+            --surface: #0c140c;
+            --theme-bright: #00ff41;
+            --theme-mid: #4d994d;
+            --theme-dim: #1f3d1f;
+            --text-main: #e6ffe6;
+            --text-dim: #73b373;
+            --border: #142914;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(300%) brightness(60%) contrast(120%);
         }
 
-        #map { height: 320px; border-radius: 4px; border: 1px solid var(--border); filter: grayscale(100%) invert(90%) brightness(80%); }
-        .chart-container { position: relative; height: 160px; }
-        .article-item { 
-            padding: 0.6rem 0; 
-            border-bottom: 1px solid var(--border);
+        [data-theme="tactical"] {
+            --bg: #0b1120;
+            --surface: #111827;
+            --theme-bright: #38bdf8;
+            --theme-mid: #94a3b8;
+            --theme-dim: #475569;
+            --text-main: #f1f5f9;
+            --text-dim: #64748b;
+            --border: #1e293b;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(170deg) saturate(300%) brightness(70%) contrast(110%);
         }
-        .article-title { color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.2rem; font-size: 0.72rem; line-height: 1.3; }
-        .article-title:hover { color: var(--lime-bright); }
-        .article-meta { font-size: 0.58rem; color: var(--text-dim); }
-        .tag { font-size: 0.55rem; padding: 0px 2px; border: 1px solid var(--border); border-radius: 2px; margin-right: 3px; text-transform: lowercase; }
-        .tag-success { color: var(--lime-bright); border-color: var(--lime-bright); }
-        .tag-danger { color: #f85149; border-color: #f85149; }
-        .footer { border-top: 1px solid var(--border); padding: 1.5rem 0; margin-top: 2rem; text-align: center; font-size: 0.65rem; color: var(--text-dim); text-transform: lowercase; }
-        ::-webkit-scrollbar { width: 3px; }
+
+        [data-theme="ember"] {
+            --bg: #120e0c;
+            --surface: #1a1512;
+            --theme-bright: #ff6b35;
+            --theme-mid: #a39185;
+            --theme-dim: #5c4d44;
+            --text-main: #fff0e6;
+            --text-dim: #8a7a6f;
+            --border: #33261f;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(345deg) saturate(300%) brightness(70%) contrast(110%);
+        }
+
+        [data-theme="ghost"] {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --theme-bright: #000000;
+            --theme-mid: #6c757d;
+            --theme-dim: #adb5bd;
+            --text-main: #212529;
+            --text-dim: #6c757d;
+            --border: #dee2e6;
+            --map-filter: grayscale(100%) invert(95%) sepia(10%) hue-rotate(180deg) brightness(105%) contrast(90%);
+        }
+
+        body { background-color: var(--bg); color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 0.85rem; overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
+        .container-fluid { max-width: 1400px; padding: 1rem 2rem; }
+        .nav-bar { border-bottom: 1px solid var(--border); padding: 0.5rem 0; margin-bottom: 1rem; transition: border-color 0.3s; }
+        .card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 1rem; margin-bottom: 1rem; height: 100%; transition: background-color 0.3s, border-color 0.3s; }
+        h5 { font-size: 0.75rem; color: var(--theme-bright); margin-bottom: 0.25rem; text-transform: lowercase; transition: color 0.3s; }
+        .chart-desc { font-size: 0.6rem; color: var(--text-dim); margin-bottom: 0.75rem; line-height: 1.2; transition: color 0.3s; }
+        
+        /* Layout Grid */
+        .chart-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .map-feed-row { display: grid; grid-template-columns: 7fr 5fr; gap: 1rem; margin-bottom: 1rem; }
+        .telemetry-row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+
+        @media (max-width: 992px) {
+            .map-feed-row { grid-template-columns: 1fr; }
+            .chart-row { grid-template-columns: 1fr; }
+            .card { height: auto; }
+        }
+
+        #map { height: 350px; filter: var(--map-filter); border: 1px solid var(--border); transition: border-color 0.3s, filter 0.3s; }
+        .chart-container { position: relative; height: 200px; }
+        
+        /* Leaflet Popups */
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: var(--surface);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            box-shadow: none;
+        }
+
+        .article-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); transition: border-color 0.3s; }
+        .article-title { color: var(--text-main); text-decoration: none; display: block; font-size: 0.72rem; margin-bottom: 2px; transition: color 0.3s; }
+        .article-title:hover { color: var(--theme-bright); }
+        .tag { font-size: 0.55rem; padding: 0px 3px; border: 1px solid var(--border); border-radius: 2px; margin-right: 4px; transition: border-color 0.3s; }
+
+        /* Map Animations */
+        .pulse-icon { position: relative; background: transparent; border: none; }
+        .pulse-dot { width: 6px; height: 6px; background: var(--theme-bright); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--theme-bright); z-index: 2; transition: background-color 0.3s, box-shadow 0.3s; }
+        .pulse-ring { border: 1px solid var(--theme-bright); border-radius: 50%; height: 24px; width: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulsate 2.5s ease-out infinite; z-index: 1; transition: border-color 0.3s; }
+        @keyframes pulsate { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; border-width: 2px; } 100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-width: 0px; } }
+
+        /* Word Cloud */
+        .word-cloud { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-content: center; min-height: 200px; perspective: 1000px; padding: 10px 0; }
+        @keyframes floatText { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-3px); } }
+        .word-item { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: crosshair; display: inline-block; }
+        .word-item:hover { color: #fff !important; transform: scale(1.25) translateY(-2px); text-shadow: 0 0 12px var(--theme-bright); z-index: 10; }
+
+        /* Feed Animations */
+        .feed-item-enter { animation: highlightSlide 0.5s ease-out forwards; }
+        @keyframes highlightSlide {
+            0% { opacity: 0; transform: translateX(-10px); background: var(--theme-dim); }
+            100% { opacity: 1; transform: translateX(0); background: transparent; }
+        }
+
+        /* Refresh Animations */
+        .fade-update { animation: softPulse 1s ease-out; }
+        @keyframes softPulse {
+            0% { opacity: 0.5; filter: brightness(1.2); }
+            100% { opacity: 1; filter: brightness(1); }
+        }
+        
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--border); }
+
+        .theme-selector {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+        .minimal-select {
+            background: var(--surface);
+            color: var(--theme-bright);
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.7rem;
+            border-radius: 2px;
+            cursor: pointer;
+            outline: none;
+            text-transform: lowercase;
+            transition: all 0.3s;
+        }
+        .minimal-select:hover {
+            border-color: var(--theme-bright);
+        }
+        .minimal-select option {
+            background: var(--surface);
+            color: var(--text-main);
+        }
     </style>
 </head>
 <body>
 
 <div class="nav-bar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <span>tensionr // <span class="text-dim">system_v1.0.5</span></span>
-        <span class="text-dim" id="clock">00:00:00</span>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <div class="card" style="height: auto; min-height: 60px; padding: 0.75rem 1.25rem;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 id="query-title" style="margin: 0; font-size: 0.85rem;">system status: listening</h2>
-                        <p class="text-dim mb-0" style="font-size: 0.6rem;">// source matrix: gdelt + rss feeds // engine: multi-platform anomaly detection</p>
-                    </div>
-                    <div class="text-end" style="font-size: 0.6rem;">
-                        <span class="text-success">engine_online</span><br>
-                        <span id="last-updated" class="text-dim">-</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card">
-                <h5>news volume pulse</h5>
-                <p class="chart-desc">24h signal frequency.</p>
-                <div class="chart-container">
-                    <canvas id="timelineChart"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <h5>top domains</h5>
-                <p class="chart-desc">primary narrative outlets.</p>
-                <div class="chart-container">
-                    <canvas id="domainsChart"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <h5>language distribution</h5>
-                <p class="chart-desc">linguistic matrix.</p>
-                <div class="chart-container">
-                    <canvas id="languagesChart"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <h5>word map engine</h5>
-                <p class="chart-desc">high-frequency narrative tokens.</p>
-                <div id="word-cloud" class="word-cloud"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <h5>geo distribution matrix</h5>
-                <p class="chart-desc">global signal origin visualization.</p>
-                <div id="map"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <h5>system telemetry</h5>
-                <div id="quick-stats" style="font-size: 0.65rem;"></div>
-                <div class="terminal-box" id="system-log"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-md-6">
-            <div class="card">
-                <h5>narrative contrast engine</h5>
-                <p class="chart-desc">framing variations detection.</p>
-                <div id="contrast-list" style="max-height: 450px; overflow-y: auto; padding-right: 8px;">
-                    <!-- dynamic -->
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <h5>detected signal feed</h5>
-                <p class="chart-desc">real-time article stream.</p>
-                <div id="articles-list" style="max-height: 450px; overflow-y: auto; padding-right: 8px;">
-                    <!-- dynamic -->
-                </div>
-            </div>
+    <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>tensionr</span>
+        <div id="top-telemetry-ticker" class="d-flex justify-content-center align-items-center gap-4" style="font-size: 0.75rem; font-weight: 500;"></div>
+        <div class="d-flex align-items-center">
+            <span class="text-dim me-3" id="last-updated" style="font-size: 0.6rem;">sync: --</span>
+            <span class="me-3" style="font-size: 0.6rem; color: var(--theme-bright);" id="live-indicator">● live_feed</span>
+            <span class="text-dim" id="clock">00:00:00</span>
         </div>
     </div>
 </div>
 
-<div class="footer">
-    tensionr © 2026 // gabriele durante // secure node: 8x-92
+<div class="container-fluid">
+
+    <!-- Map & Feeds Row -->
+    <div class="map-feed-row">
+        <div class="card">
+            <h5>geospatial intelligence vectors</h5>
+            <p class="chart-desc">displays the physical origin of intercepted intelligence nodes. flashing rings indicate active signal hotspots. hover or click to reveal regional data volumes and latest snippets.</p>
+            <div id="map"></div>
+        </div>
+        <div class="card" style="display: flex; flex-direction: column;">
+            <h5>live intercept telemetry feed</h5>
+            <p class="chart-desc">real-time stream of anomalies and events. scores > 60% trigger anomaly warnings based on narrative bias and sentiment risk. tags show origin domain and extracted narrative emotion.</p>
+            <div id="articles-list" style="flex: 1; min-height: 350px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="chart-row">
+        <div class="card">
+            <h5>entity extraction network</h5>
+            <p class="chart-desc">entity extraction from recent chatter. larger, brighter text indicates higher frequency of mentions across the global data pool. hover to highlight specific entities.</p>
+            <div id="word-cloud" class="word-cloud"></div>
+        </div>
+        <div class="card">
+            <h5>narrative resonance & sentiment</h5>
+            <p class="chart-desc">polar distribution of emotional undertones detected via nlp models. larger areas represent a higher volume of articles exhibiting the corresponding narrative emotion.</p>
+            <div class="chart-container"><canvas id="emotionChart"></canvas></div>
+        </div>
+    </div>
+
+</div>
+
+<footer class="text-center py-4" style="font-size: 0.65rem; text-transform: lowercase; color: var(--text-dim);">
+    tensionr © 2026 // <a href="https://github.com/exdsgift" target="_blank" style="color: var(--theme-bright); text-decoration: none;">github/exdsgift</a>
+</footer>
+
+<div class="theme-selector">
+    <select onchange="setTheme(this.value)" id="theme-select" class="minimal-select">
+        <option value="phosphor">phosphor</option>
+        <option value="tactical">tactical</option>
+        <option value="ember">ember</option>
+        <option value="ghost">ghost</option>
+    </select>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -217,6 +214,9 @@
     setInterval(() => {
         document.getElementById('clock').textContent = new Date().toTimeString().split(' ')[0];
     }, 1000);
+    
+    // Set active theme in select
+    document.getElementById('theme-select').value = localStorage.getItem('tensionr_theme') || 'phosphor';
 </script>
 </body>
 </html>

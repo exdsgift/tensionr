@@ -1,43 +1,100 @@
 const countryCoords = {
-    "United States": [37.0902, -95.7129],
-    "Iran": [32.4279, 53.6880],
-    "United Kingdom": [55.3781, -3.4360],
-    "China": [35.8617, 104.1954],
-    "Russia": [61.5240, 105.3188],
-    "Germany": [51.1657, 10.4515],
-    "France": [46.2276, 2.2137],
-    "Israel": [31.0461, 34.8516],
-    "Saudi Arabia": [23.8859, 45.0792],
-    "Qatar": [25.3548, 51.1839],
-    "Turkey": [38.9637, 35.2433],
-    "Egypt": [26.8206, 30.8025],
-    "India": [20.5937, 78.9629],
-    "United Arab Emirates": [23.4241, 53.8478],
-    "Canada": [56.1304, -106.3468],
-    "Australia": [-25.2744, 133.7751]
+    "United States": [38.8951, -77.0364],   // Washington DC ✓
+    "United Kingdom": [51.5074, -0.1278],    // London ✓
+    "Qatar": [25.2854, 51.5310],             // Doha ✓
+    "France": [48.8566, 2.3522],             // Paris ✓
+    "Russia": [55.7558, 37.6173],            // Moscow ✓
+    "Japan": [35.6762, 139.6503],            // Tokyo ✓
+    "Australia": [-35.2809, 149.1300],       // Canberra ✓
+    "India": [28.6139, 77.2090],             // New Delhi ✓
+    "Israel": [31.7683, 35.2137],            // Jerusalem ✓
+    "Ukraine": [50.4501, 30.5234],           // Kyiv ✓
+    "Singapore": [1.3521, 103.8198],         // Singapore ✓
+    "Canada": [45.4215, -75.6972],           // Ottawa ✓
+    "Saudi Arabia": [24.6877, 46.7219],      // Riyadh ✗ → corretto
+    "Uruguay": [-34.9011, -56.1645],         // Montevideo ✓
+    "Iran": [35.6892, 51.3890],              // Tehran ✓
+    "China": [39.9042, 116.4074],            // Beijing ✓
+    "Germany": [52.5200, 13.4050],           // Berlin ✓
+    "Turkey": [39.9334, 32.8597],            // Ankara ✓
+    "Egypt": [30.0444, 31.2357],             // Cairo ✓
+    "United Arab Emirates": [24.4539, 54.3773], // Abu Dhabi ✓
+    "South Korea": [37.5665, 126.9780],
+    "North Korea": [39.0392, 125.7625],
+    "Taiwan": [25.0330, 121.5654],
+    "Pakistan": [33.6844, 73.0479],
+    "Syria": [33.5138, 36.2765],
+    "Lebanon": [33.8938, 35.5018],
+    "Yemen": [15.3694, 44.1910],
+    "Iraq": [33.3152, 44.3661],
+    "Afghanistan": [34.5553, 69.2075],
+    "Mexico": [19.4326, -99.1332],
+    "Brazil": [-15.7975, -47.8919],
+    "Venezuela": [10.4806, -66.9036],
+    "Colombia": [4.7110, -74.0721],
+    "South Africa": [-25.7479, 28.2293],
+    "Nigeria": [9.0579, 7.4951],
+    "Kenya": [-1.2921, 36.8219],
+    "Somalia": [2.0469, 45.3182],
+    "Sudan": [15.5007, 32.5599],
+    "Ethiopia": [9.0300, 38.7400],
+    "Poland": [52.2297, 21.0122],
+    "Italy": [41.9028, 12.4964],
+    "Spain": [40.4168, -3.7038],
+    "Palestine": [31.9038, 35.2034]
 };
 
-// Colors - Lime Shades
-const LIME_BRIGHT = '#ccff00';
-const LIME_MID = '#3fb950';
-const LIME_DIM = '#238636';
-const COLOR_WHITE = '#ffffff';
-const COLOR_BORDER = '#30363d';
+// Dynamic Theme Colors
+let THEME_BRIGHT, THEME_MID, THEME_DIM, COLOR_WHITE, COLOR_BORDER;
 
-Chart.defaults.color = '#8b949e';
-Chart.defaults.font.family = "'JetBrains Mono', monospace";
-Chart.defaults.font.size = 9;
-Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+function updateThemeColors() {
+    const root = getComputedStyle(document.documentElement);
+    THEME_BRIGHT = root.getPropertyValue('--theme-bright').trim();
+    THEME_MID = root.getPropertyValue('--theme-mid').trim();
+    THEME_DIM = root.getPropertyValue('--theme-dim').trim();
+    COLOR_WHITE = root.getPropertyValue('--text-main').trim();
+    COLOR_BORDER = root.getPropertyValue('--border').trim();
+
+    Chart.defaults.color = root.getPropertyValue('--text-dim').trim();
+    Chart.defaults.font.family = "'Fira Code', monospace";
+    Chart.defaults.font.size = 10;
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+    
+    const liveIndicator = document.getElementById('live-indicator');
+    if(liveIndicator) liveIndicator.style.color = THEME_BRIGHT;
+}
+
+function setTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    localStorage.setItem('tensionr_theme', themeName);
+    updateThemeColors();
+    
+    // Re-render charts and map with new colors if data is already loaded
+    if (window.lastData) {
+        safeRender('emotions', () => renderEmotions(window.lastData.articles));
+        safeRender('map', () => renderMap(window.lastData.stats.source_countries, window.lastData.articles));
+        safeRender('wordcloud', () => renderWordCloud(window.lastData.stats.top_keywords));
+        // Force refresh feed to update colors
+        const dedupedArticles = deduplicateArticles(window.lastData.articles);
+        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 6));
+    }
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('tensionr_theme') || 'phosphor';
+document.documentElement.setAttribute('data-theme', savedTheme);
+updateThemeColors();
 
 let mapInstance = null;
 let charts = {};
 
 function logSystem(msg) {
     const log = document.getElementById('system-log');
-    if (!log) return;
-    const time = new Date().toLocaleTimeString().toLowerCase();
-    log.innerHTML += `[${time}] ${msg}<br>`;
-    log.scrollTop = log.scrollHeight;
+    if (log) { // The terminal might be removed
+        const time = new Date().toLocaleTimeString().toLowerCase();
+        log.innerHTML += `[${time}] ${msg}<br>`;
+        log.scrollTop = log.scrollHeight;
+    }
 }
 
 function formatDate(isoStr) {
@@ -62,20 +119,28 @@ async function updateDashboard() {
         const payload = await response.json();
         const data = payload.data;
         const signature = payload.signature;
+        
+        window.lastData = data; // Save for theme switcher
 
-        document.getElementById('last-updated').textContent = `sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()} // sig: ${signature.substring(0,6)}`;
+        document.getElementById('last-updated').textContent = `sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()}   sig: ${signature.substring(0,6)}`;
+
+        const dedupedArticles = deduplicateArticles(data.articles);
 
         // Safe execution of all renders
-        safeRender('timeline', () => renderTimeline(data.timeline_vol));
-        safeRender('domains', () => renderDomains(data.stats.top_domains));
-        safeRender('languages', () => renderLanguages(data.stats.languages));
+        safeRender('emotions', () => renderEmotions(data.articles));
         safeRender('map', () => renderMap(data.stats.source_countries, data.articles));
-        safeRender('articles', () => renderArticles(data.articles));
+        
+        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 6));
         safeRender('stats', () => renderQuickStats(data));
-        safeRender('contrast', () => renderContrast(data.articles));
         safeRender('wordcloud', () => renderWordCloud(data.stats.top_keywords));
-
         logSystem(`handshake success. ${data.articles.length} nodes active.`);
+
+        // Trigger subtle aesthetic refresh animation
+        document.querySelectorAll('.card').forEach(card => {
+            card.classList.remove('fade-update');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('fade-update');
+        });
     } catch (error) {
         logSystem("sync failed: packet loss");
         console.error(error);
@@ -91,35 +156,32 @@ function safeRender(name, fn) {
     }
 }
 
-function renderTimeline(timeline) {
-    const ctx = document.getElementById('timelineChart').getContext('2d');
+function renderEmotions(articles) {
+    const ctx = document.getElementById('emotionChart').getContext('2d');
+    const counts = { anger: 0, fear: 0, sadness: 0, surprise: 0, neutral: 0 };
+    articles.forEach(a => {
+        if (a.narrative_emotion && counts[a.narrative_emotion] !== undefined) {
+            counts[a.narrative_emotion]++;
+        } else if (a.narrative_emotion) {
+            counts.neutral++;
+        }
+    });
     
-    // GDELT returns nested data: timeline[0].data
-    let points = [];
-    if (timeline && timeline.length > 0) {
-        if (timeline[0].data) points = timeline[0].data;
-        else points = timeline;
-    }
-    
-    const hasData = points.length > 0;
-    const labels = hasData ? points.map(item => {
-        const dateStr = item.date || item.datetime || "";
-        return dateStr.includes('T') ? dateStr.substring(9,11) + ":00" : "--";
-    }) : Array(12).fill("--");
-    const values = hasData ? points.map(item => item.value) : Array(12).fill(0);
+    const labels = Object.keys(counts);
+    const data = Object.values(counts);
 
-    if (charts.timeline) charts.timeline.destroy();
-    charts.timeline = new Chart(ctx, {
-        type: 'line',
+    if (charts.emotions) charts.emotions.destroy();
+    charts.emotions = new Chart(ctx, {
+        type: 'radar',
         data: {
             labels: labels,
             datasets: [{
-                data: values,
-                borderColor: LIME_BRIGHT,
-                backgroundColor: 'rgba(204, 255, 0, 0.05)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
+                label: 'signals',
+                data: data,
+                backgroundColor: THEME_BRIGHT + '33', // 20% opacity hex
+                borderColor: THEME_BRIGHT,
+                pointBackgroundColor: THEME_BRIGHT,
+                pointBorderColor: '#fff',
                 borderWidth: 1
             }]
         },
@@ -128,66 +190,12 @@ function renderTimeline(timeline) {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { display: false } },
-                y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, beginAtZero: true }
-            }
-        }
-    });
-}
-
-function renderDomains(domains) {
-    const ctx = document.getElementById('domainsChart').getContext('2d');
-    const hasData = domains && Object.keys(domains).length > 0;
-    const labels = hasData ? Object.keys(domains).map(d => d.toLowerCase()) : ["none"];
-    const values = hasData ? Object.values(domains) : [0];
-
-    if (charts.domains) charts.domains.destroy();
-    charts.domains = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: values,
-                backgroundColor: LIME_MID,
-                borderRadius: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { display: false } },
-                y: { grid: { display: false } }
-            }
-        }
-    });
-}
-
-function renderLanguages(languages) {
-    const ctx = document.getElementById('languagesChart').getContext('2d');
-    const hasData = languages && Object.keys(languages).length > 0;
-    const labels = hasData ? Object.keys(languages).map(l => l.toLowerCase()) : ["none"];
-    const values = hasData ? Object.values(languages) : [1];
-
-    if (charts.languages) charts.languages.destroy();
-    charts.languages = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: values,
-                backgroundColor: hasData ? [LIME_BRIGHT, COLOR_WHITE, LIME_MID, LIME_DIM, COLOR_BORDER] : [COLOR_BORDER],
-                borderWidth: 0,
-                cutout: '82%'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 6, padding: 5, font: { size: 8 } } }
+                r: {
+                    angleLines: { color: 'rgba(255,255,255,0.1)' },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    pointLabels: { color: THEME_MID, font: { family: "'Fira Code', monospace", size: 10 } },
+                    ticks: { display: false, backdropColor: 'transparent' }
+                }
             }
         }
     });
@@ -207,16 +215,18 @@ function renderWordCloud(keywords) {
     const max = Math.max(...entries.map(e => e[1]));
     
     entries.forEach(([word, count]) => {
-        const size = 0.5 + (count / max) * 1;
-        const opacity = 0.3 + (count / max) * 0.7;
-        const color = count > max * 0.7 ? LIME_BRIGHT : LIME_MID;
+        const size = 0.55 + (count / max) * 1.1;
+        const opacity = 0.4 + (count / max) * 0.6;
+        const color = count > max * 0.6 ? THEME_BRIGHT : THEME_MID;
         
         const span = document.createElement('span');
         span.className = 'word-item';
         span.style.fontSize = `${size}rem`;
         span.style.opacity = opacity;
         span.style.color = color;
-        span.style.margin = '2px';
+        span.style.margin = '1px 4px';
+        span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
+        span.style.animationDelay = `${Math.random()}s`;
         span.textContent = word.toLowerCase();
         container.appendChild(span);
     });
@@ -224,7 +234,17 @@ function renderWordCloud(keywords) {
 
 function renderMap(countries, articles) {
     if (mapInstance) mapInstance.remove();
-    mapInstance = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+    mapInstance = L.map('map', { 
+        zoomControl: false,
+        dragging: false,
+        touchZoom: false,
+        doubleClickZoom: false,
+        scrollWheelZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        zoomSnap: 0.1,
+        zoomDelta: 0.1
+    }).setView([25, 0], 1.3);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
 
     if (!countries || !articles) return;
@@ -233,80 +253,112 @@ function renderMap(countries, articles) {
             const count = countries[country];
             const snippet = articles.find(a => a.sourcecountry === country)?.title.toLowerCase() || 'multi-node activity';
             
-            L.circleMarker(countryCoords[country], {
-                radius: Math.min(Math.sqrt(count) * 2 + 3, 12),
-                fillColor: LIME_BRIGHT,
-                color: LIME_BRIGHT,
-                weight: 1,
-                fillOpacity: 0.3
-            }).addTo(mapInstance).bindPopup(`<div style="font-family:'JetBrains Mono'; font-size: 0.7rem; color: #000; background:#fff; padding:5px; border:1px solid #000;"><b>${country.toLowerCase()}</b><br>${count} nodes<br><hr style="margin:5px 0;">"${snippet}"</div>`);
+            const icon = L.divIcon({
+                className: 'pulse-icon',
+                html: `<div class="pulse-ring" style="animation-delay: ${Math.random() * 2}s"></div><div class="pulse-dot"></div>`,
+                iconSize: [0, 0],
+                iconAnchor: [0, 0],
+                popupAnchor: [0, -10]
+            });
+            
+            L.marker(countryCoords[country], {icon: icon})
+              .addTo(mapInstance)
+              .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.7rem; color: var(--text-main); background: transparent; padding: 5px; border: none;"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr style="margin:5px 0; border-color: var(--border);">"${snippet}"</div>`);
         }
     });
 }
 
-function renderArticles(articles) {
-    const list = document.getElementById('articles-list');
-    if (!list) return;
-    list.innerHTML = '';
-    if (!articles || articles.length === 0) {
-        list.innerHTML = '<div class="text-dim text-center py-5">no articles detected in stream</div>';
-        return;
-    }
-    
+function deduplicateArticles(articles) {
+    const grouped = {};
     articles.forEach(art => {
-        const item = document.createElement('div');
-        item.className = 'article-item';
-        const score = art.manipulation_score || 0;
-        const isHighRisk = score > 60;
-
-        item.innerHTML = `
-            <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
-            <div class="article-meta">
-                ${isHighRisk ? '<span class="tag tag-danger">anomaly</span>' : ''}
-                <span class="tag" style="color:var(--lime-bright); border-color:var(--lime-dim)">${art.source || 'rss'}</span>
-                <span>${art.domain.toLowerCase()}</span> // 
-                <span style="color:var(--lime-mid)">${formatDate(art.seendate)}</span> // 
-                <span style="color:var(--lime-bright)">risk: ${score}%</span>
-            </div>
-        `;
-        list.appendChild(item);
+        const normTitle = art.title.toLowerCase().replace(/[^\w\s]/gi, '').substring(0, 40);
+        if (!grouped[normTitle]) {
+            grouped[normTitle] = { ...art, all_domains: new Set([art.domain]) };
+        } else {
+            grouped[normTitle].all_domains.add(art.domain);
+            if ((art.manipulation_score || 0) > (grouped[normTitle].manipulation_score || 0)) {
+                grouped[normTitle].manipulation_score = art.manipulation_score;
+                grouped[normTitle].narrative_emotion = art.narrative_emotion;
+            }
+        }
+    });
+    return Object.values(grouped).map(art => {
+        art.domain = Array.from(art.all_domains).join(', ');
+        return art;
     });
 }
 
-function renderContrast(articles) {
-    const list = document.getElementById('contrast-list');
-    if (!list) return;
-    list.innerHTML = '';
+let feedsIntervals = {};
+function initRotatingFeed(containerId, articles, maxVisible) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (feedsIntervals[containerId]) clearInterval(feedsIntervals[containerId]);
+
     if (!articles || articles.length === 0) {
-        list.innerHTML = '<div class="text-dim text-center py-5">no narrative nodes available</div>';
+        container.innerHTML = '<div class="text-dim text-center py-5">no active signals</div>';
         return;
     }
 
-    articles.slice(0, 10).forEach(art => {
-        const card = document.createElement('div');
-        card.className = 'contrast-card';
-        const bias = art.manipulation_score > 60 ? 'high bias' : 'neutral';
-        card.innerHTML = `
-            <span class="source-tag">${art.domain.toLowerCase()}</span>
-            <div class="article-title">"${art.title.toLowerCase()}"</div>
-            <div class="text-dim" style="font-size: 0.58rem;">
-                >> semantic analysis: <span style="color:${art.manipulation_score > 60 ? 'var(--danger)' : 'var(--lime-bright)'}">${bias}</span> // 
-                timestamp: ${formatDate(art.seendate)}
-            </div>
-        `;
-        list.appendChild(card);
-    });
+    let buffer = [...articles];
+    let visible = buffer.splice(0, Math.min(maxVisible, buffer.length));
+
+    function render() {
+        container.innerHTML = '';
+        visible.forEach((art, index) => {
+            const item = document.createElement('div');
+            item.className = 'article-item';
+            if (index === 0 && buffer.length > 0) item.classList.add('feed-item-enter');
+
+            const score = art.manipulation_score || 0;
+            const emotion = art.narrative_emotion && art.narrative_emotion !== 'unknown' ? art.narrative_emotion : '';
+            const domainsHtml = art.domain.split(', ').map(d => `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-dim)">${d}</span>`).join('');
+            const riskLabel = score > 60 ? 'high' : (score > 30 ? 'moderate' : 'baseline');
+            const emotionTag = emotion ? `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-bright)">${emotion}</span>` : '';
+            item.innerHTML = `
+                <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                    <a href="${art.url}" target="_blank" class="article-title" style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${art.title.toLowerCase()}</a>
+                    <span class="text-dim" style="font-size: 0.55rem; white-space: nowrap;">${formatDate(art.seendate)}</span>
+                </div>
+                <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:2px;">
+                    ${score > 60 ? '<span class="tag" style="color:#ff5555; border-color:#ff5555">anomaly</span>' : ''}
+                    ${emotionTag} ${domainsHtml} 
+                <span style="color:var(--theme-mid); margin-left: 4px;">  risk: <span style="color:${score > 60 ? '#ff5555' : 'var(--theme-bright)'}">${riskLabel} (${score}%)</span></span>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    render();
+    if (buffer.length > 0) {
+        feedsIntervals[containerId] = setInterval(() => {
+            buffer.push(visible.pop());
+            visible.unshift(buffer.shift());
+            render();
+        }, 3500 + Math.random() * 2000);
+    }
 }
 
 function renderQuickStats(data) {
-    const container = document.getElementById('quick-stats');
+    const container = document.getElementById('top-telemetry-ticker');
     if (!container) return;
     const stats = data.stats;
-    const avgScore = stats.avg_manipulation_score || 0;
+    const avgScore = stats.avg_risk || 0;
+    const criticalCount = stats.critical_anomalies || 0;
+    
     container.innerHTML = `
-        <div class="mb-1">// nodes active: <span style="color:var(--lime-bright)">${data.articles.length}</span></div>
-        <div class="mb-1">// risk index: <span style="color:${avgScore > 50 ? 'var(--danger)' : 'var(--lime-bright)'}">${avgScore.toFixed(1)}%</span></div>
-        <div class="mb-1">// integrity: <span class="text-dim">verified</span></div>
+        <div title="Total number of unique intelligence nodes currently stored in local memory (max 500).">
+            monitored_signals: <span style="color:var(--theme-bright)">${data.articles.length}</span>
+        </div>
+        <div title="Number of intercepted nodes with a narrative bias risk score exceeding 60%.">
+            critical_anomalies: <span style="color:${criticalCount > 0 ? '#ff5555' : 'var(--theme-bright)'}">${criticalCount}</span>
+        </div>
+        <div title="The average manipulation and bias risk across all monitored signals.">
+            average_risk: <span style="color:${avgScore > 50 ? '#ff5555' : 'var(--theme-bright)'}">${avgScore.toFixed(1)}%</span>
+        </div>
+        <div title="Digital integrity verification status for the current telemetry packet.">
+            integrity: <span style="color: #3fb950">verified</span>
+        </div>
     `;
 }
 
