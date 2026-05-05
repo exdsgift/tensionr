@@ -101,7 +101,23 @@ def fetch_rss_news(query):
     return articles
 
 
+def extract_keywords(articles):
+    """Estrae le parole più frequenti dai titoli per la word cloud."""
+    from collections import Counter
+    import re
+    
+    stop_words = {'the', 'to', 'in', 'and', 'of', 'a', 'for', 'with', 'on', 'at', 'is', 'as', 'that', 'from', 'it', 'was', 'are', 'be', 'by', 'an', 'has', 'have', 'more', 'us', 'new', 'after', 'says', 'says', 'amid', 'over', 'will'}
+    words = []
+    for art in articles:
+        title = art.get('title', '').lower()
+        # Rimuovi punteggiatura e spacca in parole
+        tokens = re.findall(r'\w+', title)
+        words.extend([w for w in tokens if w not in stop_words and len(w) > 2])
+    
+    return dict(Counter(words).most_common(20))
+
 def fetch_gdelt_data():
+    # ... rest of the logic until stats aggregation
     base_url = "https://api.gdeltproject.org/api/v2/doc/doc"
     query = 'war conflict economy'
     headers = {"User-Agent": "tensionr_cyber_node/1.0"}
@@ -147,7 +163,8 @@ def fetch_gdelt_data():
             "top_domains": df['domain'].value_counts().head(8).to_dict() if not df.empty else {},
             "source_distribution": df['source'].value_counts().to_dict() if 'source' in df.columns else {},
             "source_countries": df['sourcecountry'].value_counts().to_dict() if 'sourcecountry' in df.columns else {},
-            "languages": df['language'].value_counts().to_dict() if 'language' in df.columns else {}
+            "languages": df['language'].value_counts().to_dict() if 'language' in df.columns else {},
+            "top_keywords": extract_keywords(processed)
         }
 
         try:

@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --bg: #0d1117;
+            --bg: #0b0e14;
             --surface: #161b22;
+            --lime-bright: #ccff00; /* Lime neon */
+            --lime-mid: #3fb950;    /* Standard green */
+            --lime-dim: #238636;    /* Dark green */
             --accent: #ffffff;
-            --success: #3fb950;
-            --warning: #d29922;
-            --danger: #f85149;
             --text-main: #ffffff;
             --text-dim: #8b949e;
             --border: #30363d;
@@ -26,32 +26,31 @@
             font-size: 0.82rem;
             letter-spacing: -0.01em;
         }
-        .container { max-width: 1240px; }
+        .container { max-width: 1300px; }
         .nav-bar { border-bottom: 1px solid var(--border); padding: 0.75rem 0; margin-bottom: 1.5rem; }
         .card { 
             background-color: var(--surface); 
             border: 1px solid var(--border); 
-            border-radius: 4px;
+            border-radius: 2px;
             padding: 1.25rem;
             margin-bottom: 1rem;
             height: 100%;
         }
-        h2, h5 { font-size: 0.8rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--success); text-transform: lowercase; }
-        .chart-desc { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.8rem; line-height: 1.4; text-transform: lowercase; }
+        h2, h5 { font-size: 0.8rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--lime-bright); text-transform: lowercase; }
+        .chart-desc { font-size: 0.62rem; color: var(--text-dim); margin-bottom: 0.8rem; line-height: 1.3; text-transform: lowercase; }
         
         .terminal-box {
             background: #000;
             border: 1px solid var(--border);
-            color: var(--success);
+            color: var(--lime-mid);
             font-size: 0.6rem;
             padding: 8px;
             height: 110px;
             overflow-y: auto;
             margin-top: 10px;
-            box-shadow: inset 0 0 10px rgba(63, 185, 80, 0.05);
         }
         .contrast-card {
-            border-left: 1px solid var(--success);
+            border-left: 1px solid var(--lime-mid);
             padding-left: 10px;
             margin-bottom: 12px;
         }
@@ -63,20 +62,42 @@
             border: 1px solid var(--border);
             margin-bottom: 3px;
             display: inline-block;
-            color: var(--success);
+            color: var(--lime-bright);
         }
+        
+        /* Word Map / Cloud Styles */
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            align-content: center;
+            height: 160px;
+            padding: 5px;
+            overflow: hidden;
+        }
+        .word-item {
+            transition: color 0.2s, transform 0.2s;
+            cursor: default;
+            line-height: 1;
+        }
+        .word-item:hover {
+            color: var(--accent) !important;
+            transform: scale(1.1);
+        }
+
         #map { height: 320px; border-radius: 4px; border: 1px solid var(--border); filter: grayscale(100%) invert(90%) brightness(80%); }
-        .chart-container { position: relative; height: 180px; }
+        .chart-container { position: relative; height: 160px; }
         .article-item { 
             padding: 0.6rem 0; 
             border-bottom: 1px solid var(--border);
         }
-        .article-title { color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.2rem; font-size: 0.75rem; line-height: 1.3; }
-        .article-title:hover { color: var(--success); }
-        .article-meta { font-size: 0.6rem; color: var(--text-dim); }
+        .article-title { color: var(--text-main); text-decoration: none; display: block; margin-bottom: 0.2rem; font-size: 0.72rem; line-height: 1.3; }
+        .article-title:hover { color: var(--lime-bright); }
+        .article-meta { font-size: 0.58rem; color: var(--text-dim); }
         .tag { font-size: 0.55rem; padding: 0px 2px; border: 1px solid var(--border); border-radius: 2px; margin-right: 3px; text-transform: lowercase; }
-        .tag-success { color: var(--success); border-color: var(--success); }
-        .tag-danger { color: var(--danger); border-color: var(--danger); }
+        .tag-success { color: var(--lime-bright); border-color: var(--lime-bright); }
+        .tag-danger { color: #f85149; border-color: #f85149; }
         .footer { border-top: 1px solid var(--border); padding: 1.5rem 0; margin-top: 2rem; text-align: center; font-size: 0.65rem; color: var(--text-dim); text-transform: lowercase; }
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-thumb { background: var(--border); }
@@ -110,7 +131,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <h5>news volume pulse</h5>
                 <p class="chart-desc">24h signal frequency.</p>
@@ -119,22 +140,29 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <h5>top domains</h5>
-                <p class="chart-desc">primary outlet distribution.</p>
+                <p class="chart-desc">primary narrative outlets.</p>
                 <div class="chart-container">
                     <canvas id="domainsChart"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <h5>language distribution</h5>
-                <p class="chart-desc">linguistic diversity matrix.</p>
+                <p class="chart-desc">linguistic matrix.</p>
                 <div class="chart-container">
                     <canvas id="languagesChart"></canvas>
                 </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <h5>word map engine</h5>
+                <p class="chart-desc">high-frequency narrative tokens.</p>
+                <div id="word-cloud" class="word-cloud"></div>
             </div>
         </div>
     </div>

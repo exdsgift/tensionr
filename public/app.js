@@ -17,13 +17,14 @@ const countryCoords = {
     "Australia": [-25.2744, 133.7751]
 };
 
-// Colors
-const COLOR_GREEN = '#3fb950';
+// Colors - Lime Shades
+const LIME_BRIGHT = '#ccff00';
+const LIME_MID = '#3fb950';
+const LIME_DIM = '#238636';
 const COLOR_WHITE = '#ffffff';
-const COLOR_DIM = '#8b949e';
 const COLOR_BORDER = '#30363d';
 
-Chart.defaults.color = COLOR_DIM;
+Chart.defaults.color = '#8b949e';
 Chart.defaults.font.family = "'JetBrains Mono', monospace";
 Chart.defaults.font.size = 9;
 Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
@@ -37,9 +38,6 @@ function logSystem(msg) {
     const time = new Date().toLocaleTimeString().toLowerCase();
     log.innerHTML += `[${time}] ${msg}<br>`;
     log.scrollTop = log.scrollHeight;
-    if (log.innerHTML.split('<br>').length > 20) {
-        log.innerHTML = log.innerHTML.split('<br>').slice(-20).join('<br>');
-    }
 }
 
 function formatDate(isoStr) {
@@ -47,7 +45,6 @@ function formatDate(isoStr) {
     try {
         const d = new Date(isoStr);
         if (isNaN(d.getTime())) {
-            // Fallback for GDELT format: 20260505T130000Z
             const parts = isoStr.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);
             if (parts) return `${parts[4]}:${parts[5]} ${parts[3]}/${parts[2]}`;
             return isoStr.substring(0, 10);
@@ -57,7 +54,7 @@ function formatDate(isoStr) {
 }
 
 async function updateDashboard() {
-    logSystem("syncing signal...");
+    logSystem("syncing telemetry...");
     try {
         const response = await fetch('../data/latest.json?t=' + new Date().getTime());
         const payload = await response.json();
@@ -69,12 +66,13 @@ async function updateDashboard() {
         renderTimeline(data.timeline_vol);
         renderDomains(data.stats.top_domains);
         renderLanguages(data.stats.languages);
-        renderMap(data.stats.source_countries);
+        renderMap(data.stats.source_countries, data.articles);
         renderArticles(data.articles);
         renderQuickStats(data);
         renderContrast(data.articles);
+        renderWordCloud(data.stats.top_keywords);
 
-        logSystem(`handshake success. ${data.articles.length} nodes verified.`);
+        logSystem(`handshake success. ${data.articles.length} nodes active.`);
     } catch (error) {
         logSystem("sync failed: packet loss");
         console.error(error);
@@ -94,8 +92,8 @@ function renderTimeline(timeline) {
             labels: labels,
             datasets: [{
                 data: values,
-                borderColor: COLOR_GREEN,
-                backgroundColor: 'rgba(63, 185, 80, 0.05)',
+                borderColor: LIME_BRIGHT,
+                backgroundColor: 'rgba(204, 255, 0, 0.05)',
                 fill: true,
                 tension: 0.4,
                 pointRadius: 0,
@@ -127,7 +125,7 @@ function renderDomains(domains) {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: COLOR_GREEN,
+                backgroundColor: LIME_MID,
                 borderRadius: 1
             }]
         },
@@ -157,22 +155,45 @@ function renderLanguages(languages) {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: hasData ? [COLOR_GREEN, COLOR_WHITE, '#2ea043', '#238636', COLOR_BORDER] : [COLOR_BORDER],
+                backgroundColor: hasData ? [LIME_BRIGHT, COLOR_WHITE, LIME_MID, LIME_DIM, COLOR_BORDER] : [COLOR_BORDER],
                 borderWidth: 0,
-                cutout: '85%'
+                cutout: '82%'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 6, padding: 8, font: { size: 8 } } }
+                legend: { position: 'bottom', labels: { boxWidth: 6, padding: 5, font: { size: 8 } } }
             }
         }
     });
 }
 
-function renderMap(countries) {
+function renderWordCloud(keywords) {
+    const container = document.getElementById('word-cloud');
+    if (!container || !keywords) return;
+    container.innerHTML = '';
+    
+    const entries = Object.entries(keywords);
+    const max = Math.max(...entries.map(e => e[1]));
+    
+    entries.forEach(([word, count]) => {
+        const size = 0.5 + (count / max) * 1;
+        const opacity = 0.3 + (count / max) * 0.7;
+        const color = count > max * 0.7 ? LIME_BRIGHT : LIME_MID;
+        
+        const span = document.createElement('span');
+        span.className = 'word-item';
+        span.style.fontSize = `${size}rem`;
+        span.style.opacity = opacity;
+        span.style.color = color;
+        span.textContent = word.toLowerCase();
+        container.appendChild(span);
+    });
+}
+
+function renderMap(countries, articles) {
     if (mapInstance) mapInstance.remove();
     mapInstance = L.map('map', { zoomControl: false }).setView([20, 0], 2);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
@@ -181,13 +202,16 @@ function renderMap(countries) {
     Object.keys(countries).forEach(country => {
         if (countryCoords[country]) {
             const count = countries[country];
+            // Get a random snippet for this country if available
+            const snippet = articles.find(a => a.sourcecountry === country)?.title.toLowerCase() || 'no snippet available';
+            
             L.circleMarker(countryCoords[country], {
                 radius: Math.min(Math.sqrt(count) * 2 + 2, 12),
-                fillColor: COLOR_GREEN,
-                color: COLOR_GREEN,
+                fillColor: LIME_BRIGHT,
+                color: LIME_BRIGHT,
                 weight: 1,
                 fillOpacity: 0.3
-            }).addTo(mapInstance);
+            }).addTo(mapInstance).bindPopup(`<div style="font-family:'JetBrains Mono'; font-size: 0.7rem; color: #000;"><b>${country.toLowerCase()}</b><br>${count} nodes<br><hr style="margin:5px 0;">"${snippet}"</div>`);
         }
     });
 }
@@ -206,10 +230,10 @@ function renderArticles(articles) {
             <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
             <div class="article-meta">
                 ${isHighRisk ? '<span class="tag tag-danger">anomaly</span>' : ''}
-                <span class="tag">${art.source || 'rss'}</span>
+                <span class="tag" style="color:var(--lime-bright); border-color:var(--lime-dim)">${art.source || 'rss'}</span>
                 <span>${art.domain.toLowerCase()}</span> // 
-                <span class="text-success">${formatDate(art.seendate)}</span> // 
-                <span class="text-success">risk: ${score}%</span>
+                <span style="color:var(--lime-mid)">${formatDate(art.seendate)}</span> // 
+                <span style="color:var(--lime-bright)">risk: ${score}%</span>
             </div>
         `;
         list.appendChild(item);
@@ -219,16 +243,16 @@ function renderArticles(articles) {
 function renderContrast(articles) {
     const list = document.getElementById('contrast-list');
     list.innerHTML = '';
-    articles.slice(0, 8).forEach(art => {
+    articles.slice(0, 10).forEach(art => {
         const card = document.createElement('div');
         card.className = 'contrast-card';
-        const bias = art.manipulation_score > 60 ? 'bias detected' : 'neutral';
+        const bias = art.manipulation_score > 60 ? 'high bias' : 'neutral';
         card.innerHTML = `
             <span class="source-tag">${art.domain.toLowerCase()}</span>
             <div class="article-title">"${art.title.toLowerCase()}"</div>
-            <div class="text-dim" style="font-size: 0.6rem;">
-                >> analysis: <span class="${art.manipulation_score > 60 ? 'text-danger' : 'text-success'}">${bias}</span> // 
-                time: ${formatDate(art.seendate)}
+            <div class="text-dim" style="font-size: 0.58rem;">
+                >> semantic analysis: <span style="color:${art.manipulation_score > 60 ? 'var(--danger)' : 'var(--lime-bright)'}">${bias}</span> // 
+                timestamp: ${formatDate(art.seendate)}
             </div>
         `;
         list.appendChild(card);
@@ -240,14 +264,14 @@ function renderQuickStats(data) {
     const stats = data.stats;
     const avgScore = stats.avg_manipulation_score || 0;
     container.innerHTML = `
-        <div class="mb-1">// nodes: <span class="text-success">${data.articles.length}</span></div>
-        <div class="mb-1">// risk: <span class="${avgScore > 50 ? 'text-danger' : 'text-success'}">${avgScore.toFixed(1)}%</span></div>
-        <div class="mb-1">// layer: <span class="text-dim">multi_platform</span></div>
+        <div class="mb-1">// nodes active: <span style="color:var(--lime-bright)">${data.articles.length}</span></div>
+        <div class="mb-1">// risk index: <span style="color:${avgScore > 50 ? 'var(--danger)' : 'var(--lime-bright)'}">${avgScore.toFixed(1)}%</span></div>
+        <div class="mb-1">// integrity: <span class="text-dim">verified</span></div>
     `;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    logSystem("booting engine...");
+    logSystem("booting intelligence engine...");
     updateDashboard();
-    setInterval(updateDashboard, 30000); // 30s refresh
+    setInterval(updateDashboard, 40000);
 });
