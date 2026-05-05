@@ -89,7 +89,7 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card">
-                <h5>news_volume_pulse</h5>
+                <h5>news volume pulse</h5>
                 <p class="chart-desc">tracks the frequency of news reports over the last 24 hours. spikes often correlate with high-impact diplomatic or military events.</p>
                 <div class="chart-container">
                     <canvas id="timelineChart"></canvas>
@@ -98,7 +98,7 @@
         </div>
         <div class="col-md-4">
             <div class="card">
-                <h5>top_domains</h5>
+                <h5>top domains</h5>
                 <p class="chart-desc">distribution of news by primary domains. identifies which outlets are dominating the narrative.</p>
                 <div class="chart-container">
                     <canvas id="domainsChart"></canvas>
@@ -110,44 +110,80 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <h5>geo_distribution_matrix</h5>
+                <h5>geo distribution matrix</h5>
                 <p class="chart-desc">visualizes the physical origin of the news sources. enables the detection of regional bias and influence hubs.</p>
                 <div id="map"></div>
             </div>
         </div>
     </div>
 
+    <style>
+        /* Nuovi stili per il terminale e contrast */
+        .terminal-box {
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--success);
+            font-size: 0.7rem;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+            box-shadow: inset 0 0 10px rgba(63, 185, 80, 0.1);
+        }
+        .contrast-card {
+            border-left: 2px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .source-tag {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            padding: 2px 5px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+...
     <div class="row mt-2">
         <div class="col-md-4">
             <div class="card">
-                <h5>language_distribution</h5>
-                <p class="chart-desc">shows the linguistic diversity of the reports. can indicate internal vs external propaganda efforts.</p>
-                <div class="chart-container" style="height: 200px;">
+                <h5>language distribution</h5>
+                <div class="chart-container" style="height: 180px;">
                     <canvas id="languagesChart"></canvas>
                 </div>
             </div>
             <div class="card">
-                <h5>ml_engine_output</h5>
-                <p class="chart-desc">real-time analysis of the current data batch. probability scores for artificial influence campaigns.</p>
-                <div id="quick-stats" style="font-size: 0.75rem;">
-                    <!-- dynamic -->
+                <h5>system telemetry</h5>
+                <div id="quick-stats" style="font-size: 0.75rem;"></div>
+                <div class="terminal-box" id="system-log">
+                    [system] initiating boot sequence...<br>
+                    [system] security handshake verified...<br>
+                    [system] listening for global signal...<br>
                 </div>
             </div>
         </div>
         <div class="col-md-8">
             <div class="card">
-                <h5>detected_signal_feed</h5>
-                <p class="chart-desc">raw feed of analyzed articles. signal-to-noise ratio: <span id="snr-ratio" class="text-accent">94.2%</span></p>
-                <div id="articles-list" style="max-height: 520px; overflow-y: auto;">
+                <h5>narrative contrast engine</h5>
+                <p class="chart-desc">analyzing title variations across different nodes to detect framing manipulation.</p>
+                <div id="contrast-list" style="max-height: 400px; overflow-y: auto;">
                     <!-- dynamic -->
                 </div>
+            </div>
+            <div class="card">
+                <h5>detected signal feed</h5>
+                <div id="articles-list" style="max-height: 400px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="footer">
-    tensionr system // secure_node_id: 8X-92 // global_monitoring_active
+    tensionr © 2026 // gabriele durante // secure node id: 8x-92
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

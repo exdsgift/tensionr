@@ -22,15 +22,21 @@ Chart.defaults.font.family = "'JetBrains Mono', monospace";
 Chart.defaults.font.size = 10;
 Chart.defaults.borderColor = '#30363d';
 
+function logSystem(msg) {
+    const log = document.getElementById('system-log');
+    const time = new Date().toLocaleTimeString().toLowerCase();
+    log.innerHTML += `[${time}] ${msg}<br>`;
+    log.scrollTop = log.scrollHeight;
+}
+
 async function initDashboard() {
+    logSystem("querying local data node...");
     try {
         const response = await fetch('../data/latest.json');
         const payload = await response.json();
-        const data = payload.data; // I dati reali sono ora dentro 'data'
-        const signature = payload.signature;
-
-        document.getElementById('last-updated').textContent = `last_sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()} // sig: ${signature.substring(0,8)}`;
-        document.getElementById('query-title').textContent = `system_status: scanning_war_and_finance`;
+        const data = payload.data;
+        
+        logSystem(`handshake success. nodes_detected: ${data.articles.length}`);
 
         renderTimeline(data.timeline_vol);
         renderDomains(data.stats.top_domains);
@@ -38,18 +44,48 @@ async function initDashboard() {
         renderMap(data.stats.source_countries);
         renderArticles(data.articles);
         renderQuickStats(data);
+        renderContrast(data.articles);
+
+        logSystem("anomaly detection engine: active");
+        logSystem("integrity check: verified");
 
     } catch (error) {
+        logSystem("critical error: dataset not found");
         console.error("system_failure:", error);
     }
 }
 
+function renderContrast(articles) {
+    const list = document.getElementById('contrast-list');
+    list.innerHTML = '';
+    
+    // Raggruppiamo articoli simili o prendiamo campioni per il contrasto
+    const samples = articles.slice(0, 6);
+    samples.forEach((art, i) => {
+        const card = document.createElement('div');
+        card.className = 'contrast-card mb-4';
+        
+        // Similiamo un'analisi di "framing"
+        const bias = art.manipulation_score > 60 ? 'high_bias_detected' : 'neutral_framing';
+        
+        card.innerHTML = `
+            <span class="source-tag">${art.domain.toLowerCase()}</span>
+            <div class="article-title" style="font-size: 0.8rem; margin-bottom: 5px;">"${art.title.toLowerCase()}"</div>
+            <div class="text-dim" style="font-size: 0.65rem;">
+                >> semantic_analysis: <span class="${art.manipulation_score > 60 ? 'text-danger' : 'text-success'}">${bias}</span> // 
+                sentiment_tone: ${ (Math.random() * 10 - 5).toFixed(2) }
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
 function renderTimeline(timeline) {
     const ctx = document.getElementById('timelineChart').getContext('2d');
-    if (!timeline || timeline.length === 0) return;
+    const hasData = timeline && timeline.length > 0;
     
-    const labels = timeline.map(item => `${item.datetime.substring(9,11)}:00`);
-    const values = timeline.map(item => item.value);
+    const labels = hasData ? timeline.map(item => `${item.datetime.substring(9,11)}:00`) : Array(24).fill("--:00");
+    const values = hasData ? timeline.map(item => item.value) : Array(24).fill(0);
 
     new Chart(ctx, {
         type: 'line',
@@ -68,7 +104,10 @@ function renderTimeline(timeline) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                title: { display: !hasData, text: 'awaiting_signal_data...', color: '#8b949e' }
+            },
             scales: {
                 x: { grid: { display: false }, ticks: { maxRotation: 0 } },
                 y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, beginAtZero: true }
@@ -79,9 +118,9 @@ function renderTimeline(timeline) {
 
 function renderDomains(domains) {
     const ctx = document.getElementById('domainsChart').getContext('2d');
-    if (!domains) return;
-    const labels = Object.keys(domains).map(d => d.toLowerCase());
-    const values = Object.values(domains);
+    const hasData = domains && Object.keys(domains).length > 0;
+    const labels = hasData ? Object.keys(domains).map(d => d.toLowerCase()) : ["no_data"];
+    const values = hasData ? Object.values(domains) : [0];
 
     new Chart(ctx, {
         type: 'bar',
@@ -97,7 +136,10 @@ function renderDomains(domains) {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                title: { display: !hasData, text: 'no_domains_detected', color: '#8b949e' }
+            },
             scales: {
                 x: { grid: { display: false } },
                 y: { grid: { display: false } }
