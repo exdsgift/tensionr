@@ -170,9 +170,15 @@ function renderLanguages(languages) {
     });
 }
 
+let mapInstance = null;
+
 function renderMap(countries) {
-    const map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    if (mapInstance) {
+        mapInstance.remove();
+    }
+    
+    mapInstance = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
 
     if (!countries) return;
     Object.keys(countries).forEach(country => {
@@ -184,7 +190,7 @@ function renderMap(countries) {
                 color: "#58a6ff",
                 weight: 1,
                 fillOpacity: 0.3
-            }).addTo(map);
+            }).addTo(mapInstance);
         }
     });
 }
@@ -198,17 +204,23 @@ function renderArticles(articles) {
         const item = document.createElement('div');
         item.className = 'article-item';
         
-        // ML Logic check: if scores are 0 (no reddit keys), show 'scanning' or 'no_social_signal'
         const score = art.manipulation_score || 0;
         const isHighRisk = score > 60;
         
+        // Nuova logica per visualizzare le piattaforme target
+        const platforms = [];
+        if (art.reddit_shares > 0) platforms.push(`reddit(${art.reddit_shares})`);
+        if (art.mastodon_shares > 0) platforms.push(`mastodon(${art.mastodon_shares})`);
+        const platformString = platforms.length > 0 ? platforms.join(' + ') : 'no_social_activity';
+
         item.innerHTML = `
             <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
             <div class="article-meta">
                 ${isHighRisk ? '<span class="tag tag-danger">anomaly_detected</span>' : ''}
+                <span class="tag">${art.source || 'unknown'}</span>
                 <span>domain: ${art.domain.toLowerCase()}</span> // 
-                <span>origin: ${ (art.sourcecountry || 'unknown').toLowerCase() }</span> // 
-                <span class="text-accent">ml_score: ${score > 0 ? score : 'no_signal'}</span>
+                <span class="text-accent">social_spread: ${platformString}</span> // 
+                <span class="text-accent">ml_score: ${score}%</span>
             </div>
         `;
         list.appendChild(item);
@@ -220,16 +232,13 @@ function renderQuickStats(data) {
     const stats = data.stats;
     const avgScore = stats.avg_manipulation_score || 0;
     
-    // UI logic fix: if reddit engine is offline, explain why metrics are zero
-    const engineStatus = avgScore > 0 ? 'active' : 'no_social_keys';
-    
     container.innerHTML = `
         <div class="mb-2">// signal_nodes: <span class="text-success">${data.articles.length}</span></div>
         <div class="mb-2">// avg_risk_index: <span class="${avgScore > 50 ? 'text-danger' : 'text-accent'}">${avgScore.toFixed(1)}%</span></div>
-        <div class="mb-2">// reddit_engine: <span class="text-dim">${engineStatus}</span></div>
+        <div class="mb-2">// social_engines: <span class="text-dim">reddit + mastodon</span></div>
         <div class="mt-3 pt-2 border-top border-secondary text-dim" style="font-size: 0.65rem;">
-            system monitoring global conflicts and financial markets. 
-            ${avgScore === 0 ? 'social manipulation analysis requires api credentials.' : 'anomaly detection active across multiple social layers.'}
+            system monitoring global conflicts and finance via gdelt + rss feeds. 
+            anomaly detection scanning multiple social layers.
         </div>
     `;
 }
