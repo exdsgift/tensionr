@@ -1,6 +1,6 @@
 {
     "data": {
-        "last_updated": "2026-05-05T21:57:22.216567",
+        "last_updated": "2026-05-05T22:00:34.194432",
         "query": "war conflict economy military finance",
         "articles": [
             {
@@ -2944,6 +2944,51 @@
                 "manipulation_score": 59
             },
             {
+                "url": "https://www.straitstimes.com/world/middle-east/israel-ready-to-deploy-entire-air-force-against-iran-if-needed-new-chief",
+                "title": "Israel ready to deploy \u2018entire air force\u2019 against Iran if needed: New chief",
+                "domain": "www.straitstimes.com",
+                "seendate": "20260505T220017Z",
+                "source": "rss",
+                "sourcecountry": "Singapore",
+                "language": "Malay",
+                "narrative_emotion": "neutral",
+                "manipulation_score": 10,
+                "reddit_shares": 0,
+                "mastodon_shares": 0,
+                "bot_probability": 0,
+                "target_platforms": []
+            },
+            {
+                "url": "https://en.mercopress.com/2026/05/05/spain-agrees-to-receive-hantavirus-hit-cruise-ship-in-canary-islands-following-who-request?utm_source=feed&utm_medium=rss&utm_content=main&utm_campaign=rss",
+                "title": "Spain agrees to receive hantavirus-hit cruise ship in Canary Islands following WHO request",
+                "domain": "en.mercopress.com",
+                "seendate": "20260505T220017Z",
+                "source": "rss",
+                "sourcecountry": "Uruguay",
+                "language": "Spanish",
+                "narrative_emotion": "neutral",
+                "manipulation_score": 10,
+                "reddit_shares": 0,
+                "mastodon_shares": 0,
+                "bot_probability": 0,
+                "target_platforms": []
+            },
+            {
+                "url": "https://www.spiegel.de/ausland/italien-giorgia-meloni-verurteilt-deepfake-von-sich-als-politischen-angriff-a-cc2de38b-0b0e-4e31-a019-20ff058c0705#ref=rss",
+                "title": "Italien: Giorgia Meloni verurteilt Deepfake von sich als politischen Angriff",
+                "domain": "www.spiegel.de",
+                "seendate": "20260505T220016Z",
+                "source": "rss",
+                "sourcecountry": "Germany",
+                "language": "German",
+                "narrative_emotion": "fear",
+                "manipulation_score": 85,
+                "reddit_shares": 0,
+                "mastodon_shares": 0,
+                "bot_probability": 0,
+                "target_platforms": []
+            },
+            {
                 "url": "https://elpais.com/deportes/futbol/2026-05-05/la-falta-de-pegada-condena-al-atletico-ante-el-arsenal-y-se-queda-a-las-puertas-de-la-final.html",
                 "title": "La falta de pegada condena al Atl\u00e9tico ante el Arsenal y se queda a las puertas de la final",
                 "domain": "feeds.elpais.com",
@@ -3871,30 +3916,30 @@
         ],
         "timeline_vol": [],
         "stats": {
-            "total_nodes": 251,
+            "total_nodes": 254,
             "top_domains": {
                 "www.aljazeera.net": 26,
+                "www.straitstimes.com": 17,
                 "feeds.elpais.com": 17,
-                "www.straitstimes.com": 16,
                 "timesofindia.indiatimes.com": 16,
+                "www.spiegel.de": 16,
                 "www.lemonde.fr": 16,
                 "www.jpost.com": 15,
-                "www.japantimes.co.jp": 15,
-                "www.spiegel.de": 15
+                "www.japantimes.co.jp": 15
             },
             "source_countries": {
                 "China": 34,
                 "United Kingdom": 30,
                 "Qatar": 26,
+                "Singapore": 17,
                 "Spain": 17,
                 "France": 17,
-                "Singapore": 16,
                 "India": 16,
+                "Germany": 16,
                 "Israel": 15,
                 "Japan": 15,
-                "Germany": 15,
                 "United States": 15,
-                "Uruguay": 10,
+                "Uruguay": 11,
                 "Vietnam": 9,
                 "Malaysia": 3,
                 "Indonesia": 2,
@@ -3909,13 +3954,14 @@
                 "Taiwan": 1
             },
             "top_keywords": {
-                "iran": 12,
+                "iran": 13,
                 "china": 8,
-                "israel": 7,
+                "israel": 8,
                 "ukraine": 6,
                 "trump": 5,
                 "japan": 4,
                 "\u4e2d\u91d1\u5728\u7ebf": 4,
+                "who": 3,
                 "moscow": 3,
                 "direct": 3,
                 "uae": 2,
@@ -3926,7 +3972,6 @@
                 "germany": 2,
                 "kramatorsk": 2,
                 "cape verde": 2,
-                "who": 2,
                 "adorni": 2,
                 "d\u00edaz ayuso": 2,
                 "atl\u00e9tico": 2,
@@ -3973,6 +4018,6 @@
         },
         "security_check": "verified"
     },
-    "signature": "942cb254eb425d3fb83dd082e296d2e25f11008492f3a54d7dfcf8754e1bfcc1",
+    "signature": "d8662809d4bd19caaa1bc3ddab0c7f2a5966b094ddc813aa3536402d69bbb524",
     "algorithm": "HMAC-SHA256"
 }
