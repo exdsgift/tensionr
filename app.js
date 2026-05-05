@@ -115,7 +115,7 @@ function formatDate(isoStr) {
 async function updateDashboard() {
     logSystem("syncing telemetry...");
     try {
-        const response = await fetch('../data/latest.json?t=' + new Date().getTime());
+        const response = await fetch('data/latest.json?t=' + new Date().getTime());
         const payload = await response.json();
         const data = payload.data;
         const signature = payload.signature;
