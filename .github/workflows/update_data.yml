@@ -2,8 +2,8 @@ name: Tensionr Data Synchronizer
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Ogni 5 minuti
-  workflow_dispatch:      # Permette l'esecuzione manuale
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   build:
