@@ -81,7 +81,7 @@ function setTheme(themeName) {
 }
 
 // Load saved theme
-const savedTheme = localStorage.getItem('tensionr_theme') || 'phosphor';
+const savedTheme = localStorage.getItem('tensionr_theme') || 'ghost';
 document.documentElement.setAttribute('data-theme', savedTheme);
 updateThemeColors();
 
@@ -151,33 +151,42 @@ function formatDate(isoStr) {
 async function updateDashboard() {
     logSystem("syncing telemetry...");
     try {
-        const response = await fetch('data/latest.json?t=' + new Date().getTime());
-        const payload = await response.json();
-        const data = payload.data;
-        const signature = payload.signature;
+        const t = new Date().getTime();
+        const fetchFile = (file) => fetch(`data/${file}?t=${t}`).then(r => {
+            if (!r.ok) throw new Error(`HTTP_${r.status}`);
+            return r.json();
+        });
+
+        const [status, news, markets, telemetry, intel] = await Promise.all([
+            fetchFile('status.json'),
+            fetchFile('news.json'),
+            fetchFile('markets.json'),
+            fetchFile('telemetry.json'),
+            fetchFile('intelligence.json')
+        ]);
         
-        window.lastData = data; // Save for theme switcher
+        window.lastData = { ...status, ...news, ...markets, ...telemetry, ...intel };
 
-        document.getElementById('last-updated').textContent = `sync: ${new Date(data.last_updated).toLocaleTimeString().toLowerCase()}   sig: ${signature.substring(0,6)}`;
+        document.getElementById('last-updated').textContent = `sync: ${new Date(status.last_updated).toLocaleTimeString().toLowerCase()}`;
 
-        const dedupedArticles = deduplicateArticles(data.articles);
+        const dedupedArticles = deduplicateArticles(news.articles);
 
         // Safe execution of all renders
         safeRender('emotions', () => renderEmotions(dedupedArticles));
         safeRender('map', () => {
-            renderMap(data.stats.source_countries, data.articles);
-            renderFlightMap();
+            renderMap(news.stats.source_countries, news.articles);
+            renderFlightMap(telemetry.flight_intel);
         });
-        safeRender('gti', () => renderGTI(data.stats.global_tension_index));
-        safeRender('flights', () => renderFlightIntel(data.stats.flight_intel));
-        safeRender('cyber', () => renderCyberIntel(data.stats.cyber_intel));
-        safeRender('chatter', () => renderRawChatter(data.stats.raw_chatter));
-        safeRender('market', () => renderMarketTicker(data.stats.market_intel));
+        safeRender('gti', () => renderGTI(status.global_tension_index));
+        safeRender('flights', () => renderFlightIntel(telemetry.flight_intel));
+        safeRender('cyber', () => renderCyberIntel(intel.cyber_intel));
+        safeRender('chatter', () => renderRawChatter(intel.raw_chatter));
+        safeRender('market', () => renderMarketTicker(markets.market_intel));
         
         safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
-        safeRender('stats', () => renderQuickStats(data));
-        safeRender('wordcloud', () => renderWordCloud(data.stats.top_keywords));
-        logSystem(`handshake success. ${data.articles.length} nodes active.`);
+        safeRender('stats', () => renderQuickStats(news, status));
+        safeRender('wordcloud', () => renderWordCloud(news.stats.top_keywords));
+        logSystem(`handshake success. ${news.articles.length} nodes active.`);
 
         // Trigger subtle aesthetic refresh animation
         document.querySelectorAll('.card').forEach(card => {
@@ -357,33 +366,39 @@ function renderMap(countries, articles) {
             
             const marker = L.marker(countryCoords[country], {icon: icon})
               .addTo(maps.news)
-              .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.7rem; color: var(--text-main); background: transparent; padding: 5px; border: none;"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr style="margin:5px 0; border-color: var(--border);">"${snippet}"</div>`);
+              .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.7rem; color: var(--popup-text); background: transparent; padding: 5px; border: none;"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr style="margin:5px 0; border-color: var(--border);">"${snippet}"</div>`);
             
             mapMarkers.news.push(marker);
         }
     });
 }
 
-function renderFlightMap() {
+function renderFlightMap(intel) {
     if (!maps.flights) initMaps();
     
     // Clear old markers
     mapMarkers.flights.forEach(m => maps.flights.removeLayer(m));
     mapMarkers.flights = [];
 
-    // Add Strategic Hubs (Static for now as placeholders for real telemetry)
-    const hubs = ["Qatar", "United States", "Germany", "Japan", "United Kingdom", "Russia", "Israel"];
-    hubs.forEach(country => {
-        if (countryCoords[country]) {
+    // Hide connection pending overlay if data exists
+    const overlay = document.querySelector('#map-flights div[style*="z-index: 1000"]');
+    if (overlay && intel && intel.assets && intel.assets.length > 0) overlay.style.display = 'none';
+
+    if (!intel || !intel.assets) return;
+
+    intel.assets.forEach(asset => {
+        if (asset.lat && asset.lon) {
             const icon = L.divIcon({
-                className: 'hub-icon',
-                html: `<div class="hub-square"></div>`,
+                className: 'plane-icon',
+                html: `<div class="tactical-plane ${asset.is_mil ? 'mil' : 'outlier'}"></div>`,
                 iconSize: [0, 0],
                 iconAnchor: [0, 0]
             });
-            const marker = L.marker(countryCoords[country], {icon: icon})
-                .addTo(maps.flights)
-                .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.65rem; color: var(--theme-bright);"><b>STRATEGIC_HUB: ${country.toUpperCase()}</b><br>monitoring aerial corridors...</div>`);
+            
+            const marker = L.marker([asset.lat, asset.lon], {icon: icon})
+              .addTo(maps.flights)
+              .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.65rem; color: var(--popup-text); background:transparent; border:none; padding:5px;"><b>${asset.callsign}</b><br>ORIGIN: ${asset.origin}<br>ALT: ${asset.alt}m<br>VEL: ${asset.vel}km/h</div>`);
+            
             mapMarkers.flights.push(marker);
         }
     });
@@ -553,13 +568,13 @@ function renderMarketTicker(markets) {
     container.innerHTML = html + html + html + html;
 }
 
-function renderQuickStats(data) {
+function renderQuickStats(news, status) {
     const container = document.getElementById('top-telemetry-ticker');
     if (!container) return;
     
     container.innerHTML = `
         <div title="Total unique nodes in memory (max 500)" style="cursor:help">
-            signals: <span style="color:var(--theme-bright)">${data.articles.length}</span>
+            signals: <span style="color:var(--theme-bright)">${news.articles.length}</span>
         </div>
         <div title="Digital integrity verification status" style="cursor:help">
             integrity: <span style="color: #3fb950">verified</span>
@@ -568,16 +583,41 @@ function renderQuickStats(data) {
 }
 
 function renderFlightIntel(intel) {
-    if (!intel) return;
+    if (!intel || intel.status !== 'active') return;
+    const slide = document.getElementById('slide-flights');
+    const display = slide.querySelector('.flight-intel-display');
+    
+    // Clear offline message if present and setup grid
+    if (display.querySelector('.text-dim')) {
+        display.innerHTML = `
+            <div class="flight-stat-row">
+                <span class="flight-stat-label">active assets</span>
+                <span class="flight-stat-value" id="flight-count">--</span>
+            </div>
+            <div class="flight-stat-row">
+                <span class="flight-stat-label">primary theater</span>
+                <span id="flight-zone" class="hot-zone-tag">--</span>
+            </div>
+            <div class="flight-stat-row">
+                <span class="flight-stat-label">stream status</span>
+                <span class="flight-stat-value" id="flight-status">--</span>
+            </div>
+            <div class="flight-stat-row">
+                <span class="flight-stat-label">strategic alerts</span>
+                <span class="flight-stat-value" id="flight-anomalies" style="color: #ff6b35">--</span>
+            </div>
+        `;
+    }
+
     const countEl = document.getElementById('flight-count');
     const zoneEl = document.getElementById('flight-zone');
     const statusEl = document.getElementById('flight-status');
     const anomalyEl = document.getElementById('flight-anomalies');
-    
-    if (countEl) countEl.textContent = intel.detected_aircraft;
-    if (zoneEl) zoneEl.textContent = intel.hot_zone.toLowerCase();
-    if (statusEl) statusEl.textContent = intel.activity_level.toLowerCase();
-    if (anomalyEl) anomalyEl.textContent = intel.anomalies_detected > 0 ? `+${intel.anomalies_detected} detected` : 'none';
+
+    if (countEl) countEl.textContent = intel.count;
+    if (zoneEl) zoneEl.textContent = intel.theater;
+    if (statusEl) statusEl.textContent = 'active_link';
+    if (anomalyEl) anomalyEl.textContent = intel.assets.filter(a => !a.is_mil).length + ' outliers';
 }
 
 function renderGTI(score) {

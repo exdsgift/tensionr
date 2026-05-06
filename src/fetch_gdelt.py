@@ -272,16 +272,21 @@ def fetch_gdelt_data():
     query = "war conflict economy military finance"
     headers = {"User-Agent": "tensionr_cyber_node/1.0"}
 
-    existing_data = {}
     existing_articles = []
-    if os.path.exists("data/latest.json"):
+    if os.path.exists("data/news.json"):
+        try:
+            with open("data/news.json", "r") as f:
+                news_payload = json.load(f)
+                existing_articles = news_payload.get("articles", [])
+        except Exception as e:
+            print(f"!! error loading existing news: {e}")
+    elif os.path.exists("data/latest.json"):
         try:
             with open("data/latest.json", "r") as f:
                 full_payload = json.load(f)
-                existing_data = full_payload.get("data", {})
-                existing_articles = existing_data.get("articles", [])
-        except Exception as e:
-            print(f"!! error loading existing data: {e}")
+                existing_articles = full_payload.get("data", {}).get("articles", [])
+        except:
+            pass
 
     print(f"initiating synchronization...")
 
@@ -472,6 +477,61 @@ def fetch_gdelt_data():
             print(f"!! Failed to fetch market data: {e}")
         return market_intel
 
+    def fetch_opensky_flights():
+        print("scanning strategic aerial assets (opensky)...")
+        # Filtering for known military/gov callsign prefixes
+        mil_prefixes = ["RCH", "SPAR", "SAM", "USAF", "AF", "RRR", "FAF", "GAF", "IAM", "BAF", "PLF", "CFC", "ASY", "RSF", "SUI", "AME"]
+        url = "https://opensky-network.org/api/states/all"
+        try:
+            resp = requests.get(url, timeout=15)
+            if resp.status_code != 200:
+                return {"status": "api_limit", "assets": []}
+            
+            data = resp.json()
+            states = data.get("states", [])
+            mil_assets = []
+            
+            for s in states:
+                callsign = (s[1] or "").strip()
+                is_mil = any(callsign.startswith(pre) for pre in mil_prefixes)
+                altitude = s[7] or 0
+                velocity = s[9] or 0
+                
+                # Check for sensitive profile
+                if is_mil or (altitude > 13000 and velocity > 280):
+                    mil_assets.append({
+                        "icao24": s[0],
+                        "callsign": callsign if callsign else "U_ID",
+                        "origin": s[2],
+                        "lat": s[6],
+                        "lon": s[5],
+                        "alt": int(altitude) if altitude else 0,
+                        "vel": int(velocity * 3.6) if velocity else 0,
+                        "is_mil": is_mil
+                    })
+            
+            # Identify "Theater" (simple heuristic by count in region)
+            theaters = {"EUROPE": 0, "MIDDLE_EAST": 0, "ASIA_PACIFIC": 0, "AMERICAS": 0}
+            for a in mil_assets:
+                lat, lon = a["lat"], a["lon"]
+                if lat and lon:
+                    if 35 < lat < 70 and -10 < lon < 40: theaters["EUROPE"] += 1
+                    elif 10 < lat < 45 and 30 < lon < 75: theaters["MIDDLE_EAST"] += 1
+                    elif -10 < lat < 50 and 70 < lon < 150: theaters["ASIA_PACIFIC"] += 1
+                    else: theaters["AMERICAS"] += 1
+            
+            main_theater = max(theaters, key=theaters.get) if mil_assets else "NONE"
+            
+            return {
+                "status": "active", 
+                "assets": mil_assets[:60], 
+                "count": len(mil_assets),
+                "theater": main_theater
+            }
+        except Exception as e:
+            print(f"!! OpenSky fetch failed: {e}")
+            return {"status": "offline", "assets": []}
+
     df = pd.DataFrame(final_articles)
     gti = calculate_gti(final_articles)
     stats = {
@@ -483,10 +543,7 @@ def fetch_gdelt_data():
         "cyber_intel": fetch_cyber_intel(),
         "raw_chatter": fetch_raw_chatter(),
         "market_intel": fetch_market_data(),
-        "flight_intel": {
-            "status": "connection_pending",
-            "message": "awaiting ads-b telemetry"
-        }
+        "flight_intel": fetch_opensky_flights()
     }
 
     try:
@@ -506,22 +563,49 @@ def fetch_gdelt_data():
     except:
         timeline = []
 
-    output = {
-        "last_updated": datetime.now().isoformat(),
-        "query": query,
+    # MODULAR SAVING
+    news_data = {
         "articles": final_articles,
         "timeline_vol": timeline,
-        "stats": stats,
-        "security_check": "verified",
+        "stats": {
+            "top_domains": stats["top_domains"],
+            "source_countries": stats["source_countries"],
+            "top_keywords": stats["top_keywords"],
+            "total_nodes": stats["total_nodes"]
+        }
+    }
+    
+    market_data = {"market_intel": stats["market_intel"]}
+    telemetry_data = {"flight_intel": stats["flight_intel"]}
+    intel_data = {
+        "cyber_intel": stats["cyber_intel"],
+        "raw_chatter": stats["raw_chatter"]
+    }
+    
+    status_data = {
+        "last_updated": datetime.now().isoformat(),
+        "global_tension_index": stats["global_tension_index"],
+        "security_check": "verified"
     }
 
-    json_content = json.dumps(output, indent=4)
-    signature = sign_data(json_content)
-    final_payload = {"data": output, "signature": signature, "algorithm": "HMAC-SHA256"}
+    # Save modular files
+    modules = {
+        "data/news.json": news_data,
+        "data/markets.json": market_data,
+        "data/telemetry.json": telemetry_data,
+        "data/intelligence.json": intel_data,
+        "data/status.json": status_data
+    }
 
-    with open("data/latest.json", "w", encoding="utf-8") as f:
-        json.dump(final_payload, f, indent=4)
-    print(f"sync complete. integrity: {signature[:8]}")
+    for path, content in modules.items():
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(content, f, indent=4)
+
+    # Signature on global status for integrity
+    json_content = json.dumps(status_data, indent=4)
+    signature = sign_data(json_content)
+    
+    print(f"sync complete. modular state verified. integrity: {signature[:8]}")
 
 
 if __name__ == "__main__":

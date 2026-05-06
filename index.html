@@ -9,7 +9,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root, [data-theme="phosphor"] {
+        :root, [data-theme="ghost"] {
+            --bg: #ffffff;
+            --surface: #f0f0f0;
+            --theme-bright: #000000;
+            --theme-mid: #444444;
+            --theme-dim: #cccccc;
+            --text-main: #000000;
+            --text-dim: #666666;
+            --border: #dddddd;
+            --map-filter: grayscale(100%) invert(100%) brightness(55%) contrast(110%);
+            --popup-bg: #333333;
+            --popup-text: #ffffff;
+        }
+
+        [data-theme="phosphor"] {
             --bg: #080c08;
             --surface: #0c140c;
             --theme-bright: #00ff41;
@@ -19,42 +33,8 @@
             --text-dim: #73b373;
             --border: #142914;
             --map-filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(300%) brightness(85%) contrast(115%);
-        }
-
-        [data-theme="tactical"] {
-            --bg: #0b1120;
-            --surface: #111827;
-            --theme-bright: #38bdf8;
-            --theme-mid: #94a3b8;
-            --theme-dim: #475569;
-            --text-main: #f1f5f9;
-            --text-dim: #64748b;
-            --border: #1e293b;
-            --map-filter: grayscale(100%) sepia(100%) hue-rotate(170deg) saturate(300%) brightness(95%) contrast(110%);
-        }
-
-        [data-theme="ember"] {
-            --bg: #120e0c;
-            --surface: #1a1512;
-            --theme-bright: #ff6b35;
-            --theme-mid: #a39185;
-            --theme-dim: #5c4d44;
-            --text-main: #fff0e6;
-            --text-dim: #8a7a6f;
-            --border: #33261f;
-            --map-filter: grayscale(100%) sepia(100%) hue-rotate(345deg) saturate(300%) brightness(95%) contrast(110%);
-        }
-
-        [data-theme="ghost"] {
-            --bg: #ffffff;
-            --surface: #f0f0f0;
-            --theme-bright: #000000;
-            --theme-mid: #444444;
-            --theme-dim: #cccccc;
-            --text-main: #000000;
-            --text-dim: #666666;
-            --border: #dddddd;
-            --map-filter: grayscale(100%) brightness(115%) contrast(90%);
+            --popup-bg: var(--surface);
+            --popup-text: var(--text-main);
         }
 
         [data-theme="terminal"] {
@@ -142,10 +122,13 @@
         
         /* Leaflet Popups */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: var(--surface);
-            color: var(--text-main);
+            background: var(--popup-bg);
+            color: var(--popup-text);
             border: 1px solid var(--border);
             box-shadow: none;
+        }
+        .leaflet-popup-content {
+            color: var(--popup-text);
         }
 
         .article-item { 
@@ -259,6 +242,14 @@
             100% { transform: translateX(-50%); }
         }
 
+        /* Ghost Theme Specific Marker Contrast */
+        [data-theme="ghost"] .pulse-dot { background: #fff !important; box-shadow: 0 0 10px #fff, 0 0 2px #000; }
+        [data-theme="ghost"] .pulse-ring { border-color: #fff !important; }
+        [data-theme="ghost"] .tactical-plane { border-bottom-color: #fff !important; }
+        [data-theme="ghost"] .tactical-plane:not(.outlier)::after { background: #fff !important; }
+        [data-theme="ghost"] .tactical-plane.outlier { border-bottom-color: #ff6b35 !important; filter: drop-shadow(0 0 8px #ff6b35) !important; }
+        [data-theme="ghost"] .hub-square { border-color: #fff !important; box-shadow: 0 0 8px #fff; }
+
         /* Refresh Animations */
         .fade-update { animation: softPulse 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes softPulse {
@@ -314,6 +305,62 @@
         .minimal-select option {
             background: var(--surface);
             color: var(--text-main);
+        }
+
+        /* Mobile & Touch Optimizations */
+        @media (pointer: coarse) {
+            .intel-dot { padding: 12px 6px; } /* Larger touch targets */
+            .intel-nav { top: 0.5rem; right: 0.5rem; }
+            #map-news, #map-flights { touch-action: pan-y; } /* Allow scrolling page over maps */
+        }
+
+        @media (max-width: 576px) {
+            .container-fluid { padding: 0.5rem; }
+            .nav-bar { padding: 0.25rem 0; margin-bottom: 0.5rem; }
+            .market-ticker-wrapper { font-size: 0.58rem; }
+            .card { padding: 0.75rem; }
+            h5 { font-size: 0.65rem; }
+        }
+
+        /* Plane Icons */
+        .plane-icon { position: relative; background: transparent; border: none; }
+        .tactical-plane {
+            width: 10px; height: 10px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid var(--theme-bright);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 3px var(--theme-bright));
+        }
+        .tactical-plane.outlier { 
+            border-bottom-color: #ff6b35; 
+            filter: drop-shadow(0 0 8px #ff6b35);
+            transform: translate(-50%, -50%) scale(1.3);
+            animation: anomalyAlert 1s ease-in-out infinite;
+        }
+        /* Aura for outliers */
+        .tactical-plane.outlier::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ff6b35;
+            border-radius: 50%;
+            transform: translate(-50%, -10%);
+            animation: pulsate 2s infinite;
+        }
+        .tactical-plane::after {
+            content: ''; position: absolute; top: 7px; left: -3px; width: 6px; height: 2px; background: var(--theme-bright); opacity: 0.6;
+        }
+        .tactical-plane.outlier::after {
+            background: #ff6b35;
+        }
+
+        @keyframes anomalyAlert {
+            0%, 100% { filter: drop-shadow(0 0 8px #ff6b35); }
+            50% { filter: drop-shadow(0 0 15px #ff6b35); brightness(1.2); }
         }
     </style>
 </head>
@@ -486,7 +533,7 @@
     setInterval(updateClock, 1000);
     
     // Set active theme in select
-    document.getElementById('theme-select').value = localStorage.getItem('tensionr_theme') || 'phosphor';
+    document.getElementById('theme-select').value = localStorage.getItem('tensionr_theme') || 'ghost';
 
     // Typewriter effect for site title
     const titleText = "tensionr";
