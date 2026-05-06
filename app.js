@@ -816,10 +816,21 @@ function startMapCarousel() {
     resetMapTimer();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     logSystem("booting intelligence engine...");
-    updateDashboard();
-    startIntelCarousel();
-    startMapCarousel();
+    
+    // Wait for fonts to ensure layout measurements are correct
+    if (document.fonts) await document.fonts.ready;
+    
+    // Slight delay for mobile layout stability
+    setTimeout(async () => {
+        await updateDashboard();
+        startIntelCarousel();
+        startMapCarousel();
+        
+        // Kick layout one more time
+        window.dispatchEvent(new Event('resize'));
+    }, 300);
+
     setInterval(updateDashboard, 40000);
 });
