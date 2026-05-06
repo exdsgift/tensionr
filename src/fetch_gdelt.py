@@ -134,11 +134,20 @@ def analyze_narrative_hf(text, retries=4):
                     label = top_emotion.get("label", "").lower()
 
                     # Traduciamo il sentiment nelle emozioni della nostra dashboard
-                    if label in ["negative", "label_0", "fear", "anger", "sadness", "disgust", "annoyance", "disapproval", "nervousness", "grief"]:
+                    if label in ["fear", "nervousness", "grief"]:
                         return {"emotion": "fear", "bias_risk": 85}
-                    elif label in ["positive", "label_2", "surprise", "joy", "love", "optimism", "amusement", "excitement", "admiration"]:
+                    elif label in ["anger", "annoyance", "disapproval", "disgust"]:
+                        return {"emotion": "anger", "bias_risk": 85}
+                    elif label in ["sadness"]:
+                        return {"emotion": "sadness", "bias_risk": 85}
+                    elif label in ["surprise", "amusement", "excitement"]:
                         return {"emotion": "surprise", "bias_risk": 10}
+                    elif label in ["positive", "label_2", "joy", "love", "optimism", "admiration", "label_1", "neutral"]:
+                        return {"emotion": "neutral", "bias_risk": 10}
                     else:
+                        # Fallback for general negative/positive from base models
+                        if label in ["negative", "label_0"]:
+                            return {"emotion": "fear", "bias_risk": 85}
                         return {"emotion": "neutral", "bias_risk": 10}
             elif resp.status_code == 503:
                 time.sleep(5)

@@ -88,6 +88,10 @@
         #map { height: 350px; filter: var(--map-filter); border: 1px solid var(--border); transition: border-color 0.3s, filter 0.3s; }
         .chart-container { position: relative; height: 200px; }
         
+        /* Leaflet Fixes */
+        .leaflet-tile { outline: 1px solid transparent; }
+        .leaflet-container { background: var(--bg) !important; }
+        
         /* Leaflet Popups */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background: var(--surface);
@@ -97,8 +101,18 @@
         }
 
         .article-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); transition: border-color 0.3s; }
-        .article-title { color: var(--text-main); text-decoration: none; display: block; font-size: 0.72rem; margin-bottom: 2px; transition: color 0.3s; }
+        .article-title { color: var(--text-main); text-decoration: none; display: inline-block; font-size: 0.72rem; margin-bottom: 2px; transition: color 0.3s; white-space: nowrap; }
         .article-title:hover { color: var(--theme-bright); }
+        
+        .should-scroll {
+            animation: marquee 8s linear infinite;
+        }
+        @keyframes marquee {
+            0%, 15% { transform: translateX(0); }
+            45%, 55% { transform: translateX(var(--scroll-dist)); }
+            85%, 100% { transform: translateX(0); }
+        }
+        
         .tag { font-size: 0.55rem; padding: 0px 3px; border: 1px solid var(--border); border-radius: 2px; margin-right: 4px; transition: border-color 0.3s; }
 
         /* Map Animations */
@@ -126,6 +140,12 @@
             0% { opacity: 0.5; filter: brightness(1.2); }
             100% { opacity: 1; filter: brightness(1); }
         }
+
+        #live-indicator { animation: terminalBlink 1.5s ease-in-out infinite; }
+        @keyframes terminalBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
         
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--border); }
@@ -135,6 +155,19 @@
             bottom: 1rem;
             right: 1rem;
             z-index: 1000;
+        }
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.1rem;
+            background: var(--theme-bright);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: cursorBlink 1s step-end infinite;
+        }
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
         .minimal-select {
             background: var(--surface);
@@ -162,7 +195,9 @@
 
 <div class="nav-bar">
     <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
-        <span style="font-weight: bold;">tensionr</span>
+        <div style="display: flex; align-items: center; min-width: 120px;">
+            <span style="font-weight: bold;" id="site-title"></span><span class="terminal-cursor"></span>
+        </div>
         <div class="d-flex align-items-center gap-4" style="font-size: 0.7rem;">
             <div id="top-telemetry-ticker" class="d-flex align-items-center gap-4"></div>
             <div class="d-flex align-items-center gap-4" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
@@ -223,12 +258,40 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
 <script>
-    setInterval(() => {
+    function updateClock() {
         document.getElementById('clock').textContent = new Date().toTimeString().split(' ')[0];
-    }, 1000);
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
     
     // Set active theme in select
     document.getElementById('theme-select').value = localStorage.getItem('tensionr_theme') || 'phosphor';
+
+    // Typewriter effect for site title
+    const titleText = "tensionr";
+    const titleElement = document.getElementById('site-title');
+    let charIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 200;
+
+    function type() {
+        const current = titleText.substring(0, charIndex);
+        titleElement.textContent = current;
+
+        if (!isDeleting && charIndex < titleText.length) {
+            charIndex++;
+            typeSpeed = 150;
+        } else if (isDeleting && charIndex > 0) {
+            charIndex--;
+            typeSpeed = 75;
+        } else {
+            isDeleting = !isDeleting;
+            typeSpeed = isDeleting ? 3000 : 800;
+        }
+
+        setTimeout(type, typeSpeed);
+    }
+    type();
 </script>
 </body>
 </html>

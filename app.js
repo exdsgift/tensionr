@@ -127,7 +127,7 @@ async function updateDashboard() {
         const dedupedArticles = deduplicateArticles(data.articles);
 
         // Safe execution of all renders
-        safeRender('emotions', () => renderEmotions(data.articles));
+        safeRender('emotions', () => renderEmotions(dedupedArticles));
         safeRender('map', () => renderMap(data.stats.source_countries, data.articles));
         
         safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
@@ -188,7 +188,21 @@ function renderEmotions(articles) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleFont: { family: "'Fira Code', monospace", size: 11 },
+                    bodyFont: { family: "'Fira Code', monospace", size: 11 },
+                    borderColor: THEME_BRIGHT,
+                    borderWidth: 1,
+                    displayColors: false,
+                    callbacks: {
+                        title: (items) => items[0].label.toLowerCase(),
+                        label: (item) => `signals: ${item.raw}`
+                    }
+                }
+            },
             scales: {
                 r: {
                     angleLines: { color: 'rgba(255,255,255,0.1)' },
@@ -299,39 +313,113 @@ function initRotatingFeed(containerId, articles, maxVisible) {
         return;
     }
 
+    container.innerHTML = '';
     let buffer = [...articles];
-    let visible = buffer.splice(0, Math.min(maxVisible, buffer.length));
-
-    function render() {
-        container.innerHTML = '';
-        visible.forEach((art, index) => {
-            const item = document.createElement('div');
-            item.className = 'article-item';
-            if (index === 0 && buffer.length > 0) item.classList.add('feed-item-enter');
-
-            const emotion = art.narrative_emotion && art.narrative_emotion !== 'unknown' ? art.narrative_emotion : '';
-            const domainsHtml = art.domain.split(', ').map(d => `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-dim)">${d}</span>`).join('');
-            const emotionTag = emotion ? `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-bright)">${emotion}</span>` : '';
-            item.innerHTML = `
-                <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
-                    <a href="${art.url}" target="_blank" class="article-title" style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${art.title.toLowerCase()}</a>
-                    <span class="text-dim" style="font-size: 0.55rem; white-space: nowrap;">${formatDate(art.seendate)}</span>
-                </div>
-                <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:2px;">
-                    ${emotionTag} ${domainsHtml}
-                </div>
-            `;
-            container.appendChild(item);
-        });
+    
+    // Resume from last known index if available
+    const storageKey = `feed_index_${containerId}`;
+    let lastUrl = localStorage.getItem(storageKey);
+    if (lastUrl) {
+        const resumeIndex = buffer.findIndex(a => a.url === lastUrl);
+        if (resumeIndex !== -1) {
+            // Rotate buffer so the resumed articles are at the front
+            const resumed = buffer.splice(resumeIndex, buffer.length - resumeIndex);
+            buffer = [...resumed, ...buffer];
+        }
     }
 
-    render();
+    let visibleData = buffer.splice(0, Math.min(maxVisible, buffer.length));
+
+    function createItem(art) {
+        const item = document.createElement('div');
+        item.className = 'article-item';
+        const emotion = art.narrative_emotion && art.narrative_emotion !== 'unknown' ? art.narrative_emotion : '';
+        const domainsHtml = art.domain.split(', ').map(d => `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-dim)">${d}</span>`).join('');
+        const emotionTag = emotion ? `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-bright)">${emotion}</span>` : '';
+        item.innerHTML = `
+            <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px; overflow: hidden;">
+                <div class="article-title-wrapper" style="flex-grow: 1; overflow: hidden; white-space: nowrap;">
+                    <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
+                </div>
+                <span class="text-dim" style="font-size: 0.55rem; white-space: nowrap;">${formatDate(art.seendate)}</span>
+            </div>
+            <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:2px;">
+                ${emotionTag} ${domainsHtml}
+            </div>
+        `;
+        return item;
+    }
+
+    function applyScrollEffect(item) {
+        const wrapper = item.querySelector('.article-title-wrapper');
+        const title = item.querySelector('.article-title');
+        if (!wrapper || !title) return;
+        
+        const diff = wrapper.offsetWidth - title.scrollWidth;
+        if (diff < 0) {
+            title.style.setProperty('--scroll-dist', `${diff - 20}px`);
+            title.classList.add('should-scroll');
+        }
+    }
+
+    // Initial Render
+    visibleData.forEach(art => {
+        const item = createItem(art);
+        container.appendChild(item);
+        applyScrollEffect(item);
+    });
+
     if (buffer.length > 0) {
         feedsIntervals[containerId] = setInterval(() => {
-            buffer.push(visible.pop());
-            visible.unshift(buffer.shift());
-            render();
-        }, 3500 + Math.random() * 2000);
+            const nextArt = buffer.shift();
+            const newItem = createItem(nextArt);
+            
+            // Prepare smooth entrance
+            newItem.style.opacity = '0';
+            newItem.style.maxHeight = '0';
+            newItem.style.overflow = 'hidden';
+            newItem.style.paddingTop = '0';
+            newItem.style.paddingBottom = '0';
+            newItem.style.borderBottomColor = 'transparent';
+            newItem.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            container.prepend(newItem);
+            applyScrollEffect(newItem);
+            
+            // Trigger entrance
+            requestAnimationFrame(() => {
+                newItem.style.opacity = '1';
+                newItem.style.maxHeight = '100px';
+                newItem.style.paddingTop = '0.5rem';
+                newItem.style.paddingBottom = '0.5rem';
+                newItem.style.borderBottomColor = 'var(--border)';
+            });
+
+            // Smooth exit of last item
+            const items = container.querySelectorAll('.article-item');
+            if (items.length > maxVisible) {
+                const lastItem = items[items.length - 1];
+                lastItem.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                lastItem.style.opacity = '0';
+                lastItem.style.maxHeight = '0';
+                lastItem.style.paddingTop = '0';
+                lastItem.style.paddingBottom = '0';
+                lastItem.style.borderBottomColor = 'transparent';
+                lastItem.style.pointerEvents = 'none';
+                
+                setTimeout(() => {
+                    if (lastItem.parentNode === container) {
+                        container.removeChild(lastItem);
+                    }
+                }, 850);
+                
+                buffer.push(visibleData.pop());
+                visibleData.unshift(nextArt);
+
+                // Save state
+                localStorage.setItem(storageKey, visibleData[0].url);
+            }
+        }, 4000 + Math.random() * 2000);
     }
 }
 
