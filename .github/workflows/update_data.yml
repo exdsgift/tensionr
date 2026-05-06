@@ -41,4 +41,4 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "Automated update of GDELT data"
-        file_pattern: 'data/latest.json'
+        file_pattern: 'data/*.json'

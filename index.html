@@ -246,9 +246,9 @@
 
         /* Market Ticker */
         .market-ticker-wrapper { background: var(--bg); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; padding: 6px 0; font-size: 0.65rem; letter-spacing: 1px; }
-        .market-ticker-content { display: inline-block; animation: tickerMarquee 90s linear infinite; }
+        .market-ticker-content { display: flex; width: max-content; animation: tickerMarquee 90s linear infinite; }
         .market-ticker-content:hover { animation-play-state: paused; }
-        .market-ticker-item { display: inline-block; margin-right: 0.8rem; }
+        .market-ticker-item { display: inline-flex; align-items: center; margin-right: 0.8rem; }
         .ticker-symbol { font-weight: bold; color: var(--theme-mid); margin-right: 6px; }
         .ticker-price { color: var(--text-main); margin-right: 6px; }
         .ticker-up { color: #00ff41; }

@@ -637,7 +637,7 @@ function renderMarketTicker(markets) {
     });
     
     // Multi-duplication to ensure no gaps on wide screens/mobile
-    container.innerHTML = html.repeat(10);
+    container.innerHTML = html.repeat(25);
 }
 
 function renderQuickStats(news, status) {
