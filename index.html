@@ -100,7 +100,9 @@
         @media (max-width: 992px) {
             .map-feed-row { grid-template-columns: 1fr; height: auto; }
             .chart-row { grid-template-columns: 1fr; height: auto; }
-            .card { height: auto; }
+            .card { height: auto; min-height: 300px; }
+            .intel-carousel { min-height: 350px; }
+            #articles-list { height: 400px !important; max-height: none !important; }
         }
 
         @media (max-width: 768px) {
@@ -111,6 +113,7 @@
             #top-telemetry-ticker { width: 100%; flex-wrap: wrap; }
             .theme-selector { bottom: 0.5rem; right: 0.5rem; }
             .minimal-select { padding: 0.2rem 0.4rem; font-size: 0.6rem; }
+            .market-ticker-wrapper { font-size: 0.7rem; padding: 8px 0; }
         }
 
         #map { height: 350px; filter: var(--map-filter); border: 1px solid var(--border); transition: border-color 0.3s, filter 0.3s; }
