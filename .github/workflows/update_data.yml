@@ -3,7 +3,7 @@ name: Tensionr Data Synchronizer
 on:
   schedule:
     - cron: '0 * * * *'
-workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
