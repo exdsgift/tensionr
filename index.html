@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="ghost">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        /* Base / Ghost Theme */
         :root, [data-theme="ghost"] {
             --bg: #ffffff;
             --surface: #f0f0f0;
@@ -33,8 +34,8 @@
             --text-dim: #73b373;
             --border: #142914;
             --map-filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(300%) brightness(85%) contrast(115%);
-            --popup-bg: var(--surface);
-            --popup-text: var(--text-main);
+            --popup-bg: #0c140c;
+            --popup-text: #e6ffe6;
         }
 
         [data-theme="terminal"] {
@@ -52,30 +53,30 @@
         }
 
         [data-theme="tactical"] {
-            --bg: #1a1b1e;
-            --surface: #25262b;
+            --bg: #0b0e14;
+            --surface: #14171f;
             --theme-bright: #339af0;
             --theme-mid: #1c7ed6;
             --theme-dim: #1864ab;
             --text-main: #c1c2c5;
             --text-dim: #909296;
-            --border: #373a40;
-            --map-filter: grayscale(100%) brightness(0.8) contrast(1.2);
-            --popup-bg: #25262b;
+            --border: #25262b;
+            --map-filter: grayscale(100%) brightness(0.6) contrast(1.2) sepia(20%) hue-rotate(180deg);
+            --popup-bg: #14171f;
             --popup-text: #c1c2c5;
         }
 
         [data-theme="ember"] {
-            --bg: #140a00;
-            --surface: #1f1200;
+            --bg: #0f0a05;
+            --surface: #1a120b;
             --theme-bright: #ff922b;
             --theme-mid: #f76707;
             --theme-dim: #d9480f;
             --text-main: #fff4e6;
             --text-dim: #ffd8a8;
-            --border: #3b2000;
-            --map-filter: grayscale(100%) sepia(100%) hue-rotate(10deg) saturate(200%) brightness(0.8) contrast(1.2);
-            --popup-bg: #1f1200;
+            --border: #2b1d0e;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(10deg) saturate(180%) brightness(0.7) contrast(1.3);
+            --popup-bg: #1a120b;
             --popup-text: #fff4e6;
         }
 

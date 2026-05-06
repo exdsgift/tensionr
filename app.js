@@ -84,13 +84,15 @@ function setTheme(themeName) {
 // Load saved theme
 const savedTheme = localStorage.getItem('tensionr_theme') || 'ghost';
 document.documentElement.setAttribute('data-theme', savedTheme);
-updateThemeColors();
 
 let maps = { news: null, flights: null };
 let mapMarkers = { news: [], flights: [] };
 let charts = {};
 
 function initMaps() {
+    // Re-check theme colors right before init to be sure
+    updateThemeColors();
+    
     if (!maps.news) {
         maps.news = L.map('map-news', { 
             zoomControl: false,
@@ -548,10 +550,27 @@ function initRotatingFeed(containerId, articles, maxVisible) {
         const title = item.querySelector('.article-title');
         if (!wrapper || !title) return;
         
-        const diff = wrapper.offsetWidth - title.scrollWidth;
-        if (diff < 0) {
-            title.style.setProperty('--scroll-dist', `${diff - 20}px`);
-            title.classList.add('should-scroll');
+        const recalculate = () => {
+            title.classList.remove('should-scroll');
+            void title.offsetWidth; // Force reflow
+            
+            const diff = wrapper.offsetWidth - title.scrollWidth;
+            if (diff < 0) {
+                title.style.setProperty('--scroll-dist', `${diff - 20}px`);
+                title.classList.add('should-scroll');
+            }
+        };
+
+        // Immediate calc
+        recalculate();
+
+        // Use ResizeObserver for continuous robustness on mobile (handles orientation, dynamic bars)
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => {
+                requestAnimationFrame(recalculate);
+            });
+            ro.observe(wrapper);
+            item._ro = ro; // Store for cleanup if needed
         }
     }
 
@@ -582,9 +601,9 @@ function initRotatingFeed(containerId, articles, maxVisible) {
             // Trigger entrance
             requestAnimationFrame(() => {
                 newItem.style.opacity = '1';
-                newItem.style.maxHeight = '52px';
-                newItem.style.paddingTop = '0.5rem';
-                newItem.style.paddingBottom = '0.5rem';
+                newItem.style.maxHeight = '44px'; // Updated from 52px to match new layout
+                newItem.style.paddingTop = '0.35rem';
+                newItem.style.paddingBottom = '0.35rem';
                 newItem.style.borderBottomColor = 'var(--border)';
             });
 
@@ -592,6 +611,8 @@ function initRotatingFeed(containerId, articles, maxVisible) {
             const items = container.querySelectorAll('.article-item');
             if (items.length > maxVisible) {
                 const lastItem = items[items.length - 1];
+                if (lastItem._ro) lastItem._ro.disconnect(); // Cleanup observer
+                
                 lastItem.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
                 lastItem.style.opacity = '0';
                 lastItem.style.maxHeight = '0';
@@ -822,15 +843,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Wait for fonts to ensure layout measurements are correct
     if (document.fonts) await document.fonts.ready;
     
-    // Slight delay for mobile layout stability
+    // Multi-stage initialization for maximum mobile stability
+    // 1. Initial render
     setTimeout(async () => {
         await updateDashboard();
         startIntelCarousel();
         startMapCarousel();
-        
-        // Kick layout one more time
         window.dispatchEvent(new Event('resize'));
     }, 300);
+
+    // 2. Secondary "Kick" (handles address bar shifts/slow renders)
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        if (window.lastData) {
+            // Re-sync specific layout sensitive components
+            const dedupedArticles = deduplicateArticles(window.lastData.articles);
+            safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
+        }
+    }, 1200);
+
+    // 3. Final safety check
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 3500);
 
     setInterval(updateDashboard, 40000);
 });
