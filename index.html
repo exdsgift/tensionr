@@ -93,16 +93,17 @@
         .chart-desc { font-size: 0.6rem; color: var(--text-dim); margin-bottom: 0.75rem; line-height: 1.2; transition: color 0.3s; }
         
         /* Layout Grid */
-        .chart-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; height: 320px; }
-        .map-feed-row { display: grid; grid-template-columns: 7fr 5fr; gap: 1rem; margin-bottom: 1rem; height: 480px; }
+        .chart-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; height: 300px; }
+        .map-feed-row { display: grid; grid-template-columns: 7fr 5fr; gap: 1rem; margin-bottom: 1rem; height: 440px; }
         .telemetry-row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 
         @media (max-width: 992px) {
             .map-feed-row { grid-template-columns: 1fr; height: auto; }
             .chart-row { grid-template-columns: 1fr; height: auto; }
-            .card { height: auto; min-height: 300px; }
-            .intel-carousel { min-height: 350px; }
+            .card { height: auto; min-height: 280px; }
+            .intel-carousel { min-height: 380px; }
             #articles-list { height: 400px !important; max-height: none !important; }
+            #map-news, #map-flights { height: 280px !important; }
         }
 
         @media (max-width: 768px) {
@@ -114,39 +115,51 @@
             .theme-selector { bottom: 0.5rem; right: 0.5rem; }
             .minimal-select { padding: 0.2rem 0.4rem; font-size: 0.6rem; }
             .market-ticker-wrapper { font-size: 0.7rem; padding: 8px 0; }
+            .intel-carousel { min-height: 420px; }
+            #map-news, #map-flights { height: 250px !important; }
         }
 
-        #map { height: 350px; filter: var(--map-filter); border: 1px solid var(--border); transition: border-color 0.3s, filter 0.3s; }
-        .chart-container { position: relative; height: 200px; }
+        #map-news, #map-flights { height: 330px !important; filter: var(--map-filter); border: 1px solid var(--border); transition: border-color 0.3s, filter 0.3s; }
+        .chart-container { position: relative; height: 180px; }
         
         /* Leaflet Fixes */
         .leaflet-tile { outline: 1px solid transparent; }
         .leaflet-container { background: var(--bg) !important; }
         
-        /* Leaflet Popups */
+        /* Leaflet Popups - Glassmorphism Effect */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: var(--popup-bg);
+            background: rgba(15, 15, 15, 0.45) !important; /* Low opacity black/grey */
+            backdrop-filter: blur(8px) saturate(150%); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
             color: var(--popup-text);
-            border: 1px solid var(--border);
-            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .leaflet-popup-content {
-            color: var(--popup-text);
+            color: #ffffff !important;
+            margin: 10px 12px !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .leaflet-popup-tip-container {
+            display: none; /* Hide tip for a cleaner floating glass look */
+        }
+        .leaflet-popup {
+            margin-bottom: 15px;
         }
 
         .article-item { 
-            padding: 0.5rem 0; 
+            padding: 0.35rem 0; 
             border-bottom: 1px solid var(--border); 
             transition: border-color 0.3s; 
-            height: 52px; 
+            height: 44px; 
             overflow: hidden; 
             contain: layout size;
         }
-        .article-title { color: var(--text-main); text-decoration: none; display: inline-block; font-size: 0.72rem; margin-bottom: 2px; transition: color 0.3s; white-space: nowrap; }
+        .article-title { color: var(--text-main); text-decoration: none; display: inline-block; font-size: 0.68rem; margin-bottom: 0px; transition: color 0.3s; white-space: nowrap; }
         .article-title:hover { color: var(--theme-bright); }
         
         .should-scroll {
-            animation: marquee 12s linear infinite;
+            animation: marquee 20s linear infinite;
         }
         @keyframes marquee {
             0% { transform: translateX(0); }
@@ -155,7 +168,7 @@
             100% { transform: translateX(var(--scroll-dist)); }
         }
         
-        .tag { font-size: 0.55rem; padding: 0px 3px; border: 1px solid var(--border); border-radius: 2px; margin-right: 4px; transition: border-color 0.3s; }
+        .tag { font-size: 0.5rem; padding: 0px 3px; border: 1px solid var(--border); border-radius: 2px; margin-right: 4px; transition: border-color 0.3s; }
 
         /* Map Animations */
         .pulse-icon { position: relative; background: transparent; border: none; }
@@ -176,7 +189,7 @@
         /* Feed Animations */
         .feed-item-enter { animation: highlightSlide 0.5s ease-out forwards; }
         @keyframes highlightSlide {
-            0% { opacity: 0; transform: translateX(-10px); background: var(--theme-dim); }
+            0% { opacity: 0; transform: translateX(10px); background: var(--theme-dim); }
             100% { opacity: 1; transform: translateX(0); background: transparent; }
         }
 
@@ -232,10 +245,10 @@
         .hot-zone-tag { background: var(--theme-dim); color: var(--theme-bright); padding: 2px 6px; border-radius: 2px; font-size: 0.65rem; border: 1px solid var(--theme-mid); }
 
         /* Market Ticker */
-        .market-ticker-wrapper { background: var(--bg); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; padding: 5px 0; font-size: 0.65rem; letter-spacing: 1px; }
-        .market-ticker-content { display: inline-block; animation: tickerMarquee 80s linear infinite; }
+        .market-ticker-wrapper { background: var(--bg); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; padding: 6px 0; font-size: 0.65rem; letter-spacing: 1px; }
+        .market-ticker-content { display: inline-block; animation: tickerMarquee 90s linear infinite; }
         .market-ticker-content:hover { animation-play-state: paused; }
-        .market-ticker-item { display: inline-block; margin-right: 3rem; }
+        .market-ticker-item { display: inline-block; margin-right: 0.8rem; }
         .ticker-symbol { font-weight: bold; color: var(--theme-mid); margin-right: 6px; }
         .ticker-price { color: var(--text-main); margin-right: 6px; }
         .ticker-up { color: #00ff41; }
@@ -333,8 +346,8 @@
             border-right: 5px solid transparent;
             border-bottom: 10px solid var(--theme-bright);
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            filter: drop-shadow(0 0 3px var(--theme-bright));
         }
+        .tactical-plane.mil { border-bottom-color: #00ff41; filter: drop-shadow(0 0 5px #00ff41); }
         .tactical-plane.outlier { 
             border-bottom-color: #ff6b35; 
             filter: drop-shadow(0 0 8px #ff6b35);
@@ -355,11 +368,10 @@
             animation: pulsate 2s infinite;
         }
         .tactical-plane::after {
-            content: ''; position: absolute; top: 7px; left: -3px; width: 6px; height: 2px; background: var(--theme-bright); opacity: 0.6;
+            content: ''; position: absolute; top: 7px; left: -3px; width: 6px; height: 2px; background: rgba(255,255,255,0.7); opacity: 0.6;
         }
-        .tactical-plane.outlier::after {
-            background: #ff6b35;
-        }
+        .tactical-plane.mil::after { background: #00ff41; }
+        .tactical-plane.outlier::after { background: #ff6b35; }
 
         @keyframes anomalyAlert {
             0%, 100% { filter: drop-shadow(0 0 8px #ff6b35); }

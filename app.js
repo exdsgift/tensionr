@@ -1,24 +1,25 @@
 const countryCoords = {
-    "United States": [38.8951, -77.0364],   // Washington DC ✓
-    "United Kingdom": [51.5074, -0.1278],    // London ✓
-    "Qatar": [25.2854, 51.5310],             // Doha ✓
-    "France": [48.8566, 2.3522],             // Paris ✓
-    "Russia": [55.7558, 37.6173],            // Moscow ✓
-    "Japan": [35.6762, 139.6503],            // Tokyo ✓
-    "Australia": [-35.2809, 149.1300],       // Canberra ✓
-    "India": [28.6139, 77.2090],             // New Delhi ✓
-    "Israel": [31.7683, 35.2137],            // Jerusalem ✓
-    "Ukraine": [50.4501, 30.5234],           // Kyiv ✓
-    "Singapore": [1.3521, 103.8198],         // Singapore ✓
-    "Canada": [45.4215, -75.6972],           // Ottawa ✓
-    "Saudi Arabia": [24.6877, 46.7219],      // Riyadh ✗ → corretto
-    "Uruguay": [-34.9011, -56.1645],         // Montevideo ✓
-    "Iran": [35.6892, 51.3890],              // Tehran ✓
-    "China": [39.9042, 116.4074],            // Beijing ✓
-    "Germany": [52.5200, 13.4050],           // Berlin ✓
-    "Turkey": [39.9334, 32.8597],            // Ankara ✓
-    "Egypt": [30.0444, 31.2357],             // Cairo ✓
-    "United Arab Emirates": [24.4539, 54.3773], // Abu Dhabi ✓
+    "United States": [38.8951, -77.0364],
+    "United Kingdom": [51.5074, -0.1278],
+    "Qatar": [25.2854, 51.5310],
+    "France": [48.8566, 2.3522],
+    "Russia": [55.7558, 37.6173],
+    "Russian Federation": [55.7558, 37.6173],
+    "Japan": [35.6762, 139.6503],
+    "Australia": [-35.2809, 149.1300],
+    "India": [28.6139, 77.2090],
+    "Israel": [31.7683, 35.2137],
+    "Ukraine": [50.4501, 30.5234],
+    "Singapore": [1.3521, 103.8198],
+    "Canada": [45.4215, -75.6972],
+    "Saudi Arabia": [24.6877, 46.7219],
+    "Uruguay": [-34.9011, -56.1645],
+    "Iran": [35.6892, 51.3890],
+    "China": [39.9042, 116.4074],
+    "Germany": [52.5200, 13.4050],
+    "Turkey": [39.9334, 32.8597],
+    "Egypt": [30.0444, 31.2357],
+    "United Arab Emirates": [24.4539, 54.3773],
     "South Korea": [37.5665, 126.9780],
     "North Korea": [39.0392, 125.7625],
     "Taiwan": [25.0330, 121.5654],
@@ -373,24 +374,89 @@ function renderMap(countries, articles) {
     });
 }
 
+let flightHistory = {};
+
 function renderFlightMap(intel) {
     if (!maps.flights) initMaps();
     
-    // Clear old markers
+    // Clear old markers (but we keep polylines for trails)
     mapMarkers.flights.forEach(m => maps.flights.removeLayer(m));
     mapMarkers.flights = [];
 
-    // Hide connection pending overlay if data exists
+    // Hide connection pending overlay
     const overlay = document.querySelector('#map-flights div[style*="z-index: 1000"]');
     if (overlay && intel && intel.assets && intel.assets.length > 0) overlay.style.display = 'none';
 
     if (!intel || !intel.assets) return;
 
+    // Track active ICAO24s to prune old history
+    const activeIcaos = new Set();
+
     intel.assets.forEach(asset => {
         if (asset.lat && asset.lon) {
+            activeIcaos.add(asset.icao24);
+            
+            // Update history for trails
+            if (!flightHistory[asset.icao24]) {
+                flightHistory[asset.icao24] = [];
+            }
+            
+            const lastPos = flightHistory[asset.icao24][flightHistory[asset.icao24].length - 1];
+            if (!lastPos || lastPos[0] !== asset.lat || lastPos[1] !== asset.lon) {
+                flightHistory[asset.icao24].push([asset.lat, asset.lon]);
+                // Keep only last 15 points for performance and "tail" effect
+                if (flightHistory[asset.icao24].length > 15) flightHistory[asset.icao24].shift();
+            }
+
+            // 1. Strategic Trajectory (Origin -> Current)
+            if (countryCoords[asset.origin]) {
+                const originPos = countryCoords[asset.origin];
+                const tacticalColor = asset.is_mil ? '#00ff41' : '#ff6b35';
+                
+                const strategicLine = L.polyline([originPos, [asset.lat, asset.lon]], {
+                    color: tacticalColor,
+                    weight: 1,
+                    opacity: 0.15,
+                    dashArray: '3, 10',
+                    interactive: false
+                }).addTo(maps.flights);
+                mapMarkers.flights.push(strategicLine);
+            }
+
+            // 2. Active Movement Trail (Tail)
+            if (flightHistory[asset.icao24].length > 1) {
+                const trailColor = asset.is_mil ? '#00ff41' : '#ff6b35';
+                
+                // Glow tail
+                const glowTrail = L.polyline(flightHistory[asset.icao24], {
+                    color: trailColor,
+                    weight: 4,
+                    opacity: 0.2,
+                    lineCap: 'round'
+                }).addTo(maps.flights);
+                mapMarkers.flights.push(glowTrail);
+
+                // Core tail
+                const polyline = L.polyline(flightHistory[asset.icao24], {
+                    color: trailColor,
+                    weight: 2,
+                    opacity: 0.7,
+                    lineCap: 'round'
+                }).addTo(maps.flights);
+                mapMarkers.flights.push(polyline);
+            }
+
+            // Plane Icon with rotation logic
+            let rotation = 0;
+            if (flightHistory[asset.icao24].length > 1) {
+                const p1 = flightHistory[asset.icao24][flightHistory[asset.icao24].length - 2];
+                const p2 = flightHistory[asset.icao24][flightHistory[asset.icao24].length - 1];
+                rotation = Math.atan2(p2[0] - p1[0], p2[1] - p1[1]) * (180 / Math.PI);
+            }
+
             const icon = L.divIcon({
                 className: 'plane-icon',
-                html: `<div class="tactical-plane ${asset.is_mil ? 'mil' : 'outlier'}"></div>`,
+                html: `<div class="tactical-plane ${asset.is_mil ? 'mil' : 'outlier'}" style="transform: translate(-50%, -50%) rotate(${rotation}deg)"></div>`,
                 iconSize: [0, 0],
                 iconAnchor: [0, 0]
             });
@@ -401,6 +467,11 @@ function renderFlightMap(intel) {
             
             mapMarkers.flights.push(marker);
         }
+    });
+
+    // Prune history for aircraft no longer in the feed
+    Object.keys(flightHistory).forEach(icao => {
+        if (!activeIcaos.has(icao)) delete flightHistory[icao];
     });
 }
 
@@ -561,11 +632,12 @@ function renderMarketTicker(markets) {
                 <span class="ticker-symbol">${m.symbol}</span>
                 <span class="ticker-price">${m.price.toLocaleString()}</span>
                 <span class="${colorClass}" style="font-size: 0.55rem;">${arrow} ${changeStr}</span>
+                <span style="margin-left: 1.5rem; color: var(--border);">|</span>
             </span>`;
     });
     
-    // Duplicate for seamless infinite scroll
-    container.innerHTML = html + html + html + html;
+    // Multi-duplication to ensure no gaps on wide screens/mobile
+    container.innerHTML = html.repeat(10);
 }
 
 function renderQuickStats(news, status) {
