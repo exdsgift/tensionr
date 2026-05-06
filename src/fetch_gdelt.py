@@ -183,7 +183,38 @@ def extract_keywords(articles):
 
 
 def fetch_rss_news(query):
-    print(f"scanning {len(RSS_FEEDS)} rss feeds...")
+    import random
+    # Potentially massive list of global feeds
+    ALL_FEEDS = [
+        "http://feeds.bbci.co.uk/news/world/rss.xml",
+        "https://www.aljazeera.net/aljazeerarss/a7c986be-c2bd-44a7-82f1-104a5e6bb854/73d0e1b4-532f-45ef-b135-bfdff8b8cab9",
+        "https://www.theguardian.com/world/rss",
+        "https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+        "https://www.lemonde.fr/international/rss_full.xml",
+        "https://www.japantimes.co.jp/feed/",
+        "https://www.spiegel.de/ausland/index.rss",
+        "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+        "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",
+        "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",
+        "https://www.straitstimes.com/news/world/rss.xml",
+        "en.mercopress.com/rss/",
+        "www.chinadaily.com.cn/rss/world_rss.xml",
+        "https://www.rt.com/rss/news/",
+        "https://www.scmp.com/rss/91/feed",
+        "https://www.thehindu.com/news/international/feeder/default.rss",
+        "https://feeds.reuters.com/reuters/worldNews",
+        "https://www.france24.com/en/rss",
+        "https://www.dw.com/en/top-stories/s-9097/rss",
+        "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+        "https://www.washingtonpost.com/arcfeed/rss/category/world/?itid=lk_inline_manual_41",
+        "https://www.cbc.ca/cctoc/rss/news/world",
+        "https://www.abc.net.au/news/feed/52278/rss.xml"
+    ]
+    
+    # Select a random batch of 15 to ensure variety and prevent timeout
+    selected_feeds = random.sample(ALL_FEEDS, min(len(ALL_FEEDS), 15))
+    print(f"scanning random rotation of {len(selected_feeds)} rss feeds...")
+    
     articles = []
     headers = {"User-Agent": "tensionr_cyber_node/1.0"}
     rss_metadata = {
@@ -193,38 +224,44 @@ def fetch_rss_news(query):
         "feeds.a.dj.com": {"country": "United States", "lang": "English"},
         "www.lemonde.fr": {"country": "France", "lang": "French"},
         "www.japantimes.co.jp": {"country": "Japan", "lang": "Japanese"},
-        "www.spiegel.de": {"country": "Germany", "lang": "German"},
+        "www.spiegel.de": {"country": "Germany", "lang": "English"},
         "feeds.elpais.com": {"country": "Spain", "lang": "Spanish"},
-        "timesofindia.indiatimes.com": {"country": "India", "lang": "Hindi"},
-        "www.jpost.com": {"country": "Israel", "lang": "Hebrew"},
-        "www.straitstimes.com": {"country": "Singapore", "lang": "Malay"},
+        "timesofindia.indiatimes.com": {"country": "India", "lang": "English"},
+        "www.jpost.com": {"country": "Israel", "lang": "English"},
+        "www.straitstimes.com": {"country": "Singapore", "lang": "English"},
         "en.mercopress.com": {"country": "Uruguay", "lang": "Spanish"},
         "www.chinadaily.com.cn": {"country": "China", "lang": "English"},
+        "www.rt.com": {"country": "Russia", "lang": "Russian"},
+        "www.scmp.com": {"country": "China", "lang": "English"},
+        "www.thehindu.com": {"country": "India", "lang": "English"},
+        "feeds.reuters.com": {"country": "Global", "lang": "English"},
+        "www.france24.com": {"country": "France", "lang": "English"},
+        "www.dw.com": {"country": "Germany", "lang": "English"},
+        "rss.nytimes.com": {"country": "United States", "lang": "English"},
+        "www.washingtonpost.com": {"country": "United States", "lang": "English"},
+        "www.cbc.ca": {"country": "Canada", "lang": "English"},
+        "www.abc.net.au": {"country": "Australia", "lang": "English"}
     }
-    for url in RSS_FEEDS:
+    for url in selected_feeds:
         domain = url.split("/")[2]
         print(f"  -> Fetching {domain}...")
         try:
             resp = requests.get(url, headers=headers, timeout=15)
             if resp.status_code != 200:
-                print(f"  !! Warning: {domain} returned status {resp.status_code}")
                 continue
             feed = feedparser.parse(resp.text)
             meta = rss_metadata.get(domain, {"country": "Global", "lang": "English"})
-            for entry in feed.entries[:15]:
-                articles.append(
-                    {
-                        "url": entry.get("link"),
-                        "title": entry.get("title", ""),
-                        "domain": domain,
-                        "seendate": datetime.now().strftime("%Y%m%dT%H%M%SZ"),
-                        "source": "rss",
-                        "sourcecountry": meta["country"],
-                        "language": meta["lang"],
-                    }
-                )
-        except Exception as e:
-            print(f"  !! Failed to fetch {domain}: {e}")
+            for entry in feed.entries[:10]:
+                articles.append({
+                    "url": entry.get("link"),
+                    "title": sanitize_data(entry.get("title", "")),
+                    "domain": domain,
+                    "seendate": datetime.now().strftime("%Y%m%dT%H%M%SZ"),
+                    "source": "rss",
+                    "sourcecountry": meta["country"],
+                    "language": meta["lang"],
+                })
+        except:
             continue
     return articles
 
@@ -343,12 +380,113 @@ def fetch_gdelt_data():
     # Keep only 500 articles
     final_articles = final_articles[:500]
 
+    def calculate_gti(articles):
+        if not articles:
+            return 30 # Base neutral level
+        
+        fear_anger_count = sum(1 for a in articles if a.get("narrative_emotion") in ["fear", "anger"])
+        ratio = fear_anger_count / len(articles)
+        
+        # Base GTI is 20. Max addition from ratio is 60. Max addition from volume is 20.
+        volume_factor = min(len(articles) / 500.0, 1.0) * 20
+        sentiment_factor = ratio * 60
+        
+        gti = int(20 + volume_factor + sentiment_factor)
+        return min(max(gti, 1), 100)
+
+    def fetch_cyber_intel():
+        # Fetches real cyber threat data from RSS
+        print("fetching cyber intelligence...")
+        cyber_feed_url = "https://feeds.feedburner.com/TheHackersNews"
+        try:
+            resp = requests.get(cyber_feed_url, timeout=15)
+            feed = feedparser.parse(resp.text)
+            entries = []
+            for entry in feed.entries[:5]:
+                entries.append({
+                    "title": sanitize_data(entry.get("title", "")),
+                    "link": entry.get("link", ""),
+                    "published": entry.get("published", "")
+                })
+            return entries
+        except Exception as e:
+            print(f"!! Failed to fetch cyber intel: {e}")
+            return []
+
+    def fetch_raw_chatter():
+        # Fetches high-frequency tactical/OSINT alerts
+        print("scanning raw osint chatter...")
+        # Using a specialized military/security alert feed
+        osint_feed = "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10"
+        try:
+            resp = requests.get(osint_feed, timeout=15)
+            feed = feedparser.parse(resp.text)
+            entries = []
+            for entry in feed.entries[:6]:
+                entries.append({
+                    "title": sanitize_data(entry.get("title", "")),
+                    "link": entry.get("link", ""),
+                    "source": "OSINT_MONITOR"
+                })
+            return entries
+        except:
+            return []
+
+    def fetch_market_data():
+        print("fetching market data...")
+        market_intel = []
+        try:
+            import yfinance as yf
+            import warnings
+            warnings.filterwarnings("ignore")
+            
+            tickers = {
+                "VIX (VOLATILITY)": "^VIX",
+                "GOLD (XAU)": "GC=F",
+                "CRUDE OIL": "CL=F",
+                "RAYTHEON (RTX)": "RTX",
+                "LOCKHEED (LMT)": "LMT",
+                "NORTHROP (NOC)": "NOC",
+                "GEN DYNAMICS (GD)": "GD",
+                "BTC/USD": "BTC-USD",
+                "EUR/USD": "EURUSD=X",
+                "S&P 500": "^GSPC",
+                "NASDAQ 100": "^IXIC"
+            }
+            for name, symbol in tickers.items():
+                ticker = yf.Ticker(symbol)
+                # 5d period ensures data on weekends
+                hist = ticker.history(period="5d")
+                if len(hist) >= 2:
+                    prev = hist['Close'].iloc[-2]
+                    curr = hist['Close'].iloc[-1]
+                    change = ((curr - prev) / prev) * 100
+                    market_intel.append({
+                        "symbol": name,
+                        "price": round(curr, 2),
+                        "change": round(change, 2)
+                    })
+        except ImportError:
+            print("!! yfinance not installed. Run 'pip install yfinance'.")
+        except Exception as e:
+            print(f"!! Failed to fetch market data: {e}")
+        return market_intel
+
     df = pd.DataFrame(final_articles)
+    gti = calculate_gti(final_articles)
     stats = {
         "total_nodes": len(final_articles),
         "top_domains": df["domain"].value_counts().head(8).to_dict() if not df.empty else {},
         "source_countries": df["sourcecountry"].value_counts().to_dict() if not df.empty else {},
         "top_keywords": extract_keywords(final_articles),
+        "global_tension_index": gti,
+        "cyber_intel": fetch_cyber_intel(),
+        "raw_chatter": fetch_raw_chatter(),
+        "market_intel": fetch_market_data(),
+        "flight_intel": {
+            "status": "connection_pending",
+            "message": "awaiting ads-b telemetry"
+        }
     }
 
     try:

@@ -18,7 +18,7 @@
             --text-main: #e6ffe6;
             --text-dim: #73b373;
             --border: #142914;
-            --map-filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(300%) brightness(60%) contrast(120%);
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(300%) brightness(85%) contrast(115%);
         }
 
         [data-theme="tactical"] {
@@ -30,7 +30,7 @@
             --text-main: #f1f5f9;
             --text-dim: #64748b;
             --border: #1e293b;
-            --map-filter: grayscale(100%) sepia(100%) hue-rotate(170deg) saturate(300%) brightness(70%) contrast(110%);
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(170deg) saturate(300%) brightness(95%) contrast(110%);
         }
 
         [data-theme="ember"] {
@@ -42,19 +42,67 @@
             --text-main: #fff0e6;
             --text-dim: #8a7a6f;
             --border: #33261f;
-            --map-filter: grayscale(100%) sepia(100%) hue-rotate(345deg) saturate(300%) brightness(70%) contrast(110%);
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(345deg) saturate(300%) brightness(95%) contrast(110%);
         }
 
         [data-theme="ghost"] {
-            --bg: #f8f9fa;
-            --surface: #ffffff;
+            --bg: #ffffff;
+            --surface: #f0f0f0;
             --theme-bright: #000000;
-            --theme-mid: #6c757d;
-            --theme-dim: #adb5bd;
-            --text-main: #212529;
-            --text-dim: #6c757d;
-            --border: #dee2e6;
-            --map-filter: grayscale(100%) invert(95%) sepia(10%) hue-rotate(180deg) brightness(105%) contrast(90%);
+            --theme-mid: #444444;
+            --theme-dim: #cccccc;
+            --text-main: #000000;
+            --text-dim: #666666;
+            --border: #dddddd;
+            --map-filter: grayscale(100%) brightness(115%) contrast(90%);
+        }
+
+        [data-theme="terminal"] {
+            --bg: #000000;
+            --surface: #050505;
+            --theme-bright: #00ff41;
+            --theme-mid: #008f11;
+            --theme-dim: #003b00;
+            --text-main: #00ff41;
+            --text-dim: #008f11;
+            --border: #003b00;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(400%) brightness(75%) contrast(140%);
+        }
+
+        [data-theme="neon"] {
+            --bg: #090914;
+            --surface: #101020;
+            --theme-bright: #f0f;
+            --theme-mid: #d0d;
+            --theme-dim: #505;
+            --text-main: #f0f8ff;
+            --text-dim: #8b8b99;
+            --border: #2a2a40;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(260deg) saturate(300%) brightness(95%) contrast(120%);
+        }
+
+        [data-theme="blood"] {
+            --bg: #100000;
+            --surface: #1a0000;
+            --theme-bright: #ff0000;
+            --theme-mid: #cc0000;
+            --theme-dim: #660000;
+            --text-main: #ffe6e6;
+            --text-dim: #b36666;
+            --border: #330000;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(320deg) saturate(400%) brightness(85%) contrast(130%);
+        }
+
+        [data-theme="abyss"] {
+            --bg: #000b18;
+            --surface: #001528;
+            --theme-bright: #00ffff;
+            --theme-mid: #00cccc;
+            --theme-dim: #006666;
+            --text-main: #e6ffff;
+            --text-dim: #66b3b3;
+            --border: #002240;
+            --map-filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(300%) brightness(85%) contrast(120%);
         }
 
         body { background-color: var(--bg); color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 0.85rem; overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
@@ -65,13 +113,13 @@
         .chart-desc { font-size: 0.6rem; color: var(--text-dim); margin-bottom: 0.75rem; line-height: 1.2; transition: color 0.3s; }
         
         /* Layout Grid */
-        .chart-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
-        .map-feed-row { display: grid; grid-template-columns: 7fr 5fr; gap: 1rem; margin-bottom: 1rem; }
+        .chart-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; height: 320px; }
+        .map-feed-row { display: grid; grid-template-columns: 7fr 5fr; gap: 1rem; margin-bottom: 1rem; height: 480px; }
         .telemetry-row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 
         @media (max-width: 992px) {
-            .map-feed-row { grid-template-columns: 1fr; }
-            .chart-row { grid-template-columns: 1fr; }
+            .map-feed-row { grid-template-columns: 1fr; height: auto; }
+            .chart-row { grid-template-columns: 1fr; height: auto; }
             .card { height: auto; }
         }
 
@@ -100,26 +148,38 @@
             box-shadow: none;
         }
 
-        .article-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); transition: border-color 0.3s; }
+        .article-item { 
+            padding: 0.5rem 0; 
+            border-bottom: 1px solid var(--border); 
+            transition: border-color 0.3s; 
+            height: 52px; 
+            overflow: hidden; 
+            contain: layout size;
+        }
         .article-title { color: var(--text-main); text-decoration: none; display: inline-block; font-size: 0.72rem; margin-bottom: 2px; transition: color 0.3s; white-space: nowrap; }
         .article-title:hover { color: var(--theme-bright); }
         
         .should-scroll {
-            animation: marquee 8s linear infinite;
+            animation: marquee 12s linear infinite;
         }
         @keyframes marquee {
-            0%, 15% { transform: translateX(0); }
-            45%, 55% { transform: translateX(var(--scroll-dist)); }
-            85%, 100% { transform: translateX(0); }
+            0% { transform: translateX(0); }
+            15% { transform: translateX(0); }
+            85% { transform: translateX(var(--scroll-dist)); }
+            100% { transform: translateX(var(--scroll-dist)); }
         }
         
         .tag { font-size: 0.55rem; padding: 0px 3px; border: 1px solid var(--border); border-radius: 2px; margin-right: 4px; transition: border-color 0.3s; }
 
         /* Map Animations */
         .pulse-icon { position: relative; background: transparent; border: none; }
-        .pulse-dot { width: 6px; height: 6px; background: var(--theme-bright); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--theme-bright); z-index: 2; transition: background-color 0.3s, box-shadow 0.3s; }
-        .pulse-ring { border: 1px solid var(--theme-bright); border-radius: 50%; height: 24px; width: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulsate 2.5s ease-out infinite; z-index: 1; transition: border-color 0.3s; }
-        @keyframes pulsate { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; border-width: 2px; } 100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-width: 0px; } }
+        .pulse-dot { width: 6px; height: 6px; background: var(--theme-bright); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--theme-bright), 0 0 2px #fff; border: 0.5px solid rgba(255,255,255,0.8); z-index: 2; transition: background-color 0.3s, box-shadow 0.3s; }
+        .pulse-ring { border: 2px solid var(--theme-bright); border-radius: 50%; height: 24px; width: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulsate 2.5s ease-out infinite; z-index: 1; transition: border-color 0.3s; filter: drop-shadow(0 0 2px rgba(0,0,0,0.9)); }
+        
+        .hub-icon { position: relative; background: transparent; border: none; }
+        .hub-square { width: 6px; height: 6px; border: 1.5px solid var(--theme-bright); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 8px var(--theme-bright), 0 0 2px #fff; background: transparent; filter: drop-shadow(0 0 2px rgba(0,0,0,0.9)); }
+        
+        @keyframes pulsate { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; border-width: 3px; } 100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-width: 0px; } }
 
         /* Word Cloud */
         .word-cloud { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-content: center; min-height: 200px; perspective: 1000px; padding: 10px 0; }
@@ -134,10 +194,76 @@
             100% { opacity: 1; transform: translateX(0); background: transparent; }
         }
 
+        /* Carousel CSS */
+        .intel-carousel { position: relative; height: 100%; overflow: hidden; contain: paint; }
+        .intel-slide { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transform: translateX(20px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            visibility: hidden; /* Prevent interaction and overlapping layout */
+            display: flex; flex-direction: column;
+        }
+        .intel-slide.active { 
+            opacity: 1; 
+            transform: translateX(0); 
+            pointer-events: auto; 
+            visibility: visible;
+        }
+        
+        .intel-nav {
+            position: absolute; top: 1rem; right: 1rem;
+            display: flex; gap: 4px; z-index: 100;
+        }
+        .intel-dot {
+            padding: 8px 4px; /* Increase click area */
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .intel-dot::after {
+            content: '';
+            display: block;
+            width: 14px; height: 2px;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+        .intel-dot:hover::after { background: var(--theme-mid); }
+        .intel-dot.active::after { 
+            background: var(--theme-bright); 
+            box-shadow: 0 0 8px var(--theme-bright); 
+            width: 20px; /* Visual feedback for active state */
+        }
+
+        .gti-display { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 1rem; }
+        .gti-value { font-size: 3.5rem; font-weight: bold; color: var(--theme-bright); line-height: 1; text-shadow: 0 0 20px var(--theme-bright); }
+        .gti-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-top: 0.5rem; }
+        .gti-bar-container { width: 100%; height: 4px; background: var(--border); margin-top: 1.5rem; border-radius: 2px; overflow: hidden; }
+        .gti-bar { height: 100%; background: var(--theme-bright); transition: width 1s ease-out; box-shadow: 0 0 10px var(--theme-bright); }
+
+        .flight-intel-display { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; height: 100%; justify-content: center; }
+        .flight-stat-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+        .flight-stat-label { font-size: 0.6rem; color: var(--text-dim); text-transform: lowercase; }
+        .flight-stat-value { font-size: 0.75rem; color: var(--theme-bright); font-weight: bold; }
+        .hot-zone-tag { background: var(--theme-dim); color: var(--theme-bright); padding: 2px 6px; border-radius: 2px; font-size: 0.65rem; border: 1px solid var(--theme-mid); }
+
+        /* Market Ticker */
+        .market-ticker-wrapper { background: var(--bg); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; padding: 5px 0; font-size: 0.65rem; letter-spacing: 1px; }
+        .market-ticker-content { display: inline-block; animation: tickerMarquee 80s linear infinite; }
+        .market-ticker-content:hover { animation-play-state: paused; }
+        .market-ticker-item { display: inline-block; margin-right: 3rem; }
+        .ticker-symbol { font-weight: bold; color: var(--theme-mid); margin-right: 6px; }
+        .ticker-price { color: var(--text-main); margin-right: 6px; }
+        .ticker-up { color: #00ff41; }
+        .ticker-down { color: #ff6b35; }
+        @keyframes tickerMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
         /* Refresh Animations */
-        .fade-update { animation: softPulse 1s ease-out; }
+        .fade-update { animation: softPulse 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes softPulse {
-            0% { opacity: 0.5; filter: brightness(1.2); }
+            0% { opacity: 1; filter: brightness(1); }
+            50% { opacity: 0.85; filter: brightness(1.1); }
             100% { opacity: 1; filter: brightness(1); }
         }
 
@@ -209,19 +335,48 @@
     </div>
 </div>
 
+<div class="market-ticker-wrapper">
+    <div class="market-ticker-content" id="market-ticker">
+        <span class="text-dim">initializing market telemetry... sync in progress...</span>
+    </div>
+</div>
+
 <div class="container-fluid">
 
     <!-- Map & Feeds Row -->
     <div class="map-feed-row">
-        <div class="card">
-            <h5>geospatial intelligence vectors</h5>
-            <p class="chart-desc">displays the physical origin of intercepted intelligence nodes. flashing rings indicate active signal hotspots. hover or click to reveal regional data volumes and latest snippets.</p>
-            <div id="map"></div>
+        <div class="card" id="map-carousel-card">
+            <!-- Map Carousel Navigation Dots -->
+            <div class="intel-nav" id="map-nav-dots">
+                <div class="intel-dot active" data-index="0"></div>
+                <div class="intel-dot" data-index="1"></div>
+            </div>
+
+            <div class="intel-carousel">
+                <!-- Slide 1: News Hotspots Map -->
+                <div class="intel-slide active" id="slide-map-news">
+                    <h5>geospatial intelligence vectors</h5>
+                    <p class="chart-desc">displays the physical origin of intercepted intelligence nodes. flashing rings indicate active signal hotspots.</p>
+                    <div id="map-news" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border);"></div>
+                </div>
+
+                <!-- Slide 2: Strategic Flights Map -->
+                <div class="intel-slide" id="slide-map-flights">
+                    <h5>strategic aerial telemetry map</h5>
+                    <p class="chart-desc">real-time tracking of transponder-active military assets. [ awaiting live ads-b telemetry ]</p>
+                    <div id="map-flights" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border); position: relative;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; text-align: center; width: 100%;">
+                            <div class="text-dim" style="font-size: 0.65rem; letter-spacing: 2px; animation: terminalBlink 1.5s ease-in-out infinite;">[ connection_pending ]</div>
+                            <div class="text-dim" style="font-size: 0.55rem; margin-top: 5px;">awaiting ads-b handshake...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="card" style="display: flex; flex-direction: column;">
             <h5>live intercept telemetry feed</h5>
             <p class="chart-desc">real-time stream of intercepted intelligence events. tags show origin domain and the extracted narrative emotion (e.g. fear, surprise).</p>
-            <div id="articles-list" style="flex: 1; min-height: 350px; overflow-y: auto;"></div>
+            <div id="articles-list" style="flex: 1; height: 364px; max-height: 364px; overflow: hidden; contain: content;"></div>
         </div>
     </div>
 
@@ -232,10 +387,72 @@
             <p class="chart-desc">entity extraction from recent chatter. larger, brighter text indicates higher frequency of mentions across the global data pool. hover to highlight specific entities.</p>
             <div id="word-cloud" class="word-cloud"></div>
         </div>
-        <div class="card">
-            <h5>narrative resonance & sentiment</h5>
-            <p class="chart-desc">polar distribution of emotional undertones detected via nlp models. larger areas represent a higher volume of articles exhibiting the corresponding narrative emotion.</p>
-            <div class="chart-container"><canvas id="emotionChart"></canvas></div>
+        <div class="card" id="intel-carousel-card">
+            <!-- Manual Navigation Dots -->
+            <div class="intel-nav" id="intel-nav-dots">
+                <div class="intel-dot active" data-index="0"></div>
+                <div class="intel-dot" data-index="1"></div>
+                <div class="intel-dot" data-index="2"></div>
+                <div class="intel-dot" data-index="3"></div>
+                <div class="intel-dot" data-index="4"></div>
+            </div>
+            
+            <div class="intel-carousel">
+                <!-- Slide 1: Sentiment Radar -->
+                <div class="intel-slide active" id="slide-sentiment">
+                    <h5>narrative resonance & sentiment</h5>
+                    <p class="chart-desc">polar distribution of emotional undertones detected via nlp models. larger areas represent a higher volume of articles exhibiting the corresponding narrative emotion.</p>
+                    <div class="chart-container"><canvas id="emotionChart"></canvas></div>
+                </div>
+                
+                <!-- Slide 2: Global Tension Index -->
+                <div class="intel-slide" id="slide-gti">
+                    <h5>global tension index (gti)</h5>
+                    <p class="chart-desc">proprietary algorithmic score calculating global instability. based on signal volume, sentiment volatility, and geopolitical escalation vectors.</p>
+                    <div class="gti-display">
+                        <div class="gti-value" id="gti-score">--</div>
+                        <div class="gti-label">instability level</div>
+                        <div class="gti-bar-container">
+                            <div class="gti-bar" id="gti-bar" style="width: 0%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 5px; font-size: 0.45rem; color: var(--text-dim); font-family: monospace; letter-spacing: 1px;">
+                            <span>0</span>
+                            <span>25</span>
+                            <span>50</span>
+                            <span>75</span>
+                            <span>100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Military Flight Intel -->
+                <div class="intel-slide" id="slide-flights">
+                    <h5>strategic aerial telemetry</h5>
+                    <p class="chart-desc">intercepted movements of transponder-active military assets and high-value strategic airframes in contested theater zones.</p>
+                    <div class="flight-intel-display">
+                        <div class="text-dim" style="font-size: 0.7rem; letter-spacing: 3px; animation: terminalBlink 1.5s ease-in-out infinite; text-align: center;">[ telemetry_offline ]</div>
+                        <div class="gti-label" style="margin-top: 1rem; text-align: center;">awaiting live ads-b data stream...</div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Cyber Intelligence -->
+                <div class="intel-slide" id="slide-cyber">
+                    <h5>cyber threat intelligence (cti)</h5>
+                    <p class="chart-desc">monitoring global network anomalies and zero-day vulnerability exploitations. data source: the hacker news.</p>
+                    <div id="cyber-threat-list" style="padding: 0.5rem; display: flex; flex-direction: column; gap: 8px;">
+                        <div class="text-dim" style="font-size: 0.6rem; text-align: center; margin-top: 2rem;">initializing cti feed...</div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Raw Chatter -->
+                <div class="intel-slide" id="slide-chatter">
+                    <h5>unverified raw chatter</h5>
+                    <p class="chart-desc">real-time tactical alerts and intercepted osint signals. [ verified source authenticity pending ]</p>
+                    <div id="raw-chatter-list" style="padding: 0.5rem; display: flex; flex-direction: column; gap: 8px;">
+                        <div class="text-dim" style="font-size: 0.6rem; text-align: center; margin-top: 2rem;">scanning raw frequencies...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -251,6 +468,10 @@
         <option value="tactical">tactical</option>
         <option value="ember">ember</option>
         <option value="ghost">ghost</option>
+        <option value="terminal">terminal</option>
+        <option value="neon">neon</option>
+        <option value="blood">blood</option>
+        <option value="abyss">abyss</option>
     </select>
 </div>
 

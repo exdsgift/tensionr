@@ -85,8 +85,44 @@ const savedTheme = localStorage.getItem('tensionr_theme') || 'phosphor';
 document.documentElement.setAttribute('data-theme', savedTheme);
 updateThemeColors();
 
-let mapInstance = null;
+let maps = { news: null, flights: null };
+let mapMarkers = { news: [], flights: [] };
 let charts = {};
+
+function initMaps() {
+    if (!maps.news) {
+        maps.news = L.map('map-news', { 
+            zoomControl: false,
+            dragging: false,
+            touchZoom: false,
+            doubleClickZoom: false,
+            scrollWheelZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            zoomSnap: 0.1,
+            zoomDelta: 0.1
+        }).setView([25, 0], 1.3);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(maps.news);
+    }
+
+    if (!maps.flights) {
+        const flightContainer = document.getElementById('map-flights');
+        if (flightContainer) {
+            maps.flights = L.map('map-flights', { 
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                doubleClickZoom: false,
+                scrollWheelZoom: false,
+                boxZoom: false,
+                keyboard: false,
+                zoomSnap: 0.1,
+                zoomDelta: 0.1
+            }).setView([25, 0], 1.1);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(maps.flights);
+        }
+    }
+}
 
 function logSystem(msg) {
     const log = document.getElementById('system-log');
@@ -128,7 +164,15 @@ async function updateDashboard() {
 
         // Safe execution of all renders
         safeRender('emotions', () => renderEmotions(dedupedArticles));
-        safeRender('map', () => renderMap(data.stats.source_countries, data.articles));
+        safeRender('map', () => {
+            renderMap(data.stats.source_countries, data.articles);
+            renderFlightMap();
+        });
+        safeRender('gti', () => renderGTI(data.stats.global_tension_index));
+        safeRender('flights', () => renderFlightIntel(data.stats.flight_intel));
+        safeRender('cyber', () => renderCyberIntel(data.stats.cyber_intel));
+        safeRender('chatter', () => renderRawChatter(data.stats.raw_chatter));
+        safeRender('market', () => renderMarketTicker(data.stats.market_intel));
         
         safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
         safeRender('stats', () => renderQuickStats(data));
@@ -181,7 +225,7 @@ function renderEmotions(articles) {
                 backgroundColor: THEME_BRIGHT + '33', // 20% opacity hex
                 borderColor: THEME_BRIGHT,
                 pointBackgroundColor: THEME_BRIGHT,
-                pointBorderColor: '#fff',
+                pointBorderColor: COLOR_BORDER,
                 borderWidth: 1
             }]
         },
@@ -246,20 +290,56 @@ function renderWordCloud(keywords) {
     });
 }
 
+function renderRawChatter(chatter) {
+    const container = document.getElementById('raw-chatter-list');
+    if (!container || !chatter || chatter.length === 0) return;
+    
+    container.innerHTML = '';
+    chatter.forEach(item => {
+        const div = document.createElement('div');
+        div.style.borderBottom = '1px solid var(--border)';
+        div.style.paddingBottom = '4px';
+        div.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:2px;">
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <span class="tag" style="color: #ff6b35; border-color: #ff6b35; font-size: 0.45rem;">UNVERIFIED</span>
+                    <span style="font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase;">SRC: ${item.source}</span>
+                </div>
+                <a href="${item.link}" target="_blank" style="color: var(--text-main); font-size: 0.62rem; text-decoration: none; line-height: 1.2;">${item.title.toLowerCase()}</a>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderCyberIntel(intel) {
+    const container = document.getElementById('cyber-threat-list');
+    if (!container || !intel || intel.length === 0) return;
+    
+    container.innerHTML = '';
+    intel.forEach(threat => {
+        const item = document.createElement('div');
+        item.style.borderBottom = '1px solid var(--border)';
+        item.style.paddingBottom = '4px';
+        item.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:2px;">
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <span class="tag" style="color: var(--theme-bright); border-color: var(--theme-bright); font-size: 0.45rem;">SEC_ALERT</span>
+                    <span style="font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase;">HANDSHAKE_ACTIVE</span>
+                </div>
+                <a href="${threat.link}" target="_blank" style="color: var(--text-main); font-size: 0.62rem; text-decoration: none; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${threat.title.toLowerCase()}</a>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
 function renderMap(countries, articles) {
-    if (mapInstance) mapInstance.remove();
-    mapInstance = L.map('map', { 
-        zoomControl: false,
-        dragging: false,
-        touchZoom: false,
-        doubleClickZoom: false,
-        scrollWheelZoom: false,
-        boxZoom: false,
-        keyboard: false,
-        zoomSnap: 0.1,
-        zoomDelta: 0.1
-    }).setView([25, 0], 1.3);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
+    if (!maps.news) initMaps();
+    
+    // Clear old markers
+    mapMarkers.news.forEach(m => maps.news.removeLayer(m));
+    mapMarkers.news = [];
 
     if (!countries || !articles) return;
     Object.keys(countries).forEach(country => {
@@ -275,9 +355,36 @@ function renderMap(countries, articles) {
                 popupAnchor: [0, -10]
             });
             
-            L.marker(countryCoords[country], {icon: icon})
-              .addTo(mapInstance)
+            const marker = L.marker(countryCoords[country], {icon: icon})
+              .addTo(maps.news)
               .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.7rem; color: var(--text-main); background: transparent; padding: 5px; border: none;"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr style="margin:5px 0; border-color: var(--border);">"${snippet}"</div>`);
+            
+            mapMarkers.news.push(marker);
+        }
+    });
+}
+
+function renderFlightMap() {
+    if (!maps.flights) initMaps();
+    
+    // Clear old markers
+    mapMarkers.flights.forEach(m => maps.flights.removeLayer(m));
+    mapMarkers.flights = [];
+
+    // Add Strategic Hubs (Static for now as placeholders for real telemetry)
+    const hubs = ["Qatar", "United States", "Germany", "Japan", "United Kingdom", "Russia", "Israel"];
+    hubs.forEach(country => {
+        if (countryCoords[country]) {
+            const icon = L.divIcon({
+                className: 'hub-icon',
+                html: `<div class="hub-square"></div>`,
+                iconSize: [0, 0],
+                iconAnchor: [0, 0]
+            });
+            const marker = L.marker(countryCoords[country], {icon: icon})
+                .addTo(maps.flights)
+                .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.65rem; color: var(--theme-bright);"><b>STRATEGIC_HUB: ${country.toUpperCase()}</b><br>monitoring aerial corridors...</div>`);
+            mapMarkers.flights.push(marker);
         }
     });
 }
@@ -337,14 +444,14 @@ function initRotatingFeed(containerId, articles, maxVisible) {
         const domainsHtml = art.domain.split(', ').map(d => `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-dim)">${d}</span>`).join('');
         const emotionTag = emotion ? `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-bright)">${emotion}</span>` : '';
         item.innerHTML = `
-            <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px; overflow: hidden;">
-                <div class="article-title-wrapper" style="flex-grow: 1; overflow: hidden; white-space: nowrap;">
-                    <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
-                </div>
-                <span class="text-dim" style="font-size: 0.55rem; white-space: nowrap;">${formatDate(art.seendate)}</span>
+            <div class="article-title-wrapper" style="overflow: hidden; white-space: nowrap; margin-bottom: 4px;">
+                <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
             </div>
-            <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:2px;">
-                ${emotionTag} ${domainsHtml}
+            <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                <span style="font-size: 0.52rem; white-space: nowrap; color: var(--theme-mid);">[${formatDate(art.seendate)}]</span>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                    ${emotionTag} ${domainsHtml}
+                </div>
             </div>
         `;
         return item;
@@ -389,7 +496,7 @@ function initRotatingFeed(containerId, articles, maxVisible) {
             // Trigger entrance
             requestAnimationFrame(() => {
                 newItem.style.opacity = '1';
-                newItem.style.maxHeight = '100px';
+                newItem.style.maxHeight = '52px';
                 newItem.style.paddingTop = '0.5rem';
                 newItem.style.paddingBottom = '0.5rem';
                 newItem.style.borderBottomColor = 'var(--border)';
@@ -423,6 +530,29 @@ function initRotatingFeed(containerId, articles, maxVisible) {
     }
 }
 
+function renderMarketTicker(markets) {
+    const container = document.getElementById('market-ticker');
+    if (!container || !markets || markets.length === 0) return;
+    
+    let html = '';
+    markets.forEach(m => {
+        const isUp = m.change >= 0;
+        const colorClass = isUp ? 'ticker-up' : 'ticker-down';
+        const arrow = isUp ? '▲' : '▼';
+        const changeStr = (m.change > 0 ? '+' : '') + m.change.toFixed(2) + '%';
+        
+        html += `
+            <span class="market-ticker-item">
+                <span class="ticker-symbol">${m.symbol}</span>
+                <span class="ticker-price">${m.price.toLocaleString()}</span>
+                <span class="${colorClass}" style="font-size: 0.55rem;">${arrow} ${changeStr}</span>
+            </span>`;
+    });
+    
+    // Duplicate for seamless infinite scroll
+    container.innerHTML = html + html + html + html;
+}
+
 function renderQuickStats(data) {
     const container = document.getElementById('top-telemetry-ticker');
     if (!container) return;
@@ -437,8 +567,147 @@ function renderQuickStats(data) {
     `;
 }
 
+function renderFlightIntel(intel) {
+    if (!intel) return;
+    const countEl = document.getElementById('flight-count');
+    const zoneEl = document.getElementById('flight-zone');
+    const statusEl = document.getElementById('flight-status');
+    const anomalyEl = document.getElementById('flight-anomalies');
+    
+    if (countEl) countEl.textContent = intel.detected_aircraft;
+    if (zoneEl) zoneEl.textContent = intel.hot_zone.toLowerCase();
+    if (statusEl) statusEl.textContent = intel.activity_level.toLowerCase();
+    if (anomalyEl) anomalyEl.textContent = intel.anomalies_detected > 0 ? `+${intel.anomalies_detected} detected` : 'none';
+}
+
+function renderGTI(score) {
+    const scoreEl = document.getElementById('gti-score');
+    const barEl = document.getElementById('gti-bar');
+    if (!scoreEl || !barEl) return;
+
+    // Animate number
+    let current = 0;
+    const target = score || 30;
+    const duration = 1000;
+    const start = performance.now();
+
+    function animate(time) {
+        const progress = Math.min((time - start) / duration, 1);
+        const value = Math.floor(progress * target);
+        scoreEl.textContent = value.toString().padStart(2, '0');
+        if (progress < 1) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+    // Update bar
+    barEl.style.width = `${target}%`;
+    
+    // Color shift based on tension
+    if (target > 75) {
+        scoreEl.style.color = 'var(--theme-bright)';
+        scoreEl.style.textShadow = '0 0 20px var(--theme-bright)';
+    } else {
+        scoreEl.style.color = 'var(--theme-bright)';
+        scoreEl.style.textShadow = 'none';
+    }
+}
+
+let intelCarouselInterval = null;
+let currentIntelIndex = 0;
+
+function startIntelCarousel() {
+    if (intelCarouselInterval) clearInterval(intelCarouselInterval);
+    
+    // SCOPE: Only slides and dots belonging to the Intel Carousel
+    const slides = document.querySelectorAll('#intel-carousel-card .intel-slide');
+    const dots = document.querySelectorAll('#intel-nav-dots .intel-dot');
+    if (!slides.length) return;
+
+    function goToSlide(index) {
+        if (index === currentIntelIndex) return;
+        
+        slides[currentIntelIndex].classList.remove('active');
+        dots[currentIntelIndex].classList.remove('active');
+        
+        currentIntelIndex = index;
+        
+        slides[currentIntelIndex].classList.add('active');
+        dots[currentIntelIndex].classList.add('active');
+        
+        // If switching to sentiment, we might want to trigger a chart resize
+        if (slides[currentIntelIndex].id === 'slide-sentiment' && charts.emotions) {
+            charts.emotions.resize();
+        }
+
+        // Reset timer to give user time to read the manual selection
+        resetIntelTimer();
+    }
+
+    function resetIntelTimer() {
+        if (intelCarouselInterval) clearInterval(intelCarouselInterval);
+        intelCarouselInterval = setInterval(() => {
+            let nextIndex = (currentIntelIndex + 1) % slides.length;
+            goToSlide(nextIndex);
+        }, 15000);
+    }
+
+    // Add click listeners to dots
+    dots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => goToSlide(idx));
+    });
+
+    resetIntelTimer();
+}
+
+let mapCarouselInterval = null;
+let currentMapIndex = 0;
+
+function startMapCarousel() {
+    if (mapCarouselInterval) clearInterval(mapCarouselInterval);
+    
+    const slides = document.querySelectorAll('#map-carousel-card .intel-slide');
+    const dots = document.querySelectorAll('#map-nav-dots .intel-dot');
+    if (!slides.length) return;
+
+    function goToMap(index) {
+        if (index === currentMapIndex) return;
+
+        slides[currentMapIndex].classList.remove('active');
+        dots[currentMapIndex].classList.remove('active');
+        
+        currentMapIndex = index;
+        
+        slides[currentMapIndex].classList.add('active');
+        dots[currentMapIndex].classList.add('active');
+        
+        // Leaflet fix: invalidateSize when map container becomes visible
+        setTimeout(() => {
+            if (currentMapIndex === 0 && maps.news) maps.news.invalidateSize();
+            if (currentMapIndex === 1 && maps.flights) maps.flights.invalidateSize();
+        }, 300); // Wait for transition to be partially complete
+
+        resetMapTimer();
+    }
+
+    function resetMapTimer() {
+        if (mapCarouselInterval) clearInterval(mapCarouselInterval);
+        mapCarouselInterval = setInterval(() => {
+            let nextIndex = (currentMapIndex + 1) % slides.length;
+            goToMap(nextIndex);
+        }, 20000); // Maps rotate slower than intel (20s)
+    }
+
+    dots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => goToMap(idx));
+    });
+
+    resetMapTimer();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     logSystem("booting intelligence engine...");
     updateDashboard();
+    startIntelCarousel();
+    startMapCarousel();
     setInterval(updateDashboard, 40000);
 });
