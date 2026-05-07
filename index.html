@@ -364,6 +364,11 @@
         .minimal-select:hover {
             border-color: var(--theme-bright);
         }
+        #theme-toggle:hover {
+            color: var(--theme-bright) !important;
+            border-color: var(--theme-bright) !important;
+            transform: translateY(-2px);
+        }
         .minimal-select option {
             background: var(--surface);
             color: var(--text-main);
@@ -432,8 +437,8 @@
         <div style="display: flex; align-items: center; min-width: 120px;">
             <span style="font-weight: bold;" id="site-title"></span><span class="terminal-cursor"></span>
         </div>
-        <div class="d-flex align-items-center gap-4" style="font-size: 0.7rem;">
-            <div id="top-telemetry-ticker" class="d-flex align-items-center gap-4"></div>
+        <div class="d-flex align-items-center gap-3 gap-md-4" style="font-size: 0.7rem;">
+            <div id="top-telemetry-ticker" class="d-flex align-items-center gap-3 gap-md-4"></div>
             <div class="d-flex align-items-center gap-4" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
                 <span class="text-dim" id="last-updated">sync: --</span>
                 <span style="color: var(--theme-bright);" id="live-indicator">● live_feed</span>
@@ -570,7 +575,10 @@
     tensionr © 2026 // <a href="https://github.com/exdsgift" target="_blank" style="color: var(--theme-bright); text-decoration: none;">github/exdsgift</a>
 </footer>
 
-<div class="theme-selector">
+<div class="theme-selector d-flex align-items-center gap-2">
+    <div id="theme-toggle" onclick="toggleMode()" style="cursor: pointer; font-size: 1.2rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; color: var(--text-dim); transition: all 0.3s;" title="toggle dark/light mode">
+        <span id="theme-icon">◐</span>
+    </div>
     <select onchange="setTheme(this.value)" id="theme-select" class="minimal-select">
         <option value="phosphor">phosphor</option>
         <option value="tactical">tactical</option>
@@ -594,7 +602,21 @@
     setInterval(updateClock, 1000);
     
     // Set active theme in select
-    document.getElementById('theme-select').value = localStorage.getItem('tensionr_theme') || 'ghost';
+    document.getElementById('theme-select').value = localStorage.getItem('tensionr_theme') || 'phosphor';
+
+    function toggleMode() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = (current === 'ghost') ? 'phosphor' : 'ghost';
+        setTheme(next);
+        document.getElementById('theme-select').value = next;
+        
+        // Visual feedback for toggle
+        const toggle = document.getElementById('theme-toggle');
+        toggle.style.transform = 'rotate(180deg) scale(1.2)';
+        setTimeout(() => {
+            toggle.style.transform = 'rotate(0deg) scale(1)';
+        }, 300);
+    }
 
     // Typewriter effect for site title
     const titleText = "tensionr";

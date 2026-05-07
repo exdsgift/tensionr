@@ -82,7 +82,7 @@ function setTheme(themeName) {
 }
 
 // Load saved theme
-const savedTheme = localStorage.getItem('tensionr_theme') || 'ghost';
+const savedTheme = localStorage.getItem('tensionr_theme') || 'phosphor';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
 let maps = { news: null, flights: null };
