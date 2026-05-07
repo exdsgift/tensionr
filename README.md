@@ -5,7 +5,7 @@
 [![Status: Live](https://img.shields.io/badge/Status-Live-00ff41.svg?style=flat-square)](#)
 [![Engine: Python/JS](https://img.shields.io/badge/Engine-Python%20%7C%20JS-blue.svg)](#)
 
-**tensionr** is a high-fidelity intelligence dashboard designed to monitor global instability, narrative shifts, and strategic asset movements in real-time. By synthesizing multi-domain signals—from GDELT news flows to ADS-B aerial telemetry—tensionr provides a unified "Geopolitical Tactical Picture" for rapid situational awareness.
+**tensionr** is a high-fidelity intelligence dashboard designed to monitor global instability, narrative shifts, and strategic asset movements in real-time. By synthesizing multi-domain signals (from GDELT news flows to ADS-B aerial telemetry) tensionr provides a unified "Geopolitical Tactical Picture" for rapid situational awareness.
 
 ![tensionr Dashboard](images/dashboard1.png)
 
