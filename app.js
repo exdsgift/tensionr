@@ -153,6 +153,7 @@ function formatDate(isoStr) {
 
 async function updateDashboard() {
     logSystem("syncing telemetry...");
+    updateThemeColors();
     try {
         const t = new Date().getTime();
         const fetchFile = (file) => fetch(`data/${file}?t=${t}`).then(r => {
@@ -225,6 +226,7 @@ function renderEmotions(articles) {
     
     const labels = Object.keys(counts);
     const data = Object.values(counts);
+    const chartColor = THEME_BRIGHT || '#00ff41';
 
     if (charts.emotions) charts.emotions.destroy();
     charts.emotions = new Chart(ctx, {
@@ -234,23 +236,32 @@ function renderEmotions(articles) {
             datasets: [{
                 label: 'signals',
                 data: data,
-                backgroundColor: THEME_BRIGHT + '33', // 20% opacity hex
-                borderColor: THEME_BRIGHT,
-                pointBackgroundColor: THEME_BRIGHT,
-                pointBorderColor: COLOR_BORDER,
-                borderWidth: 1
+                backgroundColor: chartColor + '33', 
+                borderColor: chartColor,
+                pointBackgroundColor: chartColor,
+                pointBorderColor: COLOR_BORDER || '#000',
+                borderWidth: 2,
+                pointRadius: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 10,
+                    left: 10,
+                    right: 10
+                }
+            },
             plugins: { 
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.85)',
                     titleFont: { family: "'Fira Code', monospace", size: 11 },
                     bodyFont: { family: "'Fira Code', monospace", size: 11 },
-                    borderColor: THEME_BRIGHT,
+                    borderColor: chartColor,
                     borderWidth: 1,
                     displayColors: false,
                     callbacks: {
@@ -263,7 +274,12 @@ function renderEmotions(articles) {
                 r: {
                     angleLines: { color: 'rgba(255,255,255,0.1)' },
                     grid: { color: 'rgba(255,255,255,0.1)' },
-                    pointLabels: { color: THEME_MID, font: { family: "'Fira Code', monospace", size: 10 } },
+                    suggestedMin: 0,
+                    pointLabels: { 
+                        color: THEME_MID || '#888', 
+                        font: { family: "'Fira Code', monospace", size: 10 },
+                        padding: 15
+                    },
                     ticks: { display: false, backdropColor: 'transparent' }
                 }
             }
@@ -417,9 +433,9 @@ function renderFlightMap(intel) {
                 
                 const strategicLine = L.polyline([originPos, [asset.lat, asset.lon]], {
                     color: tacticalColor,
-                    weight: 1,
-                    opacity: 0.15,
-                    dashArray: '3, 10',
+                    weight: 2,
+                    opacity: 0.5,
+                    dashArray: '6, 12',
                     interactive: false
                 }).addTo(maps.flights);
                 mapMarkers.flights.push(strategicLine);
@@ -429,20 +445,20 @@ function renderFlightMap(intel) {
             if (flightHistory[asset.icao24].length > 1) {
                 const trailColor = asset.is_mil ? '#00ff41' : '#ff6b35';
                 
-                // Glow tail
+                // Glow tail - maximum visibility for mobile
                 const glowTrail = L.polyline(flightHistory[asset.icao24], {
                     color: trailColor,
-                    weight: 4,
-                    opacity: 0.2,
+                    weight: 8,
+                    opacity: 0.5,
                     lineCap: 'round'
                 }).addTo(maps.flights);
                 mapMarkers.flights.push(glowTrail);
 
-                // Core tail
+                // Core tail - solid visibility for mobile
                 const polyline = L.polyline(flightHistory[asset.icao24], {
                     color: trailColor,
-                    weight: 2,
-                    opacity: 0.7,
+                    weight: 3.5,
+                    opacity: 1.0,
                     lineCap: 'round'
                 }).addTo(maps.flights);
                 mapMarkers.flights.push(polyline);
@@ -657,8 +673,27 @@ function renderMarketTicker(markets) {
             </span>`;
     });
     
-    // Multi-duplication to ensure no gaps on wide screens/mobile
-    container.innerHTML = html.repeat(25);
+    // Create a temporary element to measure the width of one set of items
+    const measure = document.createElement('div');
+    measure.style.cssText = "position:absolute; visibility:hidden; display:flex; white-space:nowrap; font-size:0.65rem; letter-spacing:1px; font-family:'Fira Code', monospace;";
+    measure.innerHTML = html;
+    document.body.appendChild(measure);
+    const contentWidth = measure.offsetWidth;
+    document.body.removeChild(measure);
+
+    if (contentWidth === 0) return;
+
+    // Calculate repeats needed to fill viewport plus overflow for seamless loop
+    // We need at least 2 identical blocks for the 50% scroll animation to look seamless
+    const baseRepeats = Math.ceil(window.innerWidth / contentWidth) + 1;
+    const totalRepeats = baseRepeats * 2;
+    container.innerHTML = html.repeat(totalRepeats);
+    
+    // Dynamic duration: we want a consistent speed (e.g., 40px per second)
+    // The animation moves exactly half of the total width
+    const scrollDistance = (contentWidth * totalRepeats) / 2;
+    const duration = scrollDistance / 40; // 40px per second
+    container.style.setProperty('--ticker-duration', `${duration}s`);
 }
 
 function renderQuickStats(news, status) {
@@ -862,8 +897,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 1200);
 
-    // 3. Final safety check
+    // 3. Final safety check and resize handler
     setTimeout(() => window.dispatchEvent(new Event('resize')), 3500);
+
+    window.addEventListener('resize', () => {
+        if (window.lastData && window.lastData.market_intel) {
+            renderMarketTicker(window.lastData.market_intel);
+        }
+    });
 
     setInterval(updateDashboard, 40000);
 });

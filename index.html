@@ -157,7 +157,7 @@
         }
 
         #map-news, #map-flights { height: 330px !important; filter: var(--map-filter); border: 1px solid var(--border); transition: border-color 0.3s, filter 0.3s; }
-        .chart-container { position: relative; height: 180px; }
+        .chart-container { position: relative; height: 210px; }
         
         /* Leaflet Fixes */
         .leaflet-tile { outline: 1px solid transparent; }
@@ -197,6 +197,7 @@
         
         .should-scroll {
             animation: marquee 20s linear infinite;
+            will-change: transform;
         }
         @keyframes marquee {
             0% { transform: translateX(0); }
@@ -210,7 +211,7 @@
         /* Map Animations */
         .pulse-icon { position: relative; background: transparent; border: none; }
         .pulse-dot { width: 6px; height: 6px; background: var(--theme-bright); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--theme-bright), 0 0 2px #fff; border: 0.5px solid rgba(255,255,255,0.8); z-index: 2; transition: background-color 0.3s, box-shadow 0.3s; }
-        .pulse-ring { border: 2px solid var(--theme-bright); border-radius: 50%; height: 24px; width: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulsate 2.5s ease-out infinite; z-index: 1; transition: border-color 0.3s; filter: drop-shadow(0 0 2px rgba(0,0,0,0.9)); }
+        .pulse-ring { border: 2px solid var(--theme-bright); border-radius: 50%; height: 24px; width: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulsate 2.5s ease-out infinite; z-index: 1; transition: border-color 0.3s; filter: drop-shadow(0 0 2px rgba(0,0,0,0.9)); will-change: transform, opacity; }
         
         .hub-icon { position: relative; background: transparent; border: none; }
         .hub-square { width: 6px; height: 6px; border: 1.5px solid var(--theme-bright); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 8px var(--theme-bright), 0 0 2px #fff; background: transparent; filter: drop-shadow(0 0 2px rgba(0,0,0,0.9)); }
@@ -220,7 +221,7 @@
         /* Word Cloud */
         .word-cloud { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-content: center; min-height: 200px; perspective: 1000px; padding: 10px 0; }
         @keyframes floatText { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-3px); } }
-        .word-item { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: crosshair; display: inline-block; }
+        .word-item { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: crosshair; display: inline-block; will-change: transform, opacity; }
         .word-item:hover { color: #fff !important; transform: scale(1.25) translateY(-2px); text-shadow: 0 0 12px var(--theme-bright); z-index: 10; }
 
         /* Feed Animations */
@@ -238,6 +239,7 @@
             pointer-events: none;
             visibility: hidden; /* Prevent interaction and overlapping layout */
             display: flex; flex-direction: column;
+            will-change: transform, opacity;
         }
         .intel-slide.active { 
             opacity: 1; 
@@ -283,8 +285,15 @@
 
         /* Market Ticker */
         .market-ticker-wrapper { background: var(--bg); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; padding: 6px 0; font-size: 0.65rem; letter-spacing: 1px; }
-        .market-ticker-content { display: flex; width: max-content; animation: tickerMarquee 90s linear infinite; }
-        .market-ticker-content:hover { animation-play-state: paused; }
+        .market-ticker-content { 
+            display: flex; width: max-content; 
+            animation: tickerMarquee var(--ticker-duration, 90s) linear infinite; 
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+        }
+        @media (hover: hover) {
+            .market-ticker-content:hover { animation-play-state: paused; }
+        }
         .market-ticker-item { display: inline-flex; align-items: center; margin-right: 0.8rem; }
         .ticker-symbol { font-weight: bold; color: var(--theme-mid); margin-right: 6px; }
         .ticker-price { color: var(--text-main); margin-right: 6px; }
