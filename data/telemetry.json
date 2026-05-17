@@ -1,6 +1,589 @@
 {
     "flight_intel": {
-        "status": "offline",
-        "assets": []
+        "status": "active",
+        "assets": [
+            {
+                "icao24": "ad445c",
+                "callsign": "KOW954",
+                "origin": "United States",
+                "lat": 34.3343,
+                "lon": -92.7954,
+                "alt": 13769,
+                "vel": 1020,
+                "is_mil": false
+            },
+            {
+                "icao24": "c2c36d",
+                "callsign": "CFC3461",
+                "origin": "Canada",
+                "lat": 45.8316,
+                "lon": -74.3154,
+                "alt": 3025,
+                "vel": 616,
+                "is_mil": true
+            },
+            {
+                "icao24": "356343",
+                "callsign": "AME4524",
+                "origin": "Spain",
+                "lat": 39.7358,
+                "lon": 2.6594,
+                "alt": 11277,
+                "vel": 772,
+                "is_mil": true
+            },
+            {
+                "icao24": "aa1abe",
+                "callsign": "N750HF",
+                "origin": "United States",
+                "lat": 44.6684,
+                "lon": -72.3856,
+                "alt": 13716,
+                "vel": 1101,
+                "is_mil": false
+            },
+            {
+                "icao24": "a19124",
+                "callsign": "N20RC",
+                "origin": "United States",
+                "lat": 33.0675,
+                "lon": -91.5474,
+                "alt": 13716,
+                "vel": 1023,
+                "is_mil": false
+            },
+            {
+                "icao24": "3965a2",
+                "callsign": "AFR1U",
+                "origin": "France",
+                "lat": 41.6022,
+                "lon": -69.6737,
+                "alt": 10058,
+                "vel": 914,
+                "is_mil": true
+            },
+            {
+                "icao24": "3965a7",
+                "callsign": "AFR274",
+                "origin": "France",
+                "lat": 48.5644,
+                "lon": 4.6679,
+                "alt": 8420,
+                "vel": 911,
+                "is_mil": true
+            },
+            {
+                "icao24": "3965a9",
+                "callsign": "AFR442",
+                "origin": "France",
+                "lat": -16.1234,
+                "lon": -42.7589,
+                "alt": 10972,
+                "vel": 855,
+                "is_mil": true
+            },
+            {
+                "icao24": "3965b1",
+                "callsign": "AFR090",
+                "origin": "France",
+                "lat": 25.8026,
+                "lon": -80.3086,
+                "alt": 15,
+                "vel": 272,
+                "is_mil": true
+            },
+            {
+                "icao24": "aad25e",
+                "callsign": "N797DN",
+                "origin": "United States",
+                "lat": 32.1963,
+                "lon": -86.2673,
+                "alt": 13716,
+                "vel": 1011,
+                "is_mil": false
+            },
+            {
+                "icao24": "39c902",
+                "callsign": "SAMU13",
+                "origin": "France",
+                "lat": 43.2842,
+                "lon": 5.4716,
+                "alt": 373,
+                "vel": 225,
+                "is_mil": true
+            },
+            {
+                "icao24": "152001",
+                "callsign": "AFL1125",
+                "origin": "Russian Federation",
+                "lat": 58.1673,
+                "lon": 39.018,
+                "alt": 5486,
+                "vel": 100,
+                "is_mil": true
+            },
+            {
+                "icao24": "15200c",
+                "callsign": "AFL1247",
+                "origin": "Russian Federation",
+                "lat": 55.6176,
+                "lon": 39.7224,
+                "alt": 6705,
+                "vel": 99,
+                "is_mil": true
+            },
+            {
+                "icao24": "394a04",
+                "callsign": "AFR24X",
+                "origin": "France",
+                "lat": 40.8632,
+                "lon": -119.6697,
+                "alt": 10058,
+                "vel": 1092,
+                "is_mil": true
+            },
+            {
+                "icao24": "394a08",
+                "callsign": "AFR031",
+                "origin": "France",
+                "lat": 34.4635,
+                "lon": -81.7316,
+                "alt": 9913,
+                "vel": 914,
+                "is_mil": true
+            },
+            {
+                "icao24": "394a06",
+                "callsign": "AFR8U",
+                "origin": "France",
+                "lat": 46.7166,
+                "lon": -65.7319,
+                "alt": 11582,
+                "vel": 850,
+                "is_mil": true
+            },
+            {
+                "icao24": "394a18",
+                "callsign": "AFR256",
+                "origin": "France",
+                "lat": 49.0869,
+                "lon": 2.3671,
+                "alt": 1569,
+                "vel": 482,
+                "is_mil": true
+            },
+            {
+                "icao24": "394a0a",
+                "callsign": "AFR021",
+                "origin": "France",
+                "lat": 34.9875,
+                "lon": -116.6388,
+                "alt": 10058,
+                "vel": 899,
+                "is_mil": true
+            },
+            {
+                "icao24": "39bda2",
+                "callsign": "AFR91AG",
+                "origin": "France",
+                "lat": 53.4282,
+                "lon": -6.2504,
+                "alt": 0,
+                "vel": 14,
+                "is_mil": true
+            },
+            {
+                "icao24": "ae087e",
+                "callsign": "SPAR28",
+                "origin": "United States",
+                "lat": 37.2549,
+                "lon": -106.9175,
+                "alt": 12192,
+                "vel": 753,
+                "is_mil": true
+            },
+            {
+                "icao24": "43c04e",
+                "callsign": "RRR6155",
+                "origin": "United Kingdom",
+                "lat": 52.2292,
+                "lon": -1.9343,
+                "alt": 3436,
+                "vel": 547,
+                "is_mil": true
+            },
+            {
+                "icao24": "3949eb",
+                "callsign": "AFR58P",
+                "origin": "France",
+                "lat": 39.865,
+                "lon": -104.66,
+                "alt": 0,
+                "vel": 37,
+                "is_mil": true
+            },
+            {
+                "icao24": "39cf08",
+                "callsign": "AFR332",
+                "origin": "France",
+                "lat": 47.5131,
+                "lon": -64.236,
+                "alt": 12192,
+                "vel": 852,
+                "is_mil": true
+            },
+            {
+                "icao24": "39cf00",
+                "callsign": "AFR092",
+                "origin": "France",
+                "lat": 45.2265,
+                "lon": -67.968,
+                "alt": 13106,
+                "vel": 841,
+                "is_mil": true
+            },
+            {
+                "icao24": "39cf02",
+                "callsign": "AFR174",
+                "origin": "France",
+                "lat": 41.5916,
+                "lon": -75.2925,
+                "alt": 12192,
+                "vel": 879,
+                "is_mil": true
+            },
+            {
+                "icao24": "3949e3",
+                "callsign": "AFR217",
+                "origin": "France",
+                "lat": 18.7158,
+                "lon": 68.8903,
+                "alt": 10363,
+                "vel": 912,
+                "is_mil": true
+            },
+            {
+                "icao24": "3949e9",
+                "callsign": "AFR902",
+                "origin": "France",
+                "lat": 3.7367,
+                "lon": 11.5558,
+                "alt": 0,
+                "vel": 18,
+                "is_mil": true
+            },
+            {
+                "icao24": "3949e6",
+                "callsign": "AFR378E",
+                "origin": "France",
+                "lat": 43.1911,
+                "lon": -80.3593,
+                "alt": 8069,
+                "vel": 789,
+                "is_mil": true
+            },
+            {
+                "icao24": "39cf0b",
+                "callsign": "AFR570",
+                "origin": "France",
+                "lat": 38.8634,
+                "lon": 23.2177,
+                "alt": 12192,
+                "vel": 977,
+                "is_mil": true
+            },
+            {
+                "icao24": "39cf0c",
+                "callsign": "AFR468",
+                "origin": "France",
+                "lat": -14.7778,
+                "lon": -43.699,
+                "alt": 12192,
+                "vel": 834,
+                "is_mil": true
+            },
+            {
+                "icao24": "39cf11",
+                "callsign": "AFR34N",
+                "origin": "France",
+                "lat": 44.7607,
+                "lon": -68.7812,
+                "alt": 12192,
+                "vel": 821,
+                "is_mil": true
+            },
+            {
+                "icao24": "39bb24",
+                "callsign": "AFR1384",
+                "origin": "France",
+                "lat": 38.4212,
+                "lon": 10.0048,
+                "alt": 9730,
+                "vel": 853,
+                "is_mil": true
+            },
+            {
+                "icao24": "39bb21",
+                "callsign": "AFR49HR",
+                "origin": "France",
+                "lat": 36.1998,
+                "lon": -5.8128,
+                "alt": 11277,
+                "vel": 910,
+                "is_mil": true
+            },
+            {
+                "icao24": "ae1471",
+                "callsign": "RCH690",
+                "origin": "United States",
+                "lat": 61.2559,
+                "lon": -149.8113,
+                "alt": 0,
+                "vel": 0,
+                "is_mil": true
+            },
+            {
+                "icao24": "ae146d",
+                "callsign": "RCH207",
+                "origin": "United States",
+                "lat": 43.1248,
+                "lon": -71.0885,
+                "alt": 2034,
+                "vel": 581,
+                "is_mil": true
+            },
+            {
+                "icao24": "ae01a4",
+                "callsign": "SPAR588",
+                "origin": "United States",
+                "lat": 40.5528,
+                "lon": -99.4054,
+                "alt": 9456,
+                "vel": 818,
+                "is_mil": true
+            },
+            {
+                "icao24": "151ddb",
+                "callsign": "AFL799",
+                "origin": "Russian Federation",
+                "lat": 41.8556,
+                "lon": 42.3567,
+                "alt": 10675,
+                "vel": 862,
+                "is_mil": true
+            },
+            {
+                "icao24": "151dd3",
+                "callsign": "AFL1950",
+                "origin": "Russian Federation",
+                "lat": 55.9654,
+                "lon": 37.4083,
+                "alt": 3101,
+                "vel": 99,
+                "is_mil": true
+            },
+            {
+                "icao24": "151dd7",
+                "callsign": "AFL1984",
+                "origin": "Russian Federation",
+                "lat": 55.9772,
+                "lon": 37.4356,
+                "alt": 243,
+                "vel": 311,
+                "is_mil": true
+            },
+            {
+                "icao24": "3991e6",
+                "callsign": "AFR1390",
+                "origin": "France",
+                "lat": 47.9206,
+                "lon": 7.5826,
+                "alt": 10683,
+                "vel": 856,
+                "is_mil": true
+            },
+            {
+                "icao24": "151db6",
+                "callsign": "AFL284",
+                "origin": "Russian Federation",
+                "lat": 27.8354,
+                "lon": 77.6839,
+                "alt": 10668,
+                "vel": 994,
+                "is_mil": true
+            },
+            {
+                "icao24": "151dac",
+                "callsign": "AFL204",
+                "origin": "Russian Federation",
+                "lat": 55.2415,
+                "lon": 80.7349,
+                "alt": 10668,
+                "vel": 942,
+                "is_mil": true
+            },
+            {
+                "icao24": "ae6cf1",
+                "callsign": "SAM539",
+                "origin": "United States",
+                "lat": 33.0839,
+                "lon": -80.2535,
+                "alt": 12496,
+                "vel": 803,
+                "is_mil": true
+            },
+            {
+                "icao24": "151d85",
+                "callsign": "AFL857",
+                "origin": "Russian Federation",
+                "lat": 22.7932,
+                "lon": 114.0041,
+                "alt": 10088,
+                "vel": 812,
+                "is_mil": true
+            },
+            {
+                "icao24": "394c09",
+                "callsign": "AFR1776",
+                "origin": "France",
+                "lat": 33.4885,
+                "lon": -7.6312,
+                "alt": 10660,
+                "vel": 841,
+                "is_mil": true
+            },
+            {
+                "icao24": "43c6fa",
+                "callsign": "RRR2149",
+                "origin": "United Kingdom",
+                "lat": 51.6013,
+                "lon": -2.6635,
+                "alt": 3817,
+                "vel": 643,
+                "is_mil": true
+            },
+            {
+                "icao24": "3951c2",
+                "callsign": "AFR6720",
+                "origin": "France",
+                "lat": 49.7965,
+                "lon": 2.203,
+                "alt": 6530,
+                "vel": 805,
+                "is_mil": true
+            },
+            {
+                "icao24": "7b103c",
+                "callsign": "AF21",
+                "origin": "China",
+                "lat": 22.3175,
+                "lon": 113.9129,
+                "alt": 0,
+                "vel": 51,
+                "is_mil": true
+            },
+            {
+                "icao24": "151ff3",
+                "callsign": "AFL1072",
+                "origin": "Russian Federation",
+                "lat": 55.9748,
+                "lon": 37.4204,
+                "alt": 190,
+                "vel": 341,
+                "is_mil": true
+            },
+            {
+                "icao24": "151ff9",
+                "callsign": "AFL1530",
+                "origin": "Russian Federation",
+                "lat": 59.3696,
+                "lon": 57.4331,
+                "alt": 10675,
+                "vel": 1081,
+                "is_mil": true
+            },
+            {
+                "icao24": "39c425",
+                "callsign": "AFR343",
+                "origin": "France",
+                "lat": 45.5245,
+                "lon": -70.7745,
+                "alt": 10287,
+                "vel": 981,
+                "is_mil": true
+            },
+            {
+                "icao24": "39c422",
+                "callsign": "AFR202",
+                "origin": "France",
+                "lat": 47.2046,
+                "lon": 11.7735,
+                "alt": 10668,
+                "vel": 942,
+                "is_mil": true
+            },
+            {
+                "icao24": "c005b9",
+                "callsign": "CFCEI",
+                "origin": "Canada",
+                "lat": 46.7862,
+                "lon": -71.0545,
+                "alt": 914,
+                "vel": 158,
+                "is_mil": true
+            },
+            {
+                "icao24": "39d2ac",
+                "callsign": "AFR52X",
+                "origin": "France",
+                "lat": 45.9206,
+                "lon": -67.21,
+                "alt": 12192,
+                "vel": 850,
+                "is_mil": true
+            },
+            {
+                "icao24": "39d2b0",
+                "callsign": "AFR099",
+                "origin": "France",
+                "lat": 30.7706,
+                "lon": -94.7051,
+                "alt": 5638,
+                "vel": 810,
+                "is_mil": true
+            },
+            {
+                "icao24": "39d2a1",
+                "callsign": "AFR990",
+                "origin": "France",
+                "lat": 48.9903,
+                "lon": 2.3998,
+                "alt": 1211,
+                "vel": 423,
+                "is_mil": true
+            },
+            {
+                "icao24": "39d2a4",
+                "callsign": "AFR333F",
+                "origin": "France",
+                "lat": 42.1657,
+                "lon": -70.9407,
+                "alt": 4091,
+                "vel": 669,
+                "is_mil": true
+            },
+            {
+                "icao24": "ae20c2",
+                "callsign": "RCH585",
+                "origin": "United States",
+                "lat": 40.5055,
+                "lon": -94.1648,
+                "alt": 9753,
+                "vel": 808,
+                "is_mil": true
+            }
+        ],
+        "count": 58,
+        "theater": "AMERICAS"
     }
 }
