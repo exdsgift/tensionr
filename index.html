@@ -206,6 +206,28 @@
             100% { transform: translateX(var(--scroll-dist)); }
         }
         
+        /* SITREP Marquee */
+        .sitrep-container {
+            overflow: hidden;
+            white-space: nowrap;
+            flex: 1;
+            position: relative;
+            height: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .sitrep-marquee {
+            display: inline-block;
+            padding-left: 100%;
+            animation: sitrepScroll 40s linear infinite;
+            will-change: transform;
+        }
+        @keyframes sitrepScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .sitrep-marquee:hover { animation-play-state: paused; }
+
         .tag { font-size: 0.5rem; padding: 0px 3px; border: 1px solid var(--border); border-radius: 2px; margin-right: 4px; transition: border-color 0.3s; }
 
         /* Map Animations */
@@ -439,7 +461,8 @@
         </div>
         <div class="d-flex align-items-center gap-3 gap-md-4" style="font-size: 0.7rem;">
             <div id="top-telemetry-ticker" class="d-flex align-items-center gap-3 gap-md-4"></div>
-            <div class="d-flex align-items-center gap-4" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
+            <div class="d-flex align-items-center gap-3" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
+                <input type="date" id="time-machine-date" class="minimal-select" style="font-size: 0.6rem; padding: 0.1rem 0.3rem;">
                 <span class="text-dim" id="last-updated">sync: --</span>
                 <span style="color: var(--theme-bright);" id="live-indicator">● live_feed</span>
                 <span class="text-dim" id="clock">00:00:00</span>
@@ -455,6 +478,19 @@
 </div>
 
 <div class="container-fluid">
+
+    <!-- SITREP Alert Row -->
+    <div class="card mb-3" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-bright); min-height: auto;">
+        <div class="d-flex align-items-center gap-3">
+            <span style="color: var(--theme-bright); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px;">[ tactical_sitrep ]</span>
+            <div class="sitrep-container">
+                <div id="sitrep-text" class="sitrep-marquee" style="font-size: 0.75rem; color: var(--text-main); font-style: italic;">
+                    intelligence synthesis active: multi-domain nodes reporting normal operational baseline...
+                </div>
+            </div>
+            <span id="sitrep-status" class="text-dim" style="font-size: 0.5rem; text-transform: uppercase;">verified_stream</span>
+        </div>
+    </div>
 
     <!-- Map & Feeds Row -->
     <div class="map-feed-row">
@@ -523,17 +559,17 @@
                     <h5>global tension index (gti)</h5>
                     <p class="chart-desc">proprietary algorithmic score calculating global instability. based on signal volume, sentiment volatility, and geopolitical escalation vectors.</p>
                     <div class="gti-display">
-                        <div class="gti-value" id="gti-score">--</div>
-                        <div class="gti-label">instability level</div>
-                        <div class="gti-bar-container">
-                            <div class="gti-bar" id="gti-bar" style="width: 0%"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 5px; font-size: 0.45rem; color: var(--text-dim); font-family: monospace; letter-spacing: 1px;">
-                            <span>0</span>
-                            <span>25</span>
-                            <span>50</span>
-                            <span>75</span>
-                            <span>100</span>
+                        <div style="display: flex; width: 100%; height: 100%;">
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid var(--border);">
+                                <div class="gti-value" id="gti-score">--</div>
+                                <div class="gti-label">current index</div>
+                                <div class="gti-bar-container" style="width: 80%;">
+                                    <div class="gti-bar" id="gti-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div style="flex: 2; padding-left: 1rem;">
+                                <div class="chart-container" style="height: 180px;"><canvas id="gtiHistoryChart"></canvas></div>
+                            </div>
                         </div>
                     </div>
                 </div>

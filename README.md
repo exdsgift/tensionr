@@ -11,11 +11,12 @@
 
 ## 🛰️ Core Capabilities
 
-- **Narrative Resonance Mapping:** Uses NLP to extract emotional undertones (Fear, Anger, Neutral) from thousands of global news nodes, identifying emerging regional instabilities before they peak.
-- **Strategic Aerial Telemetry:** Real-time tracking of transponder-active military assets and high-value airframes in contested theaters.
-- **Global Tension Index (GTI):** A proprietary algorithmic score that quantifies global volatility based on signal volume, sentiment shifts, and market telemetry.
-- **Entity Extraction Network:** Visualizes the "chatter" of the global discourse, highlighting key actors and locations driving the current news cycle.
-- **Multi-Theme Tactical Interface:** High-performance, low-latency UI optimized for command centers, with hardware-accelerated rendering for fluid data visualization.
+- **LLM-Powered SITREP:** Real-time tactical bulletins synthesized via **Mistral-7B**, providing a concise "Situation Report" of global alerts and anomalies.
+- **Geopolitical Time Machine:** A "Static Data Lake" of daily archives, allowing users to select past dates and visualize historical geopolitical shifts.
+- **Narrative Resonance Mapping:** Uses NLP (GoEmotions) to extract granular emotional undertones (Fear, Anger, Sadness, etc.) from global news nodes.
+- **Strategic Aerial Telemetry:** Real-time tracking of military assets with automated anomaly detection for strategic airframes.
+- **Multi-Domain GTI:** A composite algorithmic score quantifying global instability based on news sentiment, market volatility (VIX, Gold), and tactical telemetry.
+- **Resilient Data Pipeline:** Parallelized RSS fetching and smart API fallbacks ensuring continuous intelligence even under rate-limiting.
 
 ## 🎯 Who is it for?
 

@@ -151,6 +151,93 @@ function formatDate(isoStr) {
     } catch { return "--:--" }
 }
 
+// Intelligence Web Worker Initialization
+const intelligenceWorker = new Worker('worker.js');
+
+intelligenceWorker.onmessage = function(e) {
+    const { type, payload } = e.data;
+    if (type === 'DATA_PROCESSED') {
+        const { articles, keywords } = payload;
+        
+        // Re-render UI with processed data
+        safeRender('emotions', () => renderEmotions(articles));
+        safeRender('articles', () => initRotatingFeed('articles-list', articles, 7));
+        safeRender('wordcloud', () => renderWordCloudEnriched(keywords));
+        logSystem("intelligence processed via background thread.");
+    }
+};
+
+async function loadHistoricalData(date) {
+    logSystem(`attempting time machine handshake: ${date}`);
+    try {
+        const resp = await fetch(`data/archive/${date}.json`);
+        if (!resp.ok) throw new Error("snapshot_not_found");
+        const archive = await resp.json();
+        
+        // Temporarily override UI for historical view
+        renderSITREP(archive.sitrep, true);
+        renderGTI(archive.gti);
+        renderWordCloud(archive.top_keywords);
+        
+        document.getElementById('live-indicator').textContent = '● playback_mode';
+        document.getElementById('live-indicator').style.color = '#ff922b';
+        document.getElementById('last-updated').textContent = `archive: ${date}`;
+        
+        logSystem(`historical sync success. date: ${date}`);
+    } catch (err) {
+        logSystem(`time machine error: ${err.message}`);
+        setTimeout(() => updateDashboard(), 3000); // Revert to live
+    }
+}
+
+function renderSITREP(text, isHistorical = false) {
+    const sitrepEl = document.getElementById('sitrep-text');
+    const statusEl = document.getElementById('sitrep-status');
+    if (!sitrepEl) return;
+
+    sitrepEl.textContent = text.toLowerCase() + " ... " + text.toLowerCase() + " ... ";
+    statusEl.textContent = isHistorical ? 'archived_intel' : 'live_stream';
+}
+
+function renderWordCloudEnriched(processedKeywords) {
+    const container = document.getElementById('word-cloud');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (processedKeywords.length === 0) {
+        container.innerHTML = '<span class="text-dim">no tokens detected</span>';
+        return;
+    }
+    
+    const typeColors = {
+        "GPE": THEME_BRIGHT,
+        "ORG": THEME_MID,
+        "PERSON": "#339af0",
+        "LOC": "#ff922b",
+        "NORP": "#d0d"
+    };
+    
+    processedKeywords.forEach(item => {
+        const size = 0.55 + (item.weight) * 1.1;
+        const opacity = 0.4 + (item.weight) * 0.6;
+        const color = typeColors[item.type] || THEME_MID;
+        
+        const span = document.createElement('span');
+        span.className = 'word-item';
+        span.style.fontSize = `${size}rem`;
+        span.style.opacity = opacity;
+        span.style.color = color;
+        span.style.margin = '1px 4px';
+        span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
+        span.style.animationDelay = `${Math.random()}s`;
+        span.textContent = item.word.toLowerCase();
+        span.title = `Type: ${item.type} | Mentions: ${item.count}`;
+        container.appendChild(span);
+    });
+}
+
+// ... existing code ...
+
 async function updateDashboard() {
     logSystem("syncing telemetry...");
     updateThemeColors();
@@ -172,24 +259,31 @@ async function updateDashboard() {
         window.lastData = { ...status, ...news, ...markets, ...telemetry, ...intel };
 
         document.getElementById('last-updated').textContent = `sync: ${new Date(status.last_updated).toLocaleTimeString().toLowerCase()}`;
+        document.getElementById('live-indicator').textContent = '● live_feed';
+        document.getElementById('live-indicator').style.color = THEME_BRIGHT;
 
-        const dedupedArticles = deduplicateArticles(news.articles);
+        // Offload heavy processing to Web Worker
+        intelligenceWorker.postMessage({
+            type: 'PROCESS_DATA',
+            data: {
+                articles: news.articles,
+                keywords: news.stats.top_keywords
+            }
+        });
 
-        // Safe execution of all renders
-        safeRender('emotions', () => renderEmotions(dedupedArticles));
+        // Immediate renders for lighter components
+        safeRender('sitrep', () => renderSITREP(intel.sitrep || "synthesizing tactical reports..."));
+        safeRender('gti', () => renderGTI(status.global_tension_index, status.gti_history));
+        safeRender('flights', () => renderFlightIntel(telemetry.flight_intel));
         safeRender('map', () => {
             renderMap(news.stats.source_countries, news.articles);
             renderFlightMap(telemetry.flight_intel);
         });
-        safeRender('gti', () => renderGTI(status.global_tension_index));
-        safeRender('flights', () => renderFlightIntel(telemetry.flight_intel));
         safeRender('cyber', () => renderCyberIntel(intel.cyber_intel));
         safeRender('chatter', () => renderRawChatter(intel.raw_chatter));
         safeRender('market', () => renderMarketTicker(markets.market_intel));
-        
-        safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
         safeRender('stats', () => renderQuickStats(news, status));
-        safeRender('wordcloud', () => renderWordCloud(news.stats.top_keywords));
+        
         logSystem(`handshake success. ${news.articles.length} nodes active.`);
 
         // Trigger subtle aesthetic refresh animation
@@ -298,12 +392,25 @@ function renderWordCloud(keywords) {
     }
     
     const entries = Object.entries(keywords);
-    const max = Math.max(...entries.map(e => e[1]));
+    // Support both simple and enriched keyword formats
+    const max = Math.max(...entries.map(e => (typeof e[1] === 'object' ? e[1].count : e[1])));
     
-    entries.forEach(([word, count]) => {
+    // Type colors
+    const typeColors = {
+        "GPE": THEME_BRIGHT,
+        "ORG": THEME_MID,
+        "PERSON": "#339af0",
+        "LOC": "#ff922b",
+        "NORP": "#d0d"
+    };
+    
+    entries.forEach(([word, info]) => {
+        const count = typeof info === 'object' ? info.count : info;
+        const type = typeof info === 'object' ? info.type : "UNKNOWN";
+        
         const size = 0.55 + (count / max) * 1.1;
         const opacity = 0.4 + (count / max) * 0.6;
-        const color = count > max * 0.6 ? THEME_BRIGHT : THEME_MID;
+        const color = typeColors[type] || THEME_MID;
         
         const span = document.createElement('span');
         span.className = 'word-item';
@@ -314,6 +421,7 @@ function renderWordCloud(keywords) {
         span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
         span.style.animationDelay = `${Math.random()}s`;
         span.textContent = word.toLowerCase();
+        span.title = `Type: ${type} | Mentions: ${count}`;
         container.appendChild(span);
     });
 }
@@ -748,12 +856,12 @@ function renderFlightIntel(intel) {
     if (anomalyEl) anomalyEl.textContent = intel.assets.filter(a => !a.is_mil).length + ' outliers';
 }
 
-function renderGTI(score) {
+function renderGTI(score, history) {
     const scoreEl = document.getElementById('gti-score');
     const barEl = document.getElementById('gti-bar');
     if (!scoreEl || !barEl) return;
 
-    // Animate number
+    // Animate current number
     let current = 0;
     const target = score || 30;
     const duration = 1000;
@@ -772,11 +880,52 @@ function renderGTI(score) {
     
     // Color shift based on tension
     if (target > 75) {
-        scoreEl.style.color = 'var(--theme-bright)';
-        scoreEl.style.textShadow = '0 0 20px var(--theme-bright)';
+        scoreEl.style.color = '#ff6b35'; // Alert color
+        scoreEl.style.textShadow = '0 0 20px #ff6b35';
     } else {
         scoreEl.style.color = 'var(--theme-bright)';
         scoreEl.style.textShadow = 'none';
+    }
+
+    // Render History Chart
+    if (history && history.length > 0) {
+        const historyCanvas = document.getElementById('gtiHistoryChart');
+        if (historyCanvas) {
+            const ctx = historyCanvas.getContext('2d');
+            const labels = history.map(h => new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            const data = history.map(h => h.score);
+            
+            if (charts.gtiHistory) charts.gtiHistory.destroy();
+            charts.gtiHistory = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'gti_trend',
+                        data: data,
+                        borderColor: THEME_BRIGHT,
+                        backgroundColor: THEME_BRIGHT + '22',
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            min: 0, max: 100, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { stepSize: 25, font: { size: 8 } }
+                        }
+                    }
+                }
+            });
+        }
     }
 }
 
@@ -897,8 +1046,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 1200);
 
-    // 3. Final safety check and resize handler
+    // Final safety check and resize handler
     setTimeout(() => window.dispatchEvent(new Event('resize')), 3500);
+
+    // Time Machine Event Listener & Range Restriction
+    const datePicker = document.getElementById('time-machine-date');
+    if (datePicker) {
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.setAttribute('min', '2026-05-21'); // Archive Start Date
+        datePicker.setAttribute('max', today);
+        datePicker.value = today; // Default to today
+
+        datePicker.addEventListener('change', (e) => {
+            if (e.target.value) {
+                if (e.target.value === today) {
+                    updateDashboard(); // Return to live
+                } else {
+                    loadHistoricalData(e.target.value);
+                }
+            }
+        });
+    }
 
     window.addEventListener('resize', () => {
         if (window.lastData && window.lastData.market_intel) {
