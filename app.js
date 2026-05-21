@@ -195,7 +195,8 @@ function renderSITREP(text, isHistorical = false) {
     const statusEl = document.getElementById('sitrep-status');
     if (!sitrepEl) return;
 
-    sitrepEl.textContent = text.toLowerCase() + " ... " + text.toLowerCase() + " ... ";
+    const safeText = (text || "Intelligence synthesis active: monitoring global signals...").toLowerCase();
+    sitrepEl.textContent = safeText + " ... " + safeText + " ... ";
     statusEl.textContent = isHistorical ? 'archived_intel' : 'live_stream';
 }
 
@@ -906,7 +907,8 @@ function renderGTI(score, history) {
                         borderColor: THEME_BRIGHT,
                         backgroundColor: THEME_BRIGHT + '22',
                         borderWidth: 1.5,
-                        pointRadius: 0,
+                        pointRadius: 2,
+                        pointBackgroundColor: THEME_BRIGHT,
                         fill: true,
                         tension: 0.4
                     }]
@@ -951,9 +953,12 @@ function startIntelCarousel() {
         slides[currentIntelIndex].classList.add('active');
         dots[currentIntelIndex].classList.add('active');
         
-        // If switching to sentiment, we might want to trigger a chart resize
-        if (slides[currentIntelIndex].id === 'slide-sentiment' && charts.emotions) {
+        // Ensure charts resize correctly when their container becomes visible
+        const activeSlideId = slides[currentIntelIndex].id;
+        if (activeSlideId === 'slide-sentiment' && charts.emotions) {
             charts.emotions.resize();
+        } else if (activeSlideId === 'slide-gti' && charts.gtiHistory) {
+            charts.gtiHistory.resize();
         }
 
         // Reset timer to give user time to read the manual selection
