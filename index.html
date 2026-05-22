@@ -3,7 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tensionr</title>
+    <title>tensionr | Real-time Global Intelligence & Narrative Resonance Engine</title>
+    <meta name="description" content="Tensionr is a high-fidelity intelligence dashboard designed to monitor global instability, narrative shifts, and strategic asset movements in real-time.">
+    <meta name="keywords" content="OSINT, geopolitical dashboard, real-time intelligence, GDELT, aerial telemetry, sentiment analysis">
+    <meta name="author" content="exdsgift">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://exdsgift.github.io/tensionr/">
+    <meta property="og:title" content="tensionr | Real-time Global Intelligence">
+    <meta property="og:description" content="Monitor global instability, narrative shifts, and strategic air telemetry in real-time.">
+    <meta property="og:image" content="https://exdsgift.github.io/tensionr/images/dashboard1.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://exdsgift.github.io/tensionr/">
+    <meta property="twitter:title" content="tensionr | Real-time Global Intelligence">
+    <meta property="twitter:description" content="Monitor global instability, narrative shifts, and strategic air telemetry in real-time.">
+    <meta property="twitter:image" content="https://exdsgift.github.io/tensionr/images/dashboard1.png">
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text y='70' x='50' font-family='monospace' font-size='80' font-weight='bold' fill='white' text-anchor='middle'>t</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -488,6 +506,12 @@
 </div>
 
 <div class="container-fluid">
+
+    <!-- Filter Status Indicator -->
+    <div id="filter-status" style="display: none; align-items: center; gap: 10px; margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--theme-bright); font-size: 0.65rem;">
+        <span class="filter-label" style="color: var(--theme-bright); font-weight: bold;"></span>
+        <button onclick="clearFilters()" class="minimal-select" style="padding: 0.1rem 0.4rem; font-size: 0.6rem;">CLEAR_X</button>
+    </div>
 
     <!-- SITREP Alert Row -->
     <div class="card mb-3" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-bright); min-height: 40px; display: flex; align-items: center;">

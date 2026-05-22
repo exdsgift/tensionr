@@ -85,9 +85,97 @@ function setTheme(themeName) {
 const savedTheme = localStorage.getItem('tensionr_theme') || 'phosphor';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
+// Global State
 let maps = { news: null, flights: null };
 let mapMarkers = { news: [], flights: [] };
 let charts = {};
+let globalFilter = { country: null, keyword: null };
+let activeDate = new Date().toISOString().split('T')[0];
+
+function setGlobalFilter(type, value) {
+    if (globalFilter[type] === value) {
+        globalFilter[type] = null; // Toggle off if clicking the same
+    } else {
+        globalFilter[type] = value;
+    }
+    logSystem(`filter updated: ${type}=${value || 'all'}`);
+    updateURL();
+    refreshFilteredUI();
+}
+
+function clearFilters() {
+    globalFilter = { country: null, keyword: null };
+    logSystem("filters cleared");
+    updateURL();
+    refreshFilteredUI();
+}
+
+function refreshFilteredUI() {
+    if (!window.lastData) return;
+    
+    const filteredArticles = applyFilters(window.lastData.articles);
+    
+    // Update dependent components
+    safeRender('emotions', () => renderEmotions(filteredArticles));
+    safeRender('articles', () => initRotatingFeed('articles-list', filteredArticles, 7));
+    
+    // Update filter indicators in UI
+    updateFilterUI();
+}
+
+function applyFilters(articles) {
+    if (!articles) return [];
+    return articles.filter(a => {
+        let match = true;
+        if (globalFilter.country) {
+            match = match && (a.sourcecountry === globalFilter.country);
+        }
+        if (globalFilter.keyword) {
+            const searchStr = `${a.title} ${a.summary} ${a.keywords || ''}`.toLowerCase();
+            match = match && searchStr.includes(globalFilter.keyword.toLowerCase());
+        }
+        return match;
+    });
+}
+
+function updateURL() {
+    const params = new URLSearchParams();
+    if (globalFilter.country) params.set('country', globalFilter.country);
+    if (globalFilter.keyword) params.set('keyword', globalFilter.keyword);
+    if (activeDate !== new Date().toISOString().split('T')[0]) params.set('date', activeDate);
+    
+    const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({ path: newURL }, '', newURL);
+}
+
+function loadStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    globalFilter.country = params.get('country');
+    globalFilter.keyword = params.get('keyword');
+    const dateParam = params.get('date');
+    if (dateParam) {
+        activeDate = dateParam;
+        const datePicker = document.getElementById('time-machine-date');
+        if (datePicker) datePicker.value = activeDate;
+    }
+}
+
+function updateFilterUI() {
+    const indicator = document.getElementById('filter-status');
+    if (!indicator) return;
+    
+    if (!globalFilter.country && !globalFilter.keyword) {
+        indicator.style.display = 'none';
+        return;
+    }
+    
+    indicator.style.display = 'flex';
+    let label = 'ACTIVE_FILTERS: ';
+    if (globalFilter.country) label += `[LOC:${globalFilter.country.toUpperCase()}] `;
+    if (globalFilter.keyword) label += `[KEY:${globalFilter.keyword.toUpperCase()}] `;
+    
+    indicator.querySelector('.filter-label').textContent = label.trim();
+}
 
 function initMaps() {
     // Re-check theme colors right before init to be sure
@@ -159,16 +247,24 @@ intelligenceWorker.onmessage = function(e) {
     if (type === 'DATA_PROCESSED') {
         const { articles, keywords } = payload;
         
-        // Re-render UI with processed data
-        safeRender('emotions', () => renderEmotions(articles));
-        safeRender('articles', () => initRotatingFeed('articles-list', articles, 7));
+        // Update state
+        if (window.lastData) {
+            window.lastData.articles = articles;
+            window.lastData.stats.top_keywords = keywords;
+        }
+        
+        // Re-render WordCloud and refresh filtered views
         safeRender('wordcloud', () => renderWordCloudEnriched(keywords));
+        refreshFilteredUI();
+        
         logSystem("intelligence processed via background thread.");
     }
 };
 
 async function loadHistoricalData(date) {
     logSystem(`attempting time machine handshake: ${date}`);
+    activeDate = date;
+    updateURL();
     try {
         const resp = await fetch(`data/archive/${date}.json`);
         if (!resp.ok) throw new Error("snapshot_not_found");
@@ -232,7 +328,9 @@ function renderWordCloudEnriched(processedKeywords) {
         span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
         span.style.animationDelay = `${Math.random()}s`;
         span.textContent = item.word.toLowerCase();
-        span.title = `Type: ${item.type} | Mentions: ${item.count}`;
+        span.title = `Type: ${item.type} | Mentions: ${item.count} | Click to filter`;
+        span.style.cursor = 'pointer';
+        span.onclick = () => setGlobalFilter('keyword', item.word);
         container.appendChild(span);
     });
 }
@@ -241,6 +339,8 @@ function renderWordCloudEnriched(processedKeywords) {
 
 async function updateDashboard() {
     logSystem("syncing telemetry...");
+    activeDate = new Date().toISOString().split('T')[0];
+    updateURL();
     updateThemeColors();
     try {
         const t = new Date().getTime();
@@ -262,6 +362,9 @@ async function updateDashboard() {
         document.getElementById('last-updated').textContent = `sync: ${new Date(status.last_updated).toLocaleTimeString().toLowerCase()}`;
         document.getElementById('live-indicator').textContent = '● live_feed';
         document.getElementById('live-indicator').style.color = THEME_BRIGHT;
+
+        // Apply filters immediately to initial data
+        refreshFilteredUI();
 
         // Offload heavy processing to Web Worker
         intelligenceWorker.postMessage({
@@ -422,7 +525,9 @@ function renderWordCloud(keywords) {
         span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
         span.style.animationDelay = `${Math.random()}s`;
         span.textContent = word.toLowerCase();
-        span.title = `Type: ${type} | Mentions: ${count}`;
+        span.title = `Type: ${type} | Mentions: ${count} | Click to filter`;
+        span.style.cursor = 'pointer';
+        span.onclick = () => setGlobalFilter('keyword', word);
         container.appendChild(span);
     });
 }
@@ -494,6 +599,7 @@ function renderMap(countries, articles) {
             
             const marker = L.marker(countryCoords[country], {icon: icon})
               .addTo(maps.news)
+              .on('click', () => setGlobalFilter('country', country))
               .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.7rem; color: var(--popup-text); background: transparent; padding: 5px; border: none;"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr style="margin:5px 0; border-color: var(--border);">"${snippet}"</div>`);
             
             mapMarkers.news.push(marker);
@@ -1029,13 +1135,21 @@ function startMapCarousel() {
 document.addEventListener('DOMContentLoaded', async () => {
     logSystem("booting intelligence engine...");
     
+    // Load state from URL parameters
+    loadStateFromURL();
+    
     // Wait for fonts to ensure layout measurements are correct
     if (document.fonts) await document.fonts.ready;
     
     // Multi-stage initialization for maximum mobile stability
     // 1. Initial render
     setTimeout(async () => {
-        await updateDashboard();
+        const today = new Date().toISOString().split('T')[0];
+        if (activeDate !== today) {
+            await loadHistoricalData(activeDate);
+        } else {
+            await updateDashboard();
+        }
         startIntelCarousel();
         startMapCarousel();
         window.dispatchEvent(new Event('resize'));
@@ -1079,5 +1193,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    setInterval(updateDashboard, 40000);
+    setInterval(() => {
+        const today = new Date().toISOString().split('T')[0];
+        if (activeDate === today) updateDashboard();
+    }, 40000);
 });
