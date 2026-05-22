@@ -140,18 +140,21 @@ def analyze_narrative_hf(text: str, retries: int = 4) -> Dict[str, Union[str, in
                     risk_multiplier: float = 1.0
                     emotion_mapped: str = "neutral"
 
-                    if label in ["fear", "nervousness"]:
+                    if label in ["fear", "nervousness", "anxiety", "confusion"]:
                         emotion_mapped = "fear"
                         risk_multiplier = 1.2
-                    elif label in ["anger", "annoyance", "disapproval", "disgust"]:
+                    elif label in ["anger", "annoyance", "disapproval", "disgust", "frustration"]:
                         emotion_mapped = "anger"
                         risk_multiplier = 1.3
-                    elif label in ["sadness", "grief", "remorse", "disappointment"]:
+                    elif label in ["sadness", "grief", "remorse", "disappointment", "embarrassment"]:
                         emotion_mapped = "sadness"
                         risk_multiplier = 1.1
-                    elif label in ["surprise", "realization", "curiosity", "confusion"]:
+                    elif label in ["surprise", "realization", "curiosity", "excitement", "joy", "pride"]:
                         emotion_mapped = "surprise"
                         risk_multiplier = 0.8
+                    elif label in ["optimism", "relief", "gratitude", "approval", "love", "admiration", "desire", "caring"]:
+                        emotion_mapped = "positive" # We'll add this category or map it to neutral/stable
+                        risk_multiplier = 0.5
                     
                     bias_risk: int = min(int(score * 100 * risk_multiplier), 100)
                     

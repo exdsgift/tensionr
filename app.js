@@ -413,18 +413,28 @@ function safeRender(name, fn) {
 
 function renderEmotions(articles) {
     const ctx = document.getElementById('emotionChart').getContext('2d');
-    const counts = { anger: 0, fear: 0, sadness: 0, surprise: 0, neutral: 0 };
+    // Exclude neutral from the radar to let other emotions "breathe"
+    const counts = { anger: 0, fear: 0, sadness: 0, surprise: 0, positive: 0 };
+    let neutralCount = 0;
+
     articles.forEach(a => {
-        if (a.narrative_emotion && counts[a.narrative_emotion] !== undefined) {
-            counts[a.narrative_emotion]++;
-        } else if (a.narrative_emotion) {
-            counts.neutral++;
+        const emo = a.narrative_emotion;
+        if (emo === 'neutral' || !emo || emo === 'unknown') {
+            neutralCount++;
+        } else if (counts[emo] !== undefined) {
+            counts[emo]++;
+        } else {
+            neutralCount++;
         }
     });
     
     const labels = Object.keys(counts);
     const data = Object.values(counts);
     const chartColor = THEME_BRIGHT || '#00ff41';
+
+    // Log the distribution for the analyst
+    const totalActive = articles.length - neutralCount;
+    logSystem(`resonance sync: ${totalActive} active signals, ${neutralCount} baseline/neutral`);
 
     if (charts.emotions) charts.emotions.destroy();
     charts.emotions = new Chart(ctx, {
