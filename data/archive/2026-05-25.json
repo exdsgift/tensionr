@@ -1,10 +1,10 @@
 {
     "date": "2026-05-25",
     "gti": 65,
-    "sitrep": "Jardine Matheson buys Australian diagnostic group I-MED for US$2.4 billion . Chip prodigy Da Bo returns to China after his role in TSMC\u2019s 3nm plant in Japan . First Hong Kong astronaut launches into space onboard Chinese mission .",
+    "sitrep": "Kuba: Wegen der \u00d6lblockade der USA wird selbst Reis zum Luxusgut . China und Russland betreiben offenbar Abh\u00f6rstationen auf Kuba . Pr\u00e4sident Lula wird wegen Hautkrebs behandelt.",
     "top_keywords": {
         "iran": {
-            "count": 44,
+            "count": 43,
             "type": "LOC"
         },
         "china": {
@@ -23,8 +23,12 @@
             "count": 11,
             "type": "ORG"
         },
+        "israel": {
+            "count": 8,
+            "type": "LOC"
+        },
         "hong kong": {
-            "count": 10,
+            "count": 8,
             "type": "LOC"
         },
         "ebola": {
@@ -35,6 +39,34 @@
             "count": 8,
             "type": "LOC"
         },
+        "hezbollah": {
+            "count": 7,
+            "type": "ORG"
+        },
+        "russia": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "idf": {
+            "count": 6,
+            "type": "ORG"
+        },
+        "lebanon": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "t\u00fcrkei": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "india": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "zapatero": {
+            "count": 3,
+            "type": "LOC"
+        },
         "japan": {
             "count": 5,
             "type": "LOC"
@@ -43,35 +75,43 @@
             "count": 5,
             "type": "LOC"
         },
-        "israel": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "idf": {
-            "count": 5,
-            "type": "ORG"
-        },
-        "hezbollah": {
-            "count": 5,
-            "type": "ORG"
-        },
-        "russia": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "\u0643\u064a\u0641": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "lebanon": {
+        "canada": {
             "count": 4,
             "type": "LOC"
         },
-        "india": {
+        "congo": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "marco rubio": {
+            "count": 4,
+            "type": "PER"
+        },
+        "france": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "bolivia": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "turkey": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "qatar": {
             "count": 4,
             "type": "LOC"
         },
         "pakistan": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "abraham accords": {
+            "count": 4,
+            "type": "PER"
+        },
+        "\u0643\u064a\u0641": {
             "count": 4,
             "type": "LOC"
         },
@@ -91,49 +131,37 @@
             "count": 4,
             "type": "PER"
         },
-        "t\u00fcrkei": {
-            "count": 4,
-            "type": "LOC"
-        },
         "netanyahu": {
             "count": 4,
             "type": "PER"
-        },
-        "cuba": {
-            "count": 4,
-            "type": "LOC"
         },
         "california": {
             "count": 4,
             "type": "LOC"
         },
-        "ankara": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "france": {
+        "new zealand": {
             "count": 3,
             "type": "LOC"
         },
-        "qatar": {
+        "alberta": {
             "count": 3,
             "type": "LOC"
+        },
+        "saudi arabia": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "hamas": {
+            "count": 3,
+            "type": "ORG"
         },
         "who": {
             "count": 3,
             "type": "ORG"
         },
-        "congo": {
-            "count": 3,
-            "type": "LOC"
-        },
         "raf": {
             "count": 3,
             "type": "ORG"
-        },
-        "marco rubio": {
-            "count": 3,
-            "type": "PER"
         },
         "ir\u00e1n": {
             "count": 3,
@@ -143,36 +171,56 @@
             "count": 3,
             "type": "ORG"
         },
-        "singapore": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "zapatero": {
-            "count": 3,
-            "type": "LOC"
-        },
         "madrid": {
             "count": 3,
             "type": "LOC"
         },
-        "rubio": {
+        "cuba": {
             "count": 3,
+            "type": "LOC"
+        },
+        "ankara": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "kuba": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "usa": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "chp": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "leo xiv": {
+            "count": 2,
             "type": "PER"
         },
-        "bolivia": {
-            "count": 3,
+        "kyiv": {
+            "count": 2,
             "type": "LOC"
         },
-        "canada": {
-            "count": 3,
+        "nigeria": {
+            "count": 2,
             "type": "LOC"
         },
-        "turkey": {
-            "count": 3,
-            "type": "LOC"
+        "udef": {
+            "count": 2,
+            "type": "ORG"
         },
-        "spain": {
-            "count": 3,
+        "white house": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "secret service": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "uganda": {
+            "count": 2,
             "type": "LOC"
         },
         "us-china": {
@@ -190,68 +238,16 @@
         "venezuelan": {
             "count": 2,
             "type": "LOC"
-        },
-        "takaichi": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "strait of hormuz": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "abraham accords": {
-            "count": 2,
-            "type": "PER"
-        },
-        "l\u00e9on\u00a0xiv": {
-            "count": 2,
-            "type": "PER"
-        },
-        "russie": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "hamas": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "video": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "erdo\u011fan": {
-            "count": 2,
-            "type": "PER"
-        },
-        "bilgi-universit\u00e4t": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "istanbul": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "texas": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "britain": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "london": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
         "www.aljazeera.net": 91,
-        "www.scmp.com": 61,
-        "www.lemonde.fr": 47,
-        "www.straitstimes.com": 44,
-        "www.japantimes.co.jp": 35,
-        "www.jpost.com": 30,
-        "timesofindia.indiatimes.com": 25,
-        "www.thehindu.com": 22
+        "www.scmp.com": 54,
+        "www.lemonde.fr": 51,
+        "www.straitstimes.com": 51,
+        "www.jpost.com": 38,
+        "www.japantimes.co.jp": 31,
+        "timesofindia.indiatimes.com": 29,
+        "www.spiegel.de": 25
     }
 }
