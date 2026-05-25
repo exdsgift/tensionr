@@ -1,22 +1,26 @@
 {
     "date": "2026-05-25",
-    "gti": 65,
-    "sitrep": "Narrative Spike: Lula receives preventive radiotherapy against skin cancer four months before Brazilian elections . Lula received radiotherapy in Brazil just months before the elections .",
+    "gti": 67,
+    "sitrep": "'A Dangerous Bluff': Carney Likens Alberta Referendum to the EU referendum . 'Lifelong Hindu pretending to be Christian': Laura Loomer criticises Tulsi Gabbard . 'New form of war': an insider view of China's AI strategy in electronic warfare .",
     "top_keywords": {
         "iran": {
             "count": 41,
+            "type": "LOC"
+        },
+        "china": {
+            "count": 21,
             "type": "LOC"
         },
         "trump": {
             "count": 20,
             "type": "PER"
         },
-        "china": {
-            "count": 20,
+        "ukraine": {
+            "count": 15,
             "type": "LOC"
         },
-        "ukraine": {
-            "count": 16,
+        "israel": {
+            "count": 12,
             "type": "LOC"
         },
         "direct": {
@@ -24,18 +28,14 @@
             "type": "ORG"
         },
         "hezbollah": {
-            "count": 10,
+            "count": 11,
             "type": "ORG"
         },
-        "israel": {
-            "count": 10,
-            "type": "LOC"
-        },
-        "russia": {
+        "lebanon": {
             "count": 9,
             "type": "LOC"
         },
-        "lebanon": {
+        "ebola": {
             "count": 8,
             "type": "LOC"
         },
@@ -43,33 +43,41 @@
             "count": 4,
             "type": "LOC"
         },
-        "u.s.": {
+        "russia": {
             "count": 8,
             "type": "LOC"
         },
-        "ebola": {
-            "count": 7,
+        "u.s.": {
+            "count": 8,
             "type": "LOC"
         },
         "hong kong": {
             "count": 7,
             "type": "LOC"
         },
+        "france": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "canada": {
+            "count": 6,
+            "type": "LOC"
+        },
         "netanyahu": {
             "count": 6,
             "type": "PER"
         },
-        "india": {
-            "count": 6,
+        "kiev": {
+            "count": 5,
             "type": "LOC"
         },
         "congo": {
             "count": 5,
             "type": "LOC"
         },
-        "marco rubio": {
+        "india": {
             "count": 5,
-            "type": "PER"
+            "type": "LOC"
         },
         "who": {
             "count": 5,
@@ -79,17 +87,9 @@
             "count": 5,
             "type": "LOC"
         },
-        "france": {
-            "count": 5,
-            "type": "LOC"
-        },
         "abraham accords": {
             "count": 5,
             "type": "PER"
-        },
-        "canada": {
-            "count": 5,
-            "type": "LOC"
         },
         "t\u00fcrkei": {
             "count": 5,
@@ -111,17 +111,13 @@
             "count": 4,
             "type": "ORG"
         },
-        "\u0643\u064a\u0641": {
+        "marco rubio": {
             "count": 4,
-            "type": "LOC"
+            "type": "PER"
         },
         "\u0645\u0627\u0630\u0627": {
             "count": 4,
             "type": "PER"
-        },
-        "kiev": {
-            "count": 4,
-            "type": "LOC"
         },
         "bolivia": {
             "count": 4,
@@ -139,13 +135,21 @@
             "count": 4,
             "type": "LOC"
         },
+        "etats-unis": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "s\u00e9n\u00e9gal": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "drc": {
+            "count": 3,
+            "type": "LOC"
+        },
         "lula": {
             "count": 3,
             "type": "PER"
-        },
-        "video": {
-            "count": 3,
-            "type": "ORG"
         },
         "beirut": {
             "count": 3,
@@ -179,6 +183,10 @@
             "count": 3,
             "type": "ORG"
         },
+        "\u0643\u064a\u0641": {
+            "count": 3,
+            "type": "LOC"
+        },
         "new zealand": {
             "count": 3,
             "type": "LOC"
@@ -207,46 +215,38 @@
             "count": 3,
             "type": "ORG"
         },
-        "us justice department": {
+        "russie": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "sonko": {
+            "count": 2,
+            "type": "PER"
+        },
+        "laura loomer": {
+            "count": 2,
+            "type": "PER"
+        },
+        "tulsi gabbard": {
+            "count": 2,
+            "type": "PER"
+        },
+        "white house": {
             "count": 2,
             "type": "ORG"
         },
-        "liban": {
+        "us justice department": {
             "count": 2,
-            "type": "LOC"
-        },
-        "washington": {
-            "count": 2,
-            "type": "PER"
-        },
-        "cuba": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "portugal": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "russland": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "brasilien": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "julio mart\u00ednez": {
-            "count": 2,
-            "type": "PER"
+            "type": "ORG"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 71,
-        "www.scmp.com": 61,
-        "www.straitstimes.com": 50,
-        "www.lemonde.fr": 45,
-        "www.japantimes.co.jp": 32,
-        "timesofindia.indiatimes.com": 31,
+        "www.aljazeera.net": 66,
+        "www.scmp.com": 62,
+        "www.lemonde.fr": 46,
+        "www.straitstimes.com": 46,
+        "timesofindia.indiatimes.com": 35,
+        "www.japantimes.co.jp": 31,
         "www.jpost.com": 30,
         "www.spiegel.de": 28
     }
