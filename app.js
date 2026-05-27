@@ -1,13 +1,5 @@
 // app.js - Main Orchestrator and Global State
 
-// Global State
-let maps = { news: null, flights: null };
-let mapMarkers = { news: [], flights: [] };
-let charts = {};
-let globalFilter = { country: null, keyword: null };
-let activeDate = new Date().toISOString().split('T')[0];
-let THEME_BRIGHT, THEME_MID, THEME_DIM, COLOR_WHITE, COLOR_BORDER;
-
 function setGlobalFilter(type, value) {
     if (globalFilter[type] === value) {
         globalFilter[type] = null;
@@ -264,8 +256,9 @@ function startMapCarousel() {
         slides[currentMapIndex].classList.add('active');
         dots[currentMapIndex].classList.add('active');
         setTimeout(() => {
-            if (currentMapIndex === 0 && maps.news) maps.news.invalidateSize();
-            if (currentMapIndex === 1 && maps.flights) maps.flights.invalidateSize();
+            if (currentMapIndex === 0 && maps.tactical) maps.tactical.invalidateSize();
+            if (currentMapIndex === 1 && maps.news) maps.news.invalidateSize();
+            if (currentMapIndex === 2 && maps.flights) maps.flights.invalidateSize();
         }, 300);
     }
     dots.forEach((dot, idx) => dot.addEventListener('click', () => { goToMap(idx); clearInterval(mapCarouselInterval); }));

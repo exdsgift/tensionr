@@ -58,6 +58,9 @@ async function updateDashboard() {
         safeRender('map', () => {
             renderMap(news.stats.source_countries, news.articles);
             renderFlightMap(telemetry.flight_intel);
+            if (typeof renderTacticalMap === 'function') {
+                renderTacticalMap(news.articles);
+            }
         });
         safeRender('cyber', () => renderCyberIntel(intel.cyber_intel));
         safeRender('chatter', () => renderRawChatter(intel.raw_chatter));

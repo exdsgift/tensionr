@@ -81,11 +81,22 @@
             <div class="intel-nav" id="map-nav-dots">
                 <div class="intel-dot active" data-index="0"></div>
                 <div class="intel-dot" data-index="1"></div>
+                <div class="intel-dot" data-index="2"></div>
             </div>
 
             <div class="intel-carousel">
+                <!-- Slide 0: Tactical Situation Map (NEW) -->
+                <div class="intel-slide active" id="slide-map-tactical">
+                    <h5>tactical situational awareness [ beta ]</h5>
+                    <p class="chart-desc">vector-grid analysis of global resonance. identifies signal concentration via hexagonal binning and tactical drift vectors.</p>
+                    <div id="map-tactical" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border); position: relative; background: #000;">
+                        <div class="tactical-scanline"></div>
+                        <div id="tactical-coord-overlay" class="tactical-coords"></div>
+                    </div>
+                </div>
+
                 <!-- Slide 1: News Hotspots Map -->
-                <div class="intel-slide active" id="slide-map-news">
+                <div class="intel-slide" id="slide-map-news">
                     <h5>geospatial intelligence vectors</h5>
                     <p class="chart-desc">displays the physical origin of intercepted intelligence nodes. flashing rings indicate active signal hotspots.</p>
                     <div id="map-news" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border);"></div>
@@ -211,10 +222,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
+<script src="state.js"></script>
 <script src="utils.js"></script>
 <script src="ui.js"></script>
 <script src="charts.js"></script>
 <script src="map.js"></script>
+<script src="tactical_map.js"></script>
 <script src="api.js"></script>
 <script src="app.js"></script>
 </body>

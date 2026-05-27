@@ -451,3 +451,75 @@ h5 { font-size: 0.75rem; color: var(--theme-bright); margin-bottom: 0.25rem; tex
     0%, 100% { filter: drop-shadow(0 0 8px var(--theme-mid)); }
     50% { filter: drop-shadow(0 0 15px var(--theme-mid)); brightness(1.2); }
 }
+
+/* Tactical UI Refinements */
+.tactical-scanline {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.15) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 1001;
+    pointer-events: none;
+    opacity: 0.2;
+    animation: scanlineScroll 10s linear infinite;
+}
+
+@keyframes scanlineScroll {
+    from { background-position: 0 0; }
+    to { background-position: 0 100%; }
+}
+
+.tactical-coords {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 0.6rem;
+    color: var(--theme-bright);
+    font-family: 'Fira Code', monospace;
+    z-index: 1002;
+    pointer-events: none;
+    text-shadow: 0 0 5px rgba(0,0,0,0.8);
+}
+
+/* Custom Tactical Popups */
+.tactical-popup .leaflet-popup-content-wrapper {
+    background: rgba(5, 10, 5, 0.95) !important;
+    border: 1px solid var(--theme-bright) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2) !important;
+    padding: 0 !important;
+}
+
+.tactical-popup .leaflet-popup-content {
+    margin: 0 !important;
+    width: auto !important;
+}
+
+.tactical-popup .leaflet-popup-tip {
+    background: var(--theme-bright) !important;
+}
+
+/* Tactical Markers */
+.tactical-diamond {
+    width: 8px;
+    height: 8px;
+    background: var(--theme-bright);
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px var(--theme-bright);
+    border: 1px solid #fff;
+}
+
+.hex-bin {
+    stroke: var(--theme-bright);
+    stroke-width: 0.2px;
+    transition: all 0.2s ease;
+}
+
+.hex-bin:hover {
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 0 8px var(--theme-bright));
+}
