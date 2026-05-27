@@ -1010,10 +1010,29 @@ function renderGTI(score, history) {
         const historyCanvas = document.getElementById('gtiHistoryChart');
         if (historyCanvas) {
             const ctx = historyCanvas.getContext('2d');
-            const labels = history.map(h => new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-            const data = history.map(h => h.score);
+            
+            // Downsample for aesthetic clarity if too many points
+            let processedHistory = history;
+            if (history.length > 40) {
+                const step = Math.ceil(history.length / 40);
+                processedHistory = history.filter((_, i) => i % step === 0 || i === history.length - 1);
+            }
+
+            const labels = processedHistory.map(h => new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            const data = processedHistory.map(h => h.score);
             
             if (charts.gtiHistory) charts.gtiHistory.destroy();
+
+            // Create aesthetic gradient with hex normalization
+            const normalizeHex = (hex) => {
+                if (hex.length === 4) return '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+                return hex;
+            };
+            const baseColor = normalizeHex(THEME_BRIGHT);
+            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, baseColor + '66'); // 40% opacity
+            gradient.addColorStop(1, baseColor + '00'); // 0% opacity
+
             charts.gtiHistory = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1022,24 +1041,64 @@ function renderGTI(score, history) {
                         label: 'gti_trend',
                         data: data,
                         borderColor: THEME_BRIGHT,
-                        backgroundColor: THEME_BRIGHT + '22',
-                        borderWidth: 1.5,
-                        pointRadius: 2,
-                        pointBackgroundColor: THEME_BRIGHT,
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: THEME_BRIGHT,
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.45,
+                        spanGaps: true
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(10, 10, 10, 0.9)',
+                            titleFont: { size: 10, family: "'Fira Code', monospace" },
+                            bodyFont: { size: 11, family: "'Fira Code', monospace" },
+                            borderColor: THEME_BRIGHT + '44',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: (context) => `index_score: ${context.parsed.y}`
+                            }
+                        }
+                    },
                     scales: {
                         x: { display: false },
                         y: { 
                             min: 0, max: 100, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { stepSize: 25, font: { size: 8 } }
+                            grid: { 
+                                color: 'rgba(255,255,255,0.03)',
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                stepSize: 25, 
+                                font: { size: 8, family: "'Fira Code', monospace" },
+                                color: 'rgba(255,255,255,0.3)',
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    },
+                    animations: {
+                        tension: {
+                            duration: 1000,
+                            easing: 'linear',
+                            from: 1,
+                            to: 0.45,
+                            loop: false
                         }
                     }
                 }
