@@ -1,6 +1,8 @@
 // Tensionr Intelligence Web Worker
 // Offloads heavy data processing from the main UI thread
 
+importScripts('utils.js');
+
 self.onmessage = function(e) {
     const { type, data } = e.data;
 
@@ -23,29 +25,6 @@ self.onmessage = function(e) {
     }
 };
 
-function deduplicateArticles(articles) {
-    if (!articles) return [];
-    const grouped = {};
-    articles.forEach(art => {
-        // Normalize title for fuzzy matching
-        const normTitle = art.title.toLowerCase().replace(/[^\w\s]/gi, '').substring(0, 45);
-        if (!grouped[normTitle]) {
-            grouped[normTitle] = { ...art, all_domains: new Set([art.domain]) };
-        } else {
-            grouped[normTitle].all_domains.add(art.domain);
-            // Keep the one with higher manipulation score if conflict
-            if ((art.manipulation_score || 0) > (grouped[normTitle].manipulation_score || 0)) {
-                grouped[normTitle].manipulation_score = art.manipulation_score;
-                grouped[normTitle].narrative_emotion = art.narrative_emotion;
-            }
-        }
-    });
-    return Object.values(grouped).map(art => {
-        art.domain = Array.from(art.all_domains).join(', ');
-        delete art.all_domains;
-        return art;
-    });
-}
 
 function processKeywords(keywords) {
     if (!keywords) return [];

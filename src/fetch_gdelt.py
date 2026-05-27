@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime
 import time
 import os
-import praw
 import re
 import feedparser
 import hmac
@@ -30,8 +29,6 @@ except OSError:
     nlp = spacy.load("xx_ent_wiki_sm")
 
 # --- CONFIGURATION ---
-REDDIT_CLIENT_ID: Optional[str] = os.getenv("REDDIT_CLIENT_ID")
-REDDIT_CLIENT_SECRET: Optional[str] = os.getenv("REDDIT_CLIENT_SECRET")
 SIGNATURE_KEY: str = os.getenv("TENSIONR_SIGNATURE_KEY", "default_secret_key")
 HF_TOKEN: Optional[str] = os.getenv("HF_TOKEN")
 
@@ -52,19 +49,6 @@ RSS_FEEDS: List[str] = [
 ]
 
 
-def get_reddit_client() -> Optional[praw.Reddit]:
-    if REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET:
-        try:
-            return praw.Reddit(
-                client_id=REDDIT_CLIENT_ID,
-                client_secret=REDDIT_CLIENT_SECRET,
-                user_agent="tensionr_intel/1.0",
-            )
-        except:
-            pass
-    return None
-
-
 def sanitize_data(text: Any) -> str:
     if not isinstance(text, str):
         return ""
@@ -75,38 +59,6 @@ def sign_data(data_json: str) -> str:
     return hmac.new(
         SIGNATURE_KEY.encode(), data_json.encode(), hashlib.sha256
     ).hexdigest()
-
-
-def analyze_social_spread(reddit: Optional[praw.Reddit], url: str) -> Dict[str, Any]:
-    metrics: Dict[str, Any] = {
-        "reddit_shares": 0,
-        "mastodon_shares": 0,
-        "bot_probability": 0,
-        "target_platforms": [],
-    }
-    if reddit:
-        try:
-            submissions = list(reddit.subreddit("all").search(f'url:"{url}"', limit=10))
-            metrics["reddit_shares"] = len(submissions)
-            if metrics["reddit_shares"] > 0:
-                metrics["target_platforms"].append("reddit")
-        except:
-            pass
-    try:
-        m_resp = requests.get(
-            f"https://mastodon.social/api/v2/search?q={url}&type=statuses", timeout=5
-        )
-        if m_resp.status_code == 200:
-            m_data = m_resp.json()
-            metrics["mastodon_shares"] = len(m_data.get("statuses", []))
-            if metrics["mastodon_shares"] > 0:
-                metrics["target_platforms"].append("mastodon")
-    except:
-        pass
-    total_shares: int = metrics["reddit_shares"] + metrics["mastodon_shares"]
-    score: int = min(total_shares * 8 + len(metrics["target_platforms"]) * 20, 100)
-    metrics["bot_probability"] = score
-    return metrics
 
 
 def analyze_narrative_hf(text: str, retries: int = 4) -> Dict[str, Union[str, int]]:
