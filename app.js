@@ -292,7 +292,8 @@ function renderSITREP(text, isHistorical = false) {
     if (!sitrepEl) return;
 
     const safeText = (text || "Intelligence synthesis active: monitoring global signals...").toLowerCase();
-    sitrepEl.textContent = safeText + " ... " + safeText + " ... ";
+    // Wrap in a span to ensure display:inline-block works for the marquee effect
+    sitrepEl.innerHTML = `<span>${safeText} &nbsp;&nbsp;...&nbsp;&nbsp; ${safeText} &nbsp;&nbsp;...&nbsp;&nbsp;</span>`;
     statusEl.textContent = isHistorical ? 'archived_intel' : 'live_stream';
 }
 

@@ -172,10 +172,11 @@
             .market-ticker-wrapper { font-size: 0.7rem; padding: 8px 0; }
             .intel-carousel { min-height: 420px; }
             #map-news, #map-flights { height: 250px !important; }
+            #articles-list { height: 400px !important; max-height: 400px !important; }
             
             /* SITREP Mobile */
             #sitrep-status { display: none; }
-            .sitrep-container { height: 25px; }
+            .sitrep-container { height: 25px; contain: strict; }
             
             /* GTI Mobile */
             .gti-mobile-row { flex-direction: column !important; }
@@ -218,7 +219,7 @@
             transition: border-color 0.3s; 
             height: 44px; 
             overflow: hidden; 
-            contain: layout size;
+            contain: layout size style;
         }
         .article-title { color: var(--text-main); text-decoration: none; display: inline-block; font-size: 0.68rem; margin-bottom: 0px; transition: color 0.3s; white-space: nowrap; }
         .article-title:hover { color: var(--theme-bright); }
@@ -282,7 +283,7 @@
         }
 
         /* Carousel CSS */
-        .intel-carousel { position: relative; height: 100%; overflow: hidden; contain: paint; }
+        .intel-carousel { position: relative; height: 100%; overflow: hidden; contain: paint layout size; }
         .intel-slide { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             opacity: 0; transform: translateX(20px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -290,6 +291,7 @@
             visibility: hidden; /* Prevent interaction and overlapping layout */
             display: flex; flex-direction: column;
             will-change: transform, opacity;
+            contain: content;
         }
         .intel-slide.active { 
             opacity: 1; 
@@ -519,7 +521,7 @@
             <span style="color: var(--theme-bright); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; white-space: nowrap;">[ tactical_sitrep ]</span>
             <div class="sitrep-container">
                 <div id="sitrep-text" class="sitrep-marquee" style="font-size: 0.75rem; color: var(--text-main); font-style: italic;">
-                    intelligence synthesis active: multi-domain nodes reporting normal operational baseline...
+                    <span>intelligence synthesis active: multi-domain nodes reporting normal operational baseline... &nbsp;&nbsp;...&nbsp;&nbsp; intelligence synthesis active: multi-domain nodes reporting normal operational baseline... &nbsp;&nbsp;...&nbsp;&nbsp;</span>
                 </div>
             </div>
             <span id="sitrep-status" class="text-dim" style="font-size: 0.5rem; text-transform: uppercase; white-space: nowrap;">verified_stream</span>
