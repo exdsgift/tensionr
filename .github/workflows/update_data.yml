@@ -27,8 +27,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install --system -r requirements.txt
-        python -m spacy download xx_ent_wiki_sm
+        uv venv
+        uv pip install -r requirements.txt
+        uv run python -m spacy download xx_ent_wiki_sm
 
     - name: Fetch data from GDELT
       env:
@@ -36,7 +37,7 @@ jobs:
         REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         TENSIONR_SIGNATURE_KEY: ${{ secrets.TENSIONR_SIGNATURE_KEY }}
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: python src/fetch_gdelt.py
+      run: uv run python src/fetch_gdelt.py
 
     - name: Commit and push changes
       uses: stefanzweifel/git-auto-commit-action@v5

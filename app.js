@@ -74,7 +74,12 @@ function setTheme(themeName) {
     if (window.lastData) {
         safeRender('emotions', () => renderEmotions(window.lastData.articles));
         safeRender('map', () => renderMap(window.lastData.stats.source_countries, window.lastData.articles));
-        safeRender('wordcloud', () => renderWordCloud(window.lastData.stats.top_keywords));
+        // Handle WordCloud data type detection to avoid "index" bug
+        if (Array.isArray(window.lastData.stats.top_keywords)) {
+            safeRender('wordcloud', () => renderWordCloudEnriched(window.lastData.stats.top_keywords));
+        } else {
+            safeRender('wordcloud', () => renderWordCloud(window.lastData.stats.top_keywords));
+        }
         // Force refresh feed to update colors
         const dedupedArticles = deduplicateArticles(window.lastData.articles);
         safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
@@ -276,7 +281,7 @@ async function loadHistoricalData(date) {
         renderWordCloud(archive.top_keywords);
         
         document.getElementById('live-indicator').textContent = '● playback_mode';
-        document.getElementById('live-indicator').style.color = '#ff922b';
+        document.getElementById('live-indicator').style.color = THEME_MID;
         document.getElementById('last-updated').textContent = `archive: ${date}`;
         
         logSystem(`historical sync success. date: ${date}`);
@@ -310,9 +315,9 @@ function renderWordCloudEnriched(processedKeywords) {
     const typeColors = {
         "GPE": THEME_BRIGHT,
         "ORG": THEME_MID,
-        "PERSON": "#339af0",
-        "LOC": "#ff922b",
-        "NORP": "#d0d"
+        "PERSON": COLOR_WHITE,
+        "LOC": THEME_DIM,
+        "NORP": THEME_MID
     };
     
     processedKeywords.forEach(item => {
@@ -431,7 +436,7 @@ function renderEmotions(articles) {
     
     const labels = Object.keys(counts);
     const data = Object.values(counts);
-    const chartColor = THEME_BRIGHT || '#00ff41';
+    const chartColor = THEME_BRIGHT;
 
     // Log the distribution for the analyst
     const totalActive = articles.length - neutralCount;
@@ -485,7 +490,7 @@ function renderEmotions(articles) {
                     grid: { color: 'rgba(255,255,255,0.1)' },
                     suggestedMin: 0,
                     pointLabels: { 
-                        color: THEME_MID || '#888', 
+                        color: THEME_MID, 
                         font: { family: "'Fira Code', monospace", size: 10 },
                         padding: 15
                     },
@@ -514,9 +519,9 @@ function renderWordCloud(keywords) {
     const typeColors = {
         "GPE": THEME_BRIGHT,
         "ORG": THEME_MID,
-        "PERSON": "#339af0",
-        "LOC": "#ff922b",
-        "NORP": "#d0d"
+        "PERSON": COLOR_WHITE,
+        "LOC": THEME_DIM,
+        "NORP": THEME_MID
     };
     
     entries.forEach(([word, info]) => {
@@ -555,7 +560,7 @@ function renderRawChatter(chatter) {
         div.innerHTML = `
             <div style="display:flex; flex-direction:column; gap:2px;">
                 <div style="display:flex; gap:5px; align-items:center;">
-                    <span class="tag" style="color: #ff6b35; border-color: #ff6b35; font-size: 0.45rem;">UNVERIFIED</span>
+                    <span class="tag" style="color: var(--theme-mid); border-color: var(--theme-mid); font-size: 0.45rem;">UNVERIFIED</span>
                     <span style="font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase;">SRC: ${item.source}</span>
                 </div>
                 <a href="${item.link}" target="_blank" style="color: var(--text-main); font-size: 0.62rem; text-decoration: none; line-height: 1.2;">${item.title.toLowerCase()}</a>
@@ -655,7 +660,7 @@ function renderFlightMap(intel) {
             // 1. Strategic Trajectory (Origin -> Current)
             if (countryCoords[asset.origin]) {
                 const originPos = countryCoords[asset.origin];
-                const tacticalColor = asset.is_mil ? '#00ff41' : '#ff6b35';
+                const tacticalColor = asset.is_mil ? THEME_BRIGHT : THEME_MID;
                 
                 const strategicLine = L.polyline([originPos, [asset.lat, asset.lon]], {
                     color: tacticalColor,
@@ -669,7 +674,7 @@ function renderFlightMap(intel) {
 
             // 2. Active Movement Trail (Tail)
             if (flightHistory[asset.icao24].length > 1) {
-                const trailColor = asset.is_mil ? '#00ff41' : '#ff6b35';
+                const trailColor = asset.is_mil ? THEME_BRIGHT : THEME_MID;
                 
                 // Glow tail - maximum visibility for mobile
                 const glowTrail = L.polyline(flightHistory[asset.icao24], {
@@ -931,7 +936,7 @@ function renderQuickStats(news, status) {
             signals: <span style="color:var(--theme-bright)">${news.articles.length}</span>
         </div>
         <div title="Digital integrity verification status" style="cursor:help">
-            integrity: <span style="color: #3fb950">verified</span>
+            integrity: <span style="color: var(--theme-bright)">verified</span>
         </div>
     `;
 }
@@ -958,7 +963,7 @@ function renderFlightIntel(intel) {
             </div>
             <div class="flight-stat-row">
                 <span class="flight-stat-label">strategic alerts</span>
-                <span class="flight-stat-value" id="flight-anomalies" style="color: #ff6b35">--</span>
+                <span class="flight-stat-value" id="flight-anomalies" style="color: var(--theme-bright)">--</span>
             </div>
         `;
     }
@@ -998,8 +1003,8 @@ function renderGTI(score, history) {
     
     // Color shift based on tension
     if (target > 75) {
-        scoreEl.style.color = '#ff6b35'; // Alert color
-        scoreEl.style.textShadow = '0 0 20px #ff6b35';
+        scoreEl.style.color = THEME_BRIGHT; 
+        scoreEl.style.textShadow = `0 0 20px ${THEME_BRIGHT}`;
     } else {
         scoreEl.style.color = 'var(--theme-bright)';
         scoreEl.style.textShadow = 'none';
@@ -1046,7 +1051,7 @@ function renderGTI(score, history) {
                         pointRadius: 0,
                         pointHoverRadius: 5,
                         pointHoverBackgroundColor: THEME_BRIGHT,
-                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderColor: COLOR_WHITE,
                         pointHoverBorderWidth: 2,
                         fill: true,
                         tension: 0.45,

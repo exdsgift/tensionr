@@ -202,7 +202,7 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .leaflet-popup-content {
-            color: #ffffff !important;
+            color: var(--popup-text) !important;
             margin: 10px 12px !important;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
@@ -349,8 +349,8 @@
         .market-ticker-item { display: inline-flex; align-items: center; margin-right: 0.8rem; }
         .ticker-symbol { font-weight: bold; color: var(--theme-mid); margin-right: 6px; }
         .ticker-price { color: var(--text-main); margin-right: 6px; }
-        .ticker-up { color: #00ff41; }
-        .ticker-down { color: #ff6b35; }
+        .ticker-up { color: var(--theme-bright); }
+        .ticker-down { color: var(--theme-mid); }
         @keyframes tickerMarquee {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -361,7 +361,7 @@
         [data-theme="ghost"] .pulse-ring { border-color: #fff !important; }
         [data-theme="ghost"] .tactical-plane { border-bottom-color: #fff !important; }
         [data-theme="ghost"] .tactical-plane:not(.outlier)::after { background: #fff !important; }
-        [data-theme="ghost"] .tactical-plane.outlier { border-bottom-color: #ff6b35 !important; filter: drop-shadow(0 0 8px #ff6b35) !important; }
+        [data-theme="ghost"] .tactical-plane.outlier { border-bottom-color: var(--theme-mid) !important; filter: drop-shadow(0 0 8px var(--theme-mid)) !important; }
         [data-theme="ghost"] .hub-square { border-color: #fff !important; box-shadow: 0 0 8px #fff; }
 
         /* Refresh Animations */
@@ -450,10 +450,10 @@
             border-bottom: 10px solid var(--theme-bright);
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
-        .tactical-plane.mil { border-bottom-color: #00ff41; filter: drop-shadow(0 0 5px #00ff41); }
+        .tactical-plane.mil { border-bottom-color: var(--theme-bright); filter: drop-shadow(0 0 5px var(--theme-bright)); }
         .tactical-plane.outlier { 
-            border-bottom-color: #ff6b35; 
-            filter: drop-shadow(0 0 8px #ff6b35);
+            border-bottom-color: var(--theme-mid); 
+            filter: drop-shadow(0 0 8px var(--theme-mid));
             transform: translate(-50%, -50%) scale(1.3);
             animation: anomalyAlert 1s ease-in-out infinite;
         }
@@ -465,7 +465,7 @@
             left: 50%;
             width: 20px;
             height: 20px;
-            border: 1px solid #ff6b35;
+            border: 1px solid var(--theme-mid);
             border-radius: 50%;
             transform: translate(-50%, -10%);
             animation: pulsate 2s infinite;
@@ -473,12 +473,12 @@
         .tactical-plane::after {
             content: ''; position: absolute; top: 7px; left: -3px; width: 6px; height: 2px; background: rgba(255,255,255,0.7); opacity: 0.6;
         }
-        .tactical-plane.mil::after { background: #00ff41; }
-        .tactical-plane.outlier::after { background: #ff6b35; }
+        .tactical-plane.mil::after { background: var(--theme-bright); }
+        .tactical-plane.outlier::after { background: var(--theme-mid); }
 
         @keyframes anomalyAlert {
-            0%, 100% { filter: drop-shadow(0 0 8px #ff6b35); }
-            50% { filter: drop-shadow(0 0 15px #ff6b35); brightness(1.2); }
+            0%, 100% { filter: drop-shadow(0 0 8px var(--theme-mid)); }
+            50% { filter: drop-shadow(0 0 15px var(--theme-mid)); brightness(1.2); }
         }
     </style>
 </head>
