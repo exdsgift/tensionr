@@ -45,6 +45,11 @@ const countryCoords = {
     "Palestine": [31.9038, 35.2034]
 };
 
+/**
+ * Deduplicates articles based on fuzzy title matching and aggregates domains.
+ * @param {Array} articles - Array of raw news articles.
+ * @returns {Array} Deduplicated and aggregated articles.
+ */
 function deduplicateArticles(articles) {
     if (!articles) return [];
     const grouped = {};

@@ -1,5 +1,14 @@
 // api.js - Data fetching and state management
 
+/**
+ * @file api.js
+ * @description Data orchestration, background processing, and historical data retrieval.
+ */
+
+/**
+ * Background worker for heavy NLP/data processing tasks.
+ * @type {Worker}
+ */
 const intelligenceWorker = new Worker('worker.js');
 
 intelligenceWorker.onmessage = function(e) {
@@ -16,9 +25,17 @@ intelligenceWorker.onmessage = function(e) {
     }
 };
 
+/**
+ * Main dashboard synchronization engine. 
+ * Fetches all real-time intelligence nodes and triggers rendering.
+ * 
+ * @async
+ * @description Bridges geopolitical data nodes (China, Russia, Middle East) into the monitoring pipeline.
+ * @listens geopolitical_hotspots
+ */
 async function updateDashboard() {
     logSystem("syncing telemetry...");
-    activeDate = new Date().toISOString().split('T')[0];
+    window.activeDate = new Date().toISOString().split('T')[0];
     updateURL();
     updateThemeColors();
     try {
@@ -40,7 +57,7 @@ async function updateDashboard() {
 
         document.getElementById('last-updated').textContent = `sync: ${new Date(status.last_updated).toLocaleTimeString().toLowerCase()}`;
         document.getElementById('live-indicator').textContent = '● live_feed';
-        document.getElementById('live-indicator').style.color = THEME_BRIGHT;
+        document.getElementById('live-indicator').style.color = window.THEME_BRIGHT;
 
         refreshFilteredUI();
 
@@ -80,9 +97,14 @@ async function updateDashboard() {
     }
 }
 
+/**
+ * Loads and renders historical snapshots from the static data lake.
+ * @async
+ * @param {string} date - ISO date string (YYYY-MM-DD).
+ */
 async function loadHistoricalData(date) {
     logSystem(`attempting time machine handshake: ${date}`);
-    activeDate = date;
+    window.activeDate = date;
     updateURL();
     try {
         const resp = await fetch(`data/archive/${date}.json`);
@@ -94,7 +116,7 @@ async function loadHistoricalData(date) {
         renderWordCloud(archive.top_keywords);
         
         document.getElementById('live-indicator').textContent = '● playback_mode';
-        document.getElementById('live-indicator').style.color = THEME_MID;
+        document.getElementById('live-indicator').style.color = window.THEME_MID;
         document.getElementById('last-updated').textContent = `archive: ${date}`;
         
         logSystem(`historical sync success. date: ${date}`);
@@ -104,24 +126,30 @@ async function loadHistoricalData(date) {
     }
 }
 
+/**
+ * Updates browser history and URL search parameters based on global filter state.
+ */
 function updateURL() {
     const params = new URLSearchParams();
-    if (globalFilter.country) params.set('country', globalFilter.country);
-    if (globalFilter.keyword) params.set('keyword', globalFilter.keyword);
-    if (activeDate !== new Date().toISOString().split('T')[0]) params.set('date', activeDate);
+    if (window.globalFilter.country) params.set('country', window.globalFilter.country);
+    if (window.globalFilter.keyword) params.set('keyword', window.globalFilter.keyword);
+    if (window.activeDate !== new Date().toISOString().split('T')[0]) params.set('date', window.activeDate);
     
     const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
     window.history.replaceState({ path: newURL }, '', newURL);
 }
 
+/**
+ * Restores application filter state from URL parameters on initialization.
+ */
 function loadStateFromURL() {
     const params = new URLSearchParams(window.location.search);
-    globalFilter.country = params.get('country');
-    globalFilter.keyword = params.get('keyword');
+    window.globalFilter.country = params.get('country');
+    window.globalFilter.keyword = params.get('keyword');
     const dateParam = params.get('date');
     if (dateParam) {
-        activeDate = dateParam;
+        window.activeDate = dateParam;
         const datePicker = document.getElementById('time-machine-date');
-        if (datePicker) datePicker.value = activeDate;
+        if (datePicker) datePicker.value = window.activeDate;
     }
 }

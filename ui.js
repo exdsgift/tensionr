@@ -1,5 +1,13 @@
 // ui.js - Theme, Clock, and general UI interactions
 
+/**
+ * @file ui.js
+ * @description Core UI management, theme handling, and common interface interactions.
+ */
+
+/**
+ * Updates the system clock in the UI.
+ */
 function updateClock() {
     const clockElement = document.getElementById('clock');
     if (clockElement) {
@@ -7,13 +15,16 @@ function updateClock() {
     }
 }
 
+/**
+ * Synchronizes CSS theme variables with JavaScript constants and Chart.js defaults.
+ */
 function updateThemeColors() {
     const root = getComputedStyle(document.documentElement);
-    THEME_BRIGHT = root.getPropertyValue('--theme-bright').trim();
-    THEME_MID = root.getPropertyValue('--theme-mid').trim();
-    THEME_DIM = root.getPropertyValue('--theme-dim').trim();
-    COLOR_WHITE = root.getPropertyValue('--text-main').trim();
-    COLOR_BORDER = root.getPropertyValue('--border').trim();
+    window.THEME_BRIGHT = root.getPropertyValue('--theme-bright').trim();
+    window.THEME_MID = root.getPropertyValue('--theme-mid').trim();
+    window.THEME_DIM = root.getPropertyValue('--theme-dim').trim();
+    window.COLOR_WHITE = root.getPropertyValue('--text-main').trim();
+    window.COLOR_BORDER = root.getPropertyValue('--border').trim();
 
     Chart.defaults.color = root.getPropertyValue('--text-dim').trim();
     Chart.defaults.font.family = "'Fira Code', monospace";
@@ -21,15 +32,19 @@ function updateThemeColors() {
     Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
     
     const liveIndicator = document.getElementById('live-indicator');
-    if(liveIndicator) liveIndicator.style.color = THEME_BRIGHT;
+    if(liveIndicator) liveIndicator.style.color = window.THEME_BRIGHT;
 }
 
+/**
+ * Sets the application theme and triggers necessary re-renders.
+ * @param {string} themeName - The name of the theme ('ghost' or 'phosphor').
+ */
 function setTheme(themeName) {
     document.documentElement.setAttribute('data-theme', themeName);
     localStorage.setItem('tensionr_theme', themeName);
     updateThemeColors();
     
-    // Re-render charts and map with new colors if data is already loaded
+    // Re-render components with new colors if data is available
     if (window.lastData) {
         safeRender('emotions', () => renderEmotions(window.lastData.articles));
         safeRender('map', () => renderMap(window.lastData.stats.source_countries, window.lastData.articles));
@@ -124,6 +139,17 @@ function formatDate(isoStr) {
     } catch { return "--:--" }
 }
 
+function safeRender(name, fn) {
+    try {
+        fn();
+    } catch (e) {
+        logSystem(`warning: component_${name} failure`);
+        console.warn(`render error in ${name}:`, e);
+    }
+}
+gging.
+ * @param {Function} fn - Rendering function.
+ */
 function safeRender(name, fn) {
     try {
         fn();
