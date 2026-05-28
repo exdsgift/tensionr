@@ -267,7 +267,8 @@ def fetch_rss_news(query: str) -> List[Dict[str, Any]]:
                     "language": meta["lang"],
                 })
             return batch
-        except:
+        except Exception as e:
+            print(f"!! RSS fetch error: {e}")
             return []
 
     with ThreadPoolExecutor(max_workers=8) as executor:
@@ -319,7 +320,8 @@ def fetch_gdelt_data() -> None:
         )
         for a in gdelt_articles:
             a["source"] = "gdelt"
-    except:
+    except Exception as e:
+        print(f"!! GDELT fetch error: {e}")
         gdelt_articles = []
 
     rss_articles: List[Dict[str, Any]] = fetch_rss_news(query)
@@ -475,7 +477,8 @@ def fetch_gdelt_data() -> None:
                     "source": "OSINT_MONITOR"
                 })
             return entries
-        except:
+        except Exception as e:
+            print(f"!! RSS fetch error: {e}")
             return []
 
     def fetch_market_data() -> List[Dict[str, Any]]:

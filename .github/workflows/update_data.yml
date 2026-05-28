@@ -31,13 +31,24 @@ jobs:
         uv pip install -r requirements.txt
         uv run python -m spacy download xx_ent_wiki_sm
 
+    - name: Ensure data directory exists
+      run: mkdir -p data
+
     - name: Fetch data from GDELT
       env:
         REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
         REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         TENSIONR_SIGNATURE_KEY: ${{ secrets.TENSIONR_SIGNATURE_KEY }}
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: uv run python src/fetch_gdelt.py
+      run: timeout 600 uv run python src/fetch_gdelt.py
+
+    - name: Validate output data
+      run: |
+        if [ -f data/news.json ]; then
+          cat data/news.json | jq . > /dev/null && echo "news.json is valid JSON"
+        else
+          echo "Warning: data/news.json not found"
+        fi
 
     - name: Commit and push changes
       uses: stefanzweifel/git-auto-commit-action@v5
