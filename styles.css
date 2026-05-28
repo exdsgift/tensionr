@@ -487,20 +487,27 @@ h5 { font-size: 0.75rem; color: var(--theme-bright); margin-bottom: 0.25rem; tex
 
 /* Custom Tactical Popups */
 .tactical-popup .leaflet-popup-content-wrapper {
-    background: rgba(5, 10, 5, 0.95) !important;
+    background: rgba(15, 15, 15, 0.7) !important;
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    color: var(--popup-text) !important;
     border: 1px solid var(--theme-bright) !important;
     border-radius: 0 !important;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
     padding: 0 !important;
 }
 
 .tactical-popup .leaflet-popup-content {
     margin: 0 !important;
     width: auto !important;
+    color: var(--popup-text) !important;
 }
 
 .tactical-popup .leaflet-popup-tip {
-    background: var(--theme-bright) !important;
+    background: rgba(15, 15, 15, 0.7) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--theme-bright);
 }
 
 /* Tactical Markers */
@@ -522,4 +529,67 @@ h5 { font-size: 0.75rem; color: var(--theme-bright); margin-bottom: 0.25rem; tex
 .hex-bin:hover {
     stroke-width: 1.5px;
     filter: drop-shadow(0 0 8px var(--theme-bright));
+}
+
+/* Tactical Flatpickr Calendar */
+.tactical-calendar {
+    background: rgba(10, 15, 10, 0.8) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid var(--theme-bright) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5) !important;
+    font-family: 'Fira Code', monospace !important;
+    color: var(--text-main) !important;
+    box-sizing: border-box !important;
+}
+.flatpickr-calendar.tactical-calendar:before,
+.flatpickr-calendar.tactical-calendar:after {
+    border-bottom-color: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-months .flatpickr-month {
+    background: transparent !important;
+    color: var(--theme-bright) !important;
+    fill: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-current-month .flatpickr-monthDropdown-months {
+    background: transparent !important;
+    color: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-weekday {
+    color: var(--theme-mid) !important;
+    font-size: 0.6rem !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-day {
+    color: var(--text-main) !important;
+    border-radius: 0 !important;
+    transition: all 0.2s !important;
+    font-size: 0.7rem !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-day:hover {
+    background: var(--theme-dim) !important;
+    color: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-day.selected {
+    background: var(--theme-bright) !important;
+    color: #000 !important;
+    box-shadow: 0 0 10px var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-day.flatpickr-disabled {
+    color: var(--text-dim) !important;
+    opacity: 0.3 !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-day.today {
+    border-color: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .flatpickr-months .flatpickr-prev-month,
+.flatpickr-calendar.tactical-calendar .flatpickr-months .flatpickr-next-month {
+    color: var(--theme-bright) !important;
+    fill: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .numInputWrapper span.arrowUp:after {
+    border-bottom-color: var(--theme-bright) !important;
+}
+.flatpickr-calendar.tactical-calendar .numInputWrapper span.arrowDown:after {
+    border-top-color: var(--theme-bright) !important;
 }

@@ -22,12 +22,12 @@ jobs:
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-        cache-dependency-path: "requirements.txt"
+        cache-dependency-glob: "requirements.txt"
         python-version: "3.12"
 
     - name: Install dependencies
       run: |
-        uv venv
+        uv venv --clear
         uv pip install -r requirements.txt
         uv run python -m spacy download xx_ent_wiki_sm
 

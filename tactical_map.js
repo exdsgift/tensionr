@@ -116,15 +116,15 @@ function renderTacticalMap(articles) {
         const isMobile = window.innerWidth < 768;
         
         const content = `
-            <div style="font-family:'Fira Code'; font-size:0.65rem; color:var(--theme-bright); background:rgba(0,0,0,0.95); padding:8px; border:1px solid var(--theme-bright); min-width:${isMobile ? '160px' : '220px'};">
+            <div style="font-family:'Fira Code'; font-size:0.65rem; color:var(--popup-text); background:transparent; padding:8px; border:none; min-width:${isMobile ? '160px' : '220px'};">
                 <div style="border-bottom:1px solid var(--theme-bright); padding-bottom:4px; margin-bottom:6px; display:flex; justify-content:space-between; font-weight:bold;">
                     <span>THEATER_SIG</span> <span>${d.length} NODES</span>
                 </div>
-                <div style="color:var(--text-main); margin-bottom:6px; max-height: 100px; overflow-y: auto;">
+                <div style="color:var(--popup-text); margin-bottom:6px; max-height: 100px; overflow-y: auto;">
                     ${d.slice(0, 5).map(p => `• ${p[2].title.substring(0, isMobile ? 25 : 45)}...`).join("<br>")}
                     ${d.length > 5 ? `<br><span style="opacity:0.5">+ ${d.length - 5} others</span>` : ""}
                 </div>
-                <div style="font-size:0.55rem; color:var(--theme-bright); opacity:0.8; border-top: 1px solid rgba(0,255,65,0.2); padding-top:4px;">
+                <div style="font-size:0.55rem; color:var(--popup-text); opacity:0.8; border-top: 1px solid var(--border); padding-top:4px;">
                     LOCI: ${topSources.join(", ").toUpperCase()}
                 </div>
             </div>
@@ -167,7 +167,7 @@ function renderTacticalMap(articles) {
             });
             const marker = L.marker(countryCoords[art.sourcecountry], {icon: icon})
                 .addTo(map)
-                .bindPopup(`<div style="font-family:'Fira Code'; font-size:0.6rem; border:1px solid var(--theme-bright); padding:5px; background:rgba(0,0,0,0.9);">[ ${art.sourcecountry.toUpperCase()} ]<br>${art.title.toLowerCase()}</div>`, {
+                .bindPopup(`<div style="font-family:'Fira Code'; font-size:0.6rem; border:none; padding:5px; background:transparent; color:var(--popup-text);">[ ${art.sourcecountry.toUpperCase()} ]<br>${art.title.toLowerCase()}</div>`, {
                     closeButton: false,
                     className: 'tactical-popup'
                 });

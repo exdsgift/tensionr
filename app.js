@@ -284,13 +284,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 300);
 
     const datePicker = document.getElementById('time-machine-date');
-    if (datePicker) {
+    if (datePicker && typeof flatpickr !== 'undefined') {
         const today = new Date().toISOString().split('T')[0];
-        datePicker.setAttribute('min', '2026-05-21');
-        datePicker.setAttribute('max', today);
-        datePicker.addEventListener('change', (e) => {
-            if (e.target.value === today) updateDashboard();
-            else loadHistoricalData(e.target.value);
+        flatpickr(datePicker, {
+            defaultDate: activeDate,
+            minDate: "2026-05-21",
+            maxDate: today,
+            dateFormat: "Y-m-d",
+            disableMobile: "true",
+            onChange: function(selectedDates, dateStr) {
+                if (dateStr === today) updateDashboard();
+                else loadHistoricalData(dateStr);
+            },
+            onReady: function(selectedDates, dateStr, instance) {
+                instance.calendarContainer.classList.add('tactical-calendar');
+            }
         });
     }
 
