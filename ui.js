@@ -147,14 +147,14 @@ function safeRender(name, fn) {
         console.warn(`render error in ${name}:`, e);
     }
 }
-gging.
- * @param {Function} fn - Rendering function.
+
+/**
+ * Renders the Strategic Insight report from the Agentic Analyst.
+ * @param {string} text - The insight text.
  */
-function safeRender(name, fn) {
-    try {
-        fn();
-    } catch (e) {
-        logSystem(`warning: component_${name} failure`);
-        console.warn(`render error in ${name}:`, e);
-    }
+function renderStrategicInsight(text) {
+    const el = document.getElementById('strategic-insight');
+    if (!el) return;
+    const safeText = (text || "Analyzing multi-domain vectors: identifying non-obvious correlations...").toLowerCase();
+    el.textContent = safeText;
 }

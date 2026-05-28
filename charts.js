@@ -75,7 +75,7 @@ function renderEmotions(articles) {
     });
 }
 
-function renderGTI(score, history) {
+function renderGTI(score, history, forecast) {
     const scoreEl = document.getElementById('gti-score');
     const barEl = document.getElementById('gti-bar');
     if (!scoreEl || !barEl) return;
@@ -107,12 +107,19 @@ function renderGTI(score, history) {
         if (historyCanvas) {
             const ctx = historyCanvas.getContext('2d');
             let processedHistory = history;
-            if (history.length > 40) {
-                const step = Math.ceil(history.length / 40);
-                processedHistory = history.filter((_, i) => i % step === 0 || i === history.length - 1);
-            }
+            
             const labels = processedHistory.map(h => new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
             const data = processedHistory.map(h => h.score);
+
+            // Add forecast if available
+            let forecastData = [];
+            let forecastLabels = [];
+            if (forecast && forecast.length > 0) {
+                // Ensure continuity
+                forecastData = [data[data.length - 1], ...forecast.map(f => f.score)];
+                forecastLabels = ["", ...forecast.map(f => new Date(f.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))];
+            }
+
             if (charts.gtiHistory) charts.gtiHistory.destroy();
 
             const normalizeHex = (hex) => {
@@ -127,22 +134,29 @@ function renderGTI(score, history) {
             charts.gtiHistory = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'gti_trend',
-                        data: data,
-                        borderColor: THEME_BRIGHT,
-                        backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 5,
-                        pointHoverBackgroundColor: THEME_BRIGHT,
-                        pointHoverBorderColor: COLOR_WHITE,
-                        pointHoverBorderWidth: 2,
-                        fill: true,
-                        tension: 0.45,
-                        spanGaps: true
-                    }]
+                    labels: [...labels, ...forecastLabels.slice(1)],
+                    datasets: [
+                        {
+                            label: 'gti_trend',
+                            data: data,
+                            borderColor: THEME_BRIGHT,
+                            backgroundColor: gradient,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'gti_forecast',
+                            data: [...Array(data.length - 1).fill(null), ...forecastData],
+                            borderColor: THEME_MID,
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -159,7 +173,7 @@ function renderGTI(score, history) {
                             borderWidth: 1,
                             padding: 10,
                             displayColors: false,
-                            callbacks: { label: (context) => `index_score: ${context.parsed.y}` }
+                            callbacks: { label: (context) => `${context.dataset.label}: ${context.parsed.y}` }
                         }
                     },
                     scales: {
@@ -174,9 +188,6 @@ function renderGTI(score, history) {
                                 callback: (value) => value + '%'
                             }
                         }
-                    },
-                    animations: {
-                        tension: { duration: 1000, easing: 'linear', from: 1, to: 0.45, loop: false }
                     }
                 }
             });

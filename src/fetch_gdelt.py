@@ -14,6 +14,10 @@ import subprocess
 import sys
 from typing import List, Dict, Any, Optional, Union
 from dotenv import load_dotenv
+try:
+    from analytics import forecast_gti, generate_narrative_graph
+except ImportError:
+    from src.analytics import forecast_gti, generate_narrative_graph
 
 load_dotenv()
 
@@ -158,6 +162,70 @@ def generate_sitrep(alerts: List[str]) -> str:
     except:
         pass
     return "Intelligence Synthesis Active: Multi-domain nodes reporting normal operational baseline."
+
+
+def generate_strategic_insight(articles: List[Dict[str, Any]], markets: List[Dict[str, Any]], flights: Dict[str, Any]) -> str:
+    """
+    Agentic Intelligence Analyst: Correlates cross-domain signals using LLM.
+    """
+    if not HF_TOKEN:
+        return "Strategic analyst offline: awaiting secure handshake."
+
+    headers = {"Authorization": f"Bearer {HF_TOKEN.strip()}"}
+    # Using a more capable instruct model for reasoning
+    API_URL = "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3"
+
+    # Synthesize richer context
+    top_news = [a["title"] for a in articles[:8]]
+    market_alerts = []
+    if markets:
+        for m in markets:
+            if abs(m["change"]) > 1.5:
+                market_alerts.append(f"{m['symbol']} moved {m['change']}%")
+    
+    anomalies = [a for a in flights.get("assets", []) if a.get("is_outlier")]
+    flight_context = f"{len(anomalies)} anomalies detected in {flights.get('theater', 'unknown')} theater"
+    
+    prompt = f"<s>[INST] You are a Senior Geopolitical Intelligence Analyst. Analyze the following SIGINT/OSINT data nodes for HIDDEN CORRELATIONS and ESCALATION RISKS.\n\n" \
+             f"NEWS FEED:\n- " + "\n- ".join(top_news) + "\n\n" \
+             f"MARKET ANOMALIES: " + (", ".join(market_alerts) if market_alerts else "Stable") + "\n" \
+             f"AERIAL TELEMETRY: {flight_context}\n\n" \
+             f"Identify ONE non-obvious strategic link between these domains. If news mentions a region and telemetry shows anomalies there, highlight the tactical significance. " \
+             f"Be specific, clinical, and predictive. Max 25 words.\n" \
+             f"FORMAT: CORRELATION: [Your insight] [/INST]"
+
+    for attempt in range(3):
+        try:
+            payload = {
+                "inputs": prompt, 
+                "parameters": {
+                    "max_new_tokens": 80, 
+                    "temperature": 0.4, # Lower temperature for more clinical analysis
+                    "repetition_penalty": 1.2
+                },
+                "options": {"wait_for_model": True}
+            }
+            resp = requests.post(API_URL, headers=headers, json=payload, timeout=30)
+            if resp.status_code == 200:
+                result = resp.json()
+                text = ""
+                if isinstance(result, list) and len(result) > 0:
+                    text = result[0].get("generated_text", "")
+                elif isinstance(result, dict):
+                    text = result.get("generated_text", "")
+                
+                if "CORRELATION:" in text:
+                    insight = text.split("CORRELATION:")[1].strip().split("\n")[0]
+                    if len(insight) > 10:
+                        return insight
+            elif resp.status_code == 503:
+                time.sleep(5)
+                continue
+        except Exception as e:
+            print(f"Insight Error: {e}")
+            time.sleep(1)
+            
+    return "Analyzing multi-domain vectors: signal density insufficient for high-confidence correlation."
 
 
 
@@ -535,6 +603,13 @@ def fetch_gdelt_data() -> None:
             states: List[List[Any]] = data.get("states", [])
             mil_assets: List[Dict[str, Any]] = []
             
+            # For Statistical Anomaly Detection
+            all_velocities = [s[9] for s in states if s[9] is not None]
+            all_altitudes = [s[7] for s in states if s[7] is not None]
+            
+            avg_vel = sum(all_velocities) / len(all_velocities) if all_velocities else 200
+            std_vel = (sum((x - avg_vel) ** 2 for x in all_velocities) / len(all_velocities)) ** 0.5 if all_velocities else 50
+
             for s in states:
                 callsign: str = (s[1] or "").strip()
                 is_mil: bool = any(callsign.startswith(pre) for pre in mil_prefixes)
@@ -543,13 +618,22 @@ def fetch_gdelt_data() -> None:
                 
                 # Enhanced Anomaly Detection logic
                 is_outlier: bool = False
+                anomaly_score: float = 0.0
+                
                 if is_mil:
                     is_outlier = True
-                elif altitude and altitude > 13500: # Very high altitude for civil
-                    is_outlier = True
-                elif velocity and velocity > 300: # Very high speed (ground speed in m/s, ~1080 km/h)
-                    is_outlier = True
+                    anomaly_score += 0.5
                 
+                if altitude and altitude > 13500: # Very high altitude for civil
+                    is_outlier = True
+                    anomaly_score += 0.3
+                
+                if velocity:
+                    z_score_vel = (velocity - avg_vel) / (std_vel + 1e-6)
+                    if abs(z_score_vel) > 2.5: # 2.5 standard deviations away
+                        is_outlier = True
+                        anomaly_score += min(abs(z_score_vel) * 0.1, 0.5)
+
                 if is_outlier:
                     mil_assets.append({
                         "icao24": s[0],
@@ -560,11 +644,12 @@ def fetch_gdelt_data() -> None:
                         "alt": int(altitude) if altitude else 0,
                         "vel": int(velocity * 3.6) if velocity else 0,
                         "is_mil": is_mil,
-                        "is_outlier": is_outlier
+                        "is_outlier": is_outlier,
+                        "anomaly_score": round(anomaly_score, 2)
                     })
             
-            # Sort by "severity" (outliers first)
-            mil_assets.sort(key=lambda x: (x["is_mil"], x["vel"]), reverse=True)
+            # Sort by "severity" (anomaly score first)
+            mil_assets.sort(key=lambda x: x.get("anomaly_score", 0), reverse=True)
             
             # Identify "Theater" (simple heuristic by count in region)
             theaters: Dict[str, int] = {"EUROPE": 0, "MIDDLE_EAST": 0, "ASIA_PACIFIC": 0, "AMERICAS": 0}
@@ -581,9 +666,10 @@ def fetch_gdelt_data() -> None:
             
             return {
                 "status": "active", 
-                "assets": mil_assets[:60], 
+                "assets": mil_assets[:80], 
                 "count": len(mil_assets),
-                "theater": main_theater
+                "theater": main_theater,
+                "global_avg_velocity": int(avg_vel * 3.6)
             }
         except Exception as e:
             print(f"!! OpenSky fetch failed: {e}")
@@ -627,7 +713,9 @@ def fetch_gdelt_data() -> None:
         alerts.extend(outliers[:5])
     
     sitrep = generate_sitrep(alerts)
+    strategic_insight = generate_strategic_insight(final_articles, market_intel, flight_intel)
     print(f"\n[SITREP] {sitrep}\n")
+    print(f"[INSIGHT] {strategic_insight}\n")
 
     stats = {
         "total_nodes": len(final_articles),
@@ -639,8 +727,12 @@ def fetch_gdelt_data() -> None:
         "raw_chatter": raw_chatter,
         "market_intel": market_intel,
         "flight_intel": flight_intel,
-        "sitrep": sitrep
+        "sitrep": sitrep,
+        "strategic_insight": strategic_insight
     }
+    
+    # Narrative Graph logic
+    narrative_graph = generate_narrative_graph(final_articles)
 
     try:
         resp_v = requests.get(
@@ -668,7 +760,8 @@ def fetch_gdelt_data() -> None:
             "source_countries": stats["source_countries"],
             "top_keywords": stats["top_keywords"],
             "total_nodes": stats["total_nodes"]
-        }
+        },
+        "narrative_graph": narrative_graph
     }
     
     market_data = {"market_intel": stats["market_intel"]}
@@ -676,7 +769,8 @@ def fetch_gdelt_data() -> None:
     intel_data = {
         "cyber_intel": stats["cyber_intel"],
         "raw_chatter": stats["raw_chatter"],
-        "sitrep": sitrep
+        "sitrep": sitrep,
+        "strategic_insight": strategic_insight
     }
     
     # GTI History Logic
@@ -694,10 +788,15 @@ def fetch_gdelt_data() -> None:
     # Keep last 50 entries
     gti_history = gti_history[-50:]
 
+    # GTI Forecasting
+    forecast_data = forecast_gti(gti_history)
+
     status_data = {
         "last_updated": current_time,
         "global_tension_index": stats["global_tension_index"],
         "gti_history": gti_history,
+        "gti_forecast": forecast_data.get("forecast", []),
+        "forecast_confidence": forecast_data.get("confidence", "low"),
         "security_check": "verified"
     }
 

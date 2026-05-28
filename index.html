@@ -63,15 +63,29 @@
     </div>
 
     <!-- SITREP Alert Row -->
-    <div class="card mb-3" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-bright); min-height: 40px; display: flex; align-items: center;">
-        <div class="d-flex align-items-center gap-3" style="width: 100%;">
-            <span style="color: var(--theme-bright); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; white-space: nowrap;">[ tactical_sitrep ]</span>
-            <div class="sitrep-container">
-                <div id="sitrep-text" class="sitrep-marquee" style="font-size: 0.75rem; color: var(--text-main); font-style: italic;">
-                    <span>intelligence synthesis active: multi-domain nodes reporting normal operational baseline... &nbsp;&nbsp;...&nbsp;&nbsp; intelligence synthesis active: multi-domain nodes reporting normal operational baseline... &nbsp;&nbsp;...&nbsp;&nbsp;</span>
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <div class="card h-100" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-bright); min-height: 48px; display: flex; align-items: center; margin-bottom: 0;">
+                <div class="d-flex align-items-center gap-3" style="width: 100%;">
+                    <span style="color: var(--theme-bright); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; white-space: nowrap;">[ tactical_sitrep ]</span>
+                    <div class="sitrep-container">
+                        <div id="sitrep-text" class="sitrep-marquee" style="font-size: 0.75rem; color: var(--text-main); font-style: italic;">
+                            <span>intelligence synthesis active: multi-domain nodes reporting normal operational baseline...</span>
+                        </div>
+                    </div>
+                    <span id="sitrep-status" class="text-dim" style="font-size: 0.5rem; text-transform: uppercase; white-space: nowrap;">verified_stream</span>
                 </div>
             </div>
-            <span id="sitrep-status" class="text-dim" style="font-size: 0.5rem; text-transform: uppercase; white-space: nowrap;">verified_stream</span>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-mid); min-height: 48px; display: flex; align-items: center; margin-bottom: 0;">
+                <div class="d-flex align-items-center gap-3" style="width: 100%;">
+                    <span style="color: var(--theme-mid); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; white-space: nowrap;">[ strategic_analyst ]</span>
+                    <div id="strategic-insight" style="font-size: 0.65rem; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        analyzing multi-domain vectors...
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

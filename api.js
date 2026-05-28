@@ -70,7 +70,8 @@ async function updateDashboard() {
         });
 
         safeRender('sitrep', () => renderSITREP(intel.sitrep || "synthesizing tactical reports..."));
-        safeRender('gti', () => renderGTI(status.global_tension_index, status.gti_history));
+        safeRender('insight', () => renderStrategicInsight(intel.strategic_insight));
+        safeRender('gti', () => renderGTI(status.global_tension_index, status.gti_history, status.gti_forecast));
         safeRender('flights', () => renderFlightIntel(telemetry.flight_intel));
         safeRender('map', () => {
             renderMap(news.stats.source_countries, news.articles);

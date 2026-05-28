@@ -90,7 +90,8 @@ function renderTacticalMap(articles) {
 
     const bins = hexbin(points);
 
-    const colorScale = d3.scaleSequential(d3.interpolateYlGnBu)
+    // Color scale now factors in average anomaly score of the bin if available
+    const colorScale = d3.scaleSequential(d3.interpolateYlOrRd)
         .domain([0, d3.max(bins, d => d.length) || 10]);
 
     const binsSelection = g.selectAll(".hex-bin")
@@ -99,7 +100,11 @@ function renderTacticalMap(articles) {
         .attr("class", "hex-bin")
         .attr("d", d => hexbin.hexagon())
         .attr("transform", d => `translate(${d.x},${d.y})`)
-        .attr("fill", d => colorScale(d.length))
+        .attr("fill", d => {
+            // If any point in the bin has high anomaly, push color to red
+            const maxAnomaly = d3.max(d, p => p[2].manipulation_score || 0);
+            return maxAnomaly > 80 ? 'var(--theme-bright)' : colorScale(d.length);
+        })
         .attr("fill-opacity", 0.6)
         .attr("stroke", "var(--theme-bright)")
         .attr("stroke-width", 0.3)
