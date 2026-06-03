@@ -1,73 +1,105 @@
 {
     "date": "2026-06-03",
     "gti": 73,
-    "sitrep": "Hong Kong launches DeepSeek-based AI model designed to run on domestic chips . China plans compute futures in Shanghai as AI computing demand surges .",
+    "sitrep": "Intelligence Synthesis Active: Multi-domain nodes reporting normal operational baseline.",
     "top_keywords": {
+        "iran": {
+            "count": 26,
+            "type": "LOC"
+        },
         "trump": {
-            "count": 23,
+            "count": 24,
             "type": "PER"
         },
-        "iran": {
-            "count": 23,
-            "type": "LOC"
-        },
         "ukraine": {
-            "count": 20,
-            "type": "LOC"
-        },
-        "china": {
             "count": 18,
             "type": "LOC"
         },
-        "direct": {
-            "count": 14,
-            "type": "ORG"
+        "china": {
+            "count": 16,
+            "type": "LOC"
         },
         "israel": {
-            "count": 13,
-            "type": "LOC"
-        },
-        "hong kong": {
-            "count": 12,
-            "type": "LOC"
-        },
-        "japan": {
-            "count": 12,
+            "count": 16,
             "type": "LOC"
         },
         "russia": {
             "count": 12,
             "type": "LOC"
         },
-        "donald trump": {
-            "count": 11,
-            "type": "PER"
-        },
-        "lebanon": {
-            "count": 10,
-            "type": "LOC"
-        },
-        "hezbollah": {
-            "count": 10,
+        "direct": {
+            "count": 12,
             "type": "ORG"
         },
-        "u.s.": {
-            "count": 8,
+        "lebanon": {
+            "count": 11,
+            "type": "LOC"
+        },
+        "hong kong": {
+            "count": 11,
+            "type": "LOC"
+        },
+        "japan": {
+            "count": 11,
             "type": "LOC"
         },
         "netanyahu": {
-            "count": 7,
+            "count": 9,
             "type": "PER"
         },
+        "hezbollah": {
+            "count": 9,
+            "type": "ORG"
+        },
+        "u.s.": {
+            "count": 9,
+            "type": "LOC"
+        },
         "kuwait": {
+            "count": 8,
+            "type": "LOC"
+        },
+        "donald trump": {
+            "count": 8,
+            "type": "PER"
+        },
+        "henry nowak": {
             "count": 6,
+            "type": "PER"
+        },
+        "california": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "russie": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "brazil": {
+            "count": 5,
             "type": "LOC"
         },
         "ebola": {
-            "count": 6,
+            "count": 5,
             "type": "LOC"
         },
-        "kenya": {
+        "rubio": {
+            "count": 4,
+            "type": "PER"
+        },
+        "bill pulte": {
+            "count": 4,
+            "type": "PER"
+        },
+        "saint-p\u00e9tersbourg": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "etats-unis": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "denmark": {
             "count": 4,
             "type": "LOC"
         },
@@ -75,31 +107,11 @@
             "count": 4,
             "type": "LOC"
         },
-        "india": {
-            "count": 4,
-            "type": "LOC"
-        },
         "putin": {
             "count": 4,
             "type": "PER"
         },
-        "henry nowak": {
-            "count": 4,
-            "type": "PER"
-        },
-        "denmark": {
-            "count": 4,
-            "type": "LOC"
-        },
         "rwanda": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "beirut": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "falklands": {
             "count": 4,
             "type": "LOC"
         },
@@ -107,11 +119,35 @@
             "count": 4,
             "type": "LOC"
         },
-        "brazil": {
-            "count": 4,
+        "video": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "germany": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "who": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "south africa": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "beirut": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "kenya": {
+            "count": 3,
             "type": "LOC"
         },
         "mexico": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "india": {
             "count": 3,
             "type": "LOC"
         },
@@ -122,26 +158,6 @@
         "volodymyr zelensky": {
             "count": 3,
             "type": "PER"
-        },
-        "saint-p\u00e9tersbourg": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "russie": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "europe": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "etats-unis": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "california": {
-            "count": 3,
-            "type": "LOC"
         },
         "taiwan": {
             "count": 3,
@@ -155,19 +171,7 @@
             "count": 3,
             "type": "LOC"
         },
-        "usa": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "bill pulte": {
-            "count": 3,
-            "type": "PER"
-        },
-        "kiev": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "liban": {
+        "falklands": {
             "count": 3,
             "type": "LOC"
         },
@@ -179,79 +183,75 @@
             "count": 3,
             "type": "ORG"
         },
-        "rubio": {
-            "count": 3,
-            "type": "PER"
+        "kiev": {
+            "count": 2,
+            "type": "LOC"
         },
-        "us ebola": {
+        "\u0643\u0623\u0633": {
             "count": 2,
             "type": "ORG"
         },
-        "sweden": {
+        "bolivia": {
             "count": 2,
             "type": "LOC"
         },
-        "christophe gleizes": {
+        "petersburg": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "portugal": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "wim wenders": {
             "count": 2,
             "type": "PER"
         },
-        "saint petersburg": {
+        "nigeria": {
             "count": 2,
             "type": "LOC"
         },
-        "gaza": {
+        "gro\u00dfbritannien": {
             "count": 2,
             "type": "LOC"
         },
-        "alg\u00e9rie": {
+        "usa": {
             "count": 2,
             "type": "LOC"
         },
-        "kowe\u00eft": {
+        "drohnen": {
             "count": 2,
             "type": "LOC"
         },
-        "st petersburg": {
+        "teheran": {
             "count": 2,
             "type": "LOC"
         },
-        "southampton": {
+        "gulf": {
             "count": 2,
             "type": "LOC"
         },
-        "leire d\u00edez": {
-            "count": 2,
-            "type": "PER"
-        },
-        "psoe": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "cuba": {
+        "chicago": {
             "count": 2,
             "type": "LOC"
         },
-        "vox": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "rdc": {
+        "liban": {
             "count": 2,
             "type": "LOC"
         },
-        "israel-lebanon": {
+        "north korea": {
             "count": 2,
             "type": "LOC"
         }
     },
     "top_domains": {
-        "www.scmp.com": 59,
-        "www.lemonde.fr": 56,
-        "www.france24.com": 43,
+        "www.scmp.com": 56,
+        "www.lemonde.fr": 51,
+        "www.france24.com": 42,
         "www.aljazeera.net": 40,
+        "www.thehindu.com": 39,
         "www.straitstimes.com": 37,
-        "feeds.bbci.co.uk": 33,
-        "www.thehindu.com": 31,
+        "www.jpost.com": 30,
         "www.japantimes.co.jp": 29
     }
 }
