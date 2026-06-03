@@ -1,10 +1,10 @@
 {
     "date": "2026-06-03",
-    "gti": 65,
-    "sitrep": "Tactical Alerts: Narrative Spike:   \u00a0\u00a0\u00a0- \u00a0-\u00a0\u2018\"\"\u00a0- \"\u00a0\"\u00a0\" \u00a0\u201c\u00a0\"\" \u2013\u00a0\u00a0\u201d \u2013 \u00a0\" \"\u00a0-\u201d -\u00a0\u00a0\"-\u00a0-\"\u00a0\u2013\"\u00a0\"-\u00a0\" -\u00a0\"\u2013\u00a0\"--\"-\"-",
+    "gti": 68,
+    "sitrep": "Intelligence Synthesis Active: Multi-domain nodes reporting normal operational baseline.",
     "top_keywords": {
         "trump": {
-            "count": 32,
+            "count": 29,
             "type": "PER"
         },
         "iran": {
@@ -16,58 +16,54 @@
             "type": "LOC"
         },
         "israel": {
-            "count": 21,
+            "count": 17,
             "type": "LOC"
         },
         "china": {
-            "count": 17,
+            "count": 14,
+            "type": "LOC"
+        },
+        "lebanon": {
+            "count": 13,
             "type": "LOC"
         },
         "hezbollah": {
-            "count": 17,
+            "count": 13,
             "type": "ORG"
         },
-        "lebanon": {
-            "count": 16,
-            "type": "LOC"
-        },
-        "russia": {
-            "count": 13,
-            "type": "LOC"
+        "direct": {
+            "count": 12,
+            "type": "ORG"
         },
         "japan": {
             "count": 11,
             "type": "LOC"
         },
-        "donald trump": {
+        "russia": {
             "count": 11,
-            "type": "PER"
-        },
-        "direct": {
-            "count": 11,
-            "type": "ORG"
+            "type": "LOC"
         },
         "hong kong": {
             "count": 10,
             "type": "LOC"
         },
-        "netanyahu": {
+        "donald trump": {
             "count": 10,
             "type": "PER"
         },
-        "ebola": {
+        "netanyahu": {
             "count": 9,
+            "type": "PER"
+        },
+        "ebola": {
+            "count": 7,
             "type": "LOC"
         },
         "u.s.": {
             "count": 6,
             "type": "LOC"
         },
-        "kenya": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "brazil": {
+        "kuwait": {
             "count": 5,
             "type": "LOC"
         },
@@ -75,15 +71,11 @@
             "count": 5,
             "type": "ORG"
         },
-        "feij\u00f3o": {
-            "count": 4,
-            "type": "PER"
-        },
-        "colombia": {
+        "denmark": {
             "count": 4,
             "type": "LOC"
         },
-        "canada": {
+        "rwanda": {
             "count": 4,
             "type": "LOC"
         },
@@ -92,8 +84,44 @@
             "type": "LOC"
         },
         "putin": {
-            "count": 3,
+            "count": 4,
             "type": "PER"
+        },
+        "falklands": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "feij\u00f3o": {
+            "count": 4,
+            "type": "PER"
+        },
+        "canada": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "kenya": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "brazil": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "south africa": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "france": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "india": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "malaysia": {
+            "count": 3,
+            "type": "LOC"
         },
         "usa": {
             "count": 3,
@@ -107,19 +135,7 @@
             "count": 3,
             "type": "LOC"
         },
-        "malaysia": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "isra\u00ebl": {
-            "count": 3,
-            "type": "LOC"
-        },
         "liban": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "rwanda": {
             "count": 3,
             "type": "LOC"
         },
@@ -130,10 +146,6 @@
         "who": {
             "count": 3,
             "type": "ORG"
-        },
-        "osaka": {
-            "count": 3,
-            "type": "LOC"
         },
         "idf": {
             "count": 3,
@@ -147,111 +159,99 @@
             "count": 3,
             "type": "PER"
         },
-        "florida": {
-            "count": 3,
+        "cuba": {
+            "count": 2,
             "type": "LOC"
+        },
+        "vox": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "david s\u00e1nchez": {
+            "count": 2,
+            "type": "PER"
+        },
+        "saint-p\u00e9tersbourg": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "rdc": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "etats-unis": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "california": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "israel-lebanon": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "us-iran": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "nato": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "st. petersburg": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "london": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "texas": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "west asia": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "pakistan": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "alabama": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "beijing": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "taiwan": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "antarctic": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "falklands legislative assembly": {
+            "count": 2,
+            "type": "ORG"
         },
         "ucrania": {
             "count": 2,
             "type": "LOC"
-        },
-        "kuwait": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "russie": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "royaume-uni": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "tropical storm jangmi": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "litani": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "vatican": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "south korea": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "mette frederiksen": {
-            "count": 2,
-            "type": "PER"
-        },
-        "spain": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "ghana": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "falklands": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "guterres": {
-            "count": 2,
-            "type": "PER"
-        },
-        "mexico": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "lowtiergod": {
-            "count": 2,
-            "type": "PER"
-        },
-        "white house": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "senegal": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "paris": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "iaea": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "south africa": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "libanon": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "gro\u00dfbritannien": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "benjamin netanyahu": {
-            "count": 2,
-            "type": "PER"
         }
     },
     "top_domains": {
-        "www.scmp.com": 54,
-        "www.lemonde.fr": 45,
-        "www.france24.com": 45,
-        "www.aljazeera.net": 43,
-        "www.jpost.com": 40,
-        "feeds.elpais.com": 38,
-        "www.straitstimes.com": 37,
-        "feeds.bbci.co.uk": 35
+        "www.scmp.com": 49,
+        "www.lemonde.fr": 48,
+        "www.straitstimes.com": 47,
+        "www.aljazeera.net": 47,
+        "www.france24.com": 46,
+        "www.japantimes.co.jp": 34,
+        "www.jpost.com": 33,
+        "timesofindia.indiatimes.com": 31
     }
 }
