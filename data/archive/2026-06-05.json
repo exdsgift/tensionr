@@ -1,87 +1,103 @@
 {
     "date": "2026-06-05",
     "gti": 70,
-    "sitrep": "Intelligence Synthesis Active: Multi-domain nodes reporting normal operational baseline.",
+    "sitrep": "Narrative Spike: LA-bound Boeing 787 collapses before take-off (VIDEO). Suspected Ukrainian drone explodes in Romanian port . Xi Jinping to pay state visit to North Korea . Nearly 50 people die of thirst in Sahara desert after lorry breaks down .",
     "top_keywords": {
         "trump": {
-            "count": 24,
+            "count": 26,
             "type": "PER"
         },
         "china": {
-            "count": 20,
+            "count": 23,
+            "type": "LOC"
+        },
+        "iran": {
+            "count": 17,
             "type": "LOC"
         },
         "ukraine": {
-            "count": 18,
+            "count": 17,
+            "type": "LOC"
+        },
+        "israel": {
+            "count": 16,
             "type": "LOC"
         },
         "lebanon": {
             "count": 16,
             "type": "LOC"
         },
-        "iran": {
-            "count": 16,
-            "type": "LOC"
-        },
-        "israel": {
-            "count": 13,
-            "type": "LOC"
+        "hezbollah": {
+            "count": 12,
+            "type": "ORG"
         },
         "japan": {
             "count": 12,
             "type": "LOC"
         },
-        "hezbollah": {
-            "count": 10,
-            "type": "ORG"
-        },
-        "liban": {
-            "count": 8,
-            "type": "LOC"
-        },
         "india": {
-            "count": 8,
+            "count": 7,
             "type": "LOC"
         },
-        "marjane satrapi": {
-            "count": 7,
-            "type": "PER"
+        "france": {
+            "count": 6,
+            "type": "LOC"
         },
-        "donald trump": {
+        "putin": {
             "count": 6,
             "type": "PER"
         },
-        "direct": {
+        "u.s.": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "hong kong": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "russia": {
             "count": 5,
             "type": "LOC"
+        },
+        "netanyahu": {
+            "count": 5,
+            "type": "PER"
+        },
+        "brazil": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "liban": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "marjane satrapi": {
+            "count": 5,
+            "type": "PER"
         },
         "north korea": {
-            "count": 5,
+            "count": 4,
             "type": "LOC"
         },
-        "moyen-orient": {
-            "count": 5,
-            "type": "ORG"
-        },
-        "putin": {
-            "count": 5,
-            "type": "PER"
-        },
-        "france": {
-            "count": 5,
+        "ebola": {
+            "count": 4,
             "type": "LOC"
         },
-        "henry nowak": {
-            "count": 5,
-            "type": "PER"
+        "gaza": {
+            "count": 4,
+            "type": "LOC"
         },
-        "isra\u00ebl": {
+        "direct": {
             "count": 4,
             "type": "LOC"
         },
         "albania": {
             "count": 4,
             "type": "LOC"
+        },
+        "moyen-orient": {
+            "count": 4,
+            "type": "ORG"
         },
         "russie": {
             "count": 4,
@@ -95,53 +111,41 @@
             "count": 4,
             "type": "LOC"
         },
-        "u.s.": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "south korea": {
-            "count": 4,
-            "type": "LOC"
-        },
         "dubai": {
             "count": 4,
             "type": "LOC"
+        },
+        "henry nowak": {
+            "count": 4,
+            "type": "PER"
         },
         "sweden": {
             "count": 4,
             "type": "LOC"
         },
-        "brazil": {
-            "count": 4,
+        "musk": {
+            "count": 3,
+            "type": "PER"
+        },
+        "thailand": {
+            "count": 3,
             "type": "LOC"
         },
         "balkans": {
             "count": 3,
             "type": "LOC"
         },
-        "ebola": {
+        "isra\u00ebl": {
             "count": 3,
             "type": "LOC"
-        },
-        "netanyahu": {
-            "count": 3,
-            "type": "PER"
         },
         "\u0643\u0623\u0633": {
             "count": 3,
             "type": "ORG"
         },
-        "kim jong un": {
-            "count": 3,
-            "type": "PER"
-        },
         "leire d\u00edez": {
             "count": 3,
             "type": "PER"
-        },
-        "kyiv": {
-            "count": 3,
-            "type": "LOC"
         },
         "britain": {
             "count": 3,
@@ -150,10 +154,6 @@
         "idf": {
             "count": 3,
             "type": "ORG"
-        },
-        "gaza": {
-            "count": 3,
-            "type": "LOC"
         },
         "etats-unis": {
             "count": 3,
@@ -167,9 +167,9 @@
             "count": 3,
             "type": "PER"
         },
-        "russia": {
+        "donald trump": {
             "count": 3,
-            "type": "LOC"
+            "type": "PER"
         },
         "white house": {
             "count": 3,
@@ -191,36 +191,40 @@
             "count": 3,
             "type": "LOC"
         },
-        "persepolis": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "hong kong": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "europe": {
-            "count": 3,
-            "type": "LOC"
-        },
         "budapest": {
             "count": 3,
             "type": "LOC"
         },
-        "ungarn": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "libanon": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "marco rubio": {
-            "count": 3,
+        "starmer": {
+            "count": 2,
             "type": "PER"
         },
-        "kuwait": {
-            "count": 3,
+        "xi jinping": {
+            "count": 2,
+            "type": "PER"
+        },
+        "how trump": {
+            "count": 2,
+            "type": "PER"
+        },
+        "nigeria": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "khamenei": {
+            "count": 2,
+            "type": "PER"
+        },
+        "tyre": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "india-china": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "falklands": {
+            "count": 2,
             "type": "LOC"
         },
         "kiev": {
@@ -234,20 +238,16 @@
         "tokyo": {
             "count": 2,
             "type": "LOC"
-        },
-        "switzerland": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 59,
-        "www.lemonde.fr": 53,
-        "www.straitstimes.com": 43,
-        "www.scmp.com": 40,
-        "www.jpost.com": 39,
-        "timesofindia.indiatimes.com": 38,
-        "www.france24.com": 33,
-        "www.japantimes.co.jp": 32
+        "www.straitstimes.com": 53,
+        "www.aljazeera.net": 49,
+        "www.scmp.com": 46,
+        "www.jpost.com": 43,
+        "www.lemonde.fr": 43,
+        "timesofindia.indiatimes.com": 35,
+        "www.japantimes.co.jp": 32,
+        "feeds.elpais.com": 28
     }
 }
