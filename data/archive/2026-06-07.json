@@ -1,22 +1,22 @@
 {
     "date": "2026-06-07",
     "gti": 80,
-    "sitrep": "Narrative Spike: Trump says he will urge Netanyahu not to retaliate after Iran's missile attack on Israel . Trump abruptly ends NBC interview after clash over 'rigged election' claim .",
+    "sitrep": "Israel army says Iran committed \u2018grave mistake\u2019 by firing missiles . Trump says he will press Israel to hold back after Iran retaliates for Beirut attack . U.K., France, Germany back direct Ukraine-Russia talks . Moldova's president pushes for develo",
     "top_keywords": {
+        "iran": {
+            "count": 34,
+            "type": "LOC"
+        },
         "israel": {
             "count": 34,
             "type": "LOC"
         },
-        "iran": {
-            "count": 28,
-            "type": "LOC"
-        },
         "trump": {
-            "count": 15,
+            "count": 17,
             "type": "PER"
         },
         "ukraine": {
-            "count": 12,
+            "count": 15,
             "type": "LOC"
         },
         "madrid": {
@@ -24,16 +24,20 @@
             "type": "LOC"
         },
         "lebanon": {
-            "count": 8,
+            "count": 9,
+            "type": "LOC"
+        },
+        "beirut": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "france": {
+            "count": 7,
             "type": "LOC"
         },
         "peru": {
             "count": 7,
             "type": "LOC"
-        },
-        "west bank": {
-            "count": 7,
-            "type": "ORG"
         },
         "idf": {
             "count": 7,
@@ -47,21 +51,33 @@
             "count": 7,
             "type": "LOC"
         },
+        "u.s.": {
+            "count": 6,
+            "type": "LOC"
+        },
         "papa": {
             "count": 6,
             "type": "PER"
         },
-        "beirut": {
-            "count": 6,
-            "type": "LOC"
-        },
-        "france": {
-            "count": 6,
-            "type": "LOC"
-        },
         "leo": {
             "count": 6,
             "type": "PER"
+        },
+        "russia": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "nbc": {
+            "count": 5,
+            "type": "ORG"
+        },
+        "direct": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "moyen-orient": {
+            "count": 5,
+            "type": "ORG"
         },
         "donald trump": {
             "count": 5,
@@ -71,19 +87,11 @@
             "count": 5,
             "type": "LOC"
         },
-        "russia": {
+        "west bank": {
             "count": 5,
-            "type": "LOC"
+            "type": "ORG"
         },
         "\u0643\u0623\u0633": {
-            "count": 5,
-            "type": "ORG"
-        },
-        "direct": {
-            "count": 4,
-            "type": "ORG"
-        },
-        "moyen-orient": {
             "count": 5,
             "type": "ORG"
         },
@@ -91,7 +99,11 @@
             "count": 5,
             "type": "LOC"
         },
-        "nbc": {
+        "netanyahu": {
+            "count": 4,
+            "type": "PER"
+        },
+        "hamas": {
             "count": 4,
             "type": "ORG"
         },
@@ -107,10 +119,6 @@
             "count": 4,
             "type": "LOC"
         },
-        "hezbollah": {
-            "count": 4,
-            "type": "ORG"
-        },
         "pentagon": {
             "count": 4,
             "type": "LOC"
@@ -119,25 +127,17 @@
             "count": 4,
             "type": "LOC"
         },
-        "u.s.": {
+        "gulf": {
             "count": 4,
             "type": "LOC"
         },
-        "gulf": {
-            "count": 4,
+        "chagos islands": {
+            "count": 3,
             "type": "LOC"
         },
         "canada": {
             "count": 3,
             "type": "LOC"
-        },
-        "video": {
-            "count": 3,
-            "type": "ORG"
-        },
-        "netanyahu": {
-            "count": 3,
-            "type": "PER"
         },
         "roland garros": {
             "count": 3,
@@ -171,11 +171,7 @@
             "count": 3,
             "type": "PER"
         },
-        "gaza": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "hamas": {
+        "hezbollah": {
             "count": 3,
             "type": "ORG"
         },
@@ -211,9 +207,25 @@
             "count": 3,
             "type": "LOC"
         },
-        "bernadette chirac": {
-            "count": 3,
+        "la france": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "volodymyr zelensky": {
+            "count": 2,
             "type": "PER"
+        },
+        "u.k.": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "watch": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "video": {
+            "count": 2,
+            "type": "ORG"
         },
         "\u062d\u0631\u0628": {
             "count": 2,
@@ -226,28 +238,16 @@
         "espa\u00f1a": {
             "count": 2,
             "type": "LOC"
-        },
-        "real madrid": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "sriram krishnan": {
-            "count": 2,
-            "type": "PER"
-        },
-        "chagos islands": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 96,
-        "www.jpost.com": 45,
-        "www.lemonde.fr": 43,
-        "www.straitstimes.com": 39,
+        "www.aljazeera.net": 100,
+        "www.straitstimes.com": 49,
+        "www.jpost.com": 41,
+        "www.lemonde.fr": 36,
         "timesofindia.indiatimes.com": 34,
         "www.scmp.com": 34,
-        "www.france24.com": 33,
-        "feeds.elpais.com": 31
+        "feeds.elpais.com": 31,
+        "www.thehindu.com": 30
     }
 }
