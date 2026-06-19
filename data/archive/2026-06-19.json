@@ -1,55 +1,71 @@
 {
     "date": "2026-06-19",
     "gti": 65,
-    "sitrep": "SCMP's 7 highlights: US, Iran sign peace deal; China\u2019s C919 jets grounded for safety checks . EU leaders ask Brussels to come up with new trade weapons to counter China shock .",
+    "sitrep": "Narrative Spike: Kremlin acknowledges Ukrainian drone attack on Moscow, says strikes on Ukraine will continue . Hormuz ship crossings spike after U.S.-Iran deal to end war, says marine tracker .",
     "top_keywords": {
         "iran": {
-            "count": 53,
+            "count": 49,
             "type": "LOC"
         },
         "trump": {
-            "count": 2,
-            "type": "ORG"
+            "count": 27,
+            "type": "PER"
         },
         "israel": {
-            "count": 16,
+            "count": 21,
             "type": "LOC"
         },
         "ukraine": {
             "count": 16,
             "type": "LOC"
         },
-        "china": {
-            "count": 13,
-            "type": "LOC"
+        "us-iran": {
+            "count": 10,
+            "type": "ORG"
         },
         "direct": {
             "count": 10,
             "type": "ORG"
         },
-        "us-iran": {
+        "zapatero": {
             "count": 8,
-            "type": "ORG"
+            "type": "PER"
         },
-        "russia": {
+        "china": {
             "count": 8,
+            "type": "LOC"
+        },
+        "donald trump": {
+            "count": 7,
+            "type": "PER"
+        },
+        "lebanon": {
+            "count": 7,
             "type": "LOC"
         },
         "europe": {
             "count": 7,
             "type": "LOC"
         },
-        "etats-unis": {
-            "count": 7,
+        "moscow": {
+            "count": 6,
             "type": "LOC"
         },
-        "zapatero": {
-            "count": 7,
+        "russia": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "u.s.": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "vance": {
+            "count": 6,
             "type": "PER"
         },
-        "moscow": {
-            "count": 7,
-            "type": "LOC"
+        "netanyahu": {
+            "count": 6,
+            "type": "PER"
         },
         "nato": {
             "count": 6,
@@ -59,35 +75,19 @@
             "count": 6,
             "type": "LOC"
         },
-        "donald trump": {
-            "count": 6,
-            "type": "PER"
-        },
-        "u.s.": {
-            "count": 6,
+        "switzerland": {
+            "count": 5,
             "type": "LOC"
+        },
+        "idf": {
+            "count": 5,
+            "type": "ORG"
         },
         "jd vance": {
             "count": 5,
             "type": "ORG"
         },
-        "netanyahu": {
-            "count": 5,
-            "type": "PER"
-        },
-        "switzerland": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "usa": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "brazil": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "cuba": {
+        "etats-unis": {
             "count": 5,
             "type": "LOC"
         },
@@ -99,15 +99,11 @@
             "count": 5,
             "type": "LOC"
         },
-        "malaysia": {
+        "liban": {
             "count": 4,
             "type": "LOC"
         },
-        "vance": {
-            "count": 4,
-            "type": "PER"
-        },
-        "new york": {
+        "usa": {
             "count": 4,
             "type": "LOC"
         },
@@ -115,31 +111,51 @@
             "count": 4,
             "type": "PER"
         },
+        "brazil": {
+            "count": 4,
+            "type": "LOC"
+        },
         "ebola": {
             "count": 4,
             "type": "LOC"
         },
-        "japan": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "taiwan": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "texas": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "moscou": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "starmer": {
-            "count": 4,
+        "andy burnham": {
+            "count": 3,
             "type": "PER"
         },
-        "south korea": {
+        "keir starmer": {
+            "count": 3,
+            "type": "PER"
+        },
+        "hezbollah": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "india": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "icc": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "quir\u00f3n": {
+            "count": 3,
+            "type": "PER"
+        },
+        "ayuso": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "colombia": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "volodymyr zelensky": {
+            "count": 3,
+            "type": "PER"
+        },
+        "russie": {
             "count": 3,
             "type": "LOC"
         },
@@ -151,19 +167,11 @@
             "count": 3,
             "type": "LOC"
         },
-        "lula": {
-            "count": 3,
-            "type": "PER"
-        },
-        "volodymyr zelensky": {
-            "count": 3,
-            "type": "PER"
-        },
-        "france": {
+        "new york": {
             "count": 3,
             "type": "LOC"
         },
-        "liban": {
+        "cuba": {
             "count": 3,
             "type": "LOC"
         },
@@ -171,83 +179,79 @@
             "count": 3,
             "type": "LOC"
         },
-        "ghana": {
+        "japan": {
             "count": 3,
             "type": "LOC"
         },
-        "britain": {
+        "taiwan": {
             "count": 3,
             "type": "LOC"
         },
-        "tehran": {
+        "texas": {
             "count": 3,
             "type": "LOC"
         },
-        "video": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "mexico": {
-            "count": 2,
+        "moscou": {
+            "count": 3,
             "type": "LOC"
         },
-        "fifa": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "india": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "times square": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "emmanuel macron": {
+        "hormuz": {
             "count": 2,
             "type": "PER"
         },
-        "kiev": {
+        "u.k.": {
             "count": 2,
             "type": "LOC"
+        },
+        "zimbabwe": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "gaza": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "america": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "s\u00e1nchez": {
+            "count": 2,
+            "type": "PER"
+        },
+        "ir\u00e1n": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "suiza": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "white house": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "karim khan": {
+            "count": 2,
+            "type": "PER"
         },
         "royaume-uni": {
             "count": 2,
             "type": "LOC"
         },
-        "keir starmer": {
-            "count": 2,
-            "type": "PER"
-        },
-        "russie": {
+        "suisse": {
             "count": 2,
             "type": "LOC"
-        },
-        "\u0643\u0623\u0633": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "air force one": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "qatar": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "manzambi": {
-            "count": 2,
-            "type": "PER"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 60,
-        "www.scmp.com": 55,
-        "www.lemonde.fr": 51,
-        "www.france24.com": 46,
-        "timesofindia.indiatimes.com": 44,
-        "www.straitstimes.com": 38,
-        "www.thehindu.com": 32,
-        "www.japantimes.co.jp": 28
+        "www.aljazeera.net": 70,
+        "www.lemonde.fr": 50,
+        "www.straitstimes.com": 48,
+        "www.scmp.com": 45,
+        "www.france24.com": 37,
+        "www.jpost.com": 31,
+        "www.thehindu.com": 30,
+        "timesofindia.indiatimes.com": 29
     }
 }
