@@ -1,22 +1,22 @@
 {
     "date": "2026-06-24",
     "gti": 80,
-    "sitrep": "12-year-old Chinese boy caught after 6-hour highway joyride, claims dwarfism when stopped . Kim Jong-un says North Korea to arm navy with nuclear weapons, build bigger warships . Le Congr\u00e8s am\u00e9ricain ordonne \u00e0 Donald Trump de retirer .",
+    "sitrep": "Narrative Spike: US to set up testing ranges mimicking Ukraine battlefield . US eases World Cup restrictions on Iran after FIFA complaint . Australia ramps up bird flu surveillance, testing after first mainland cases reported .",
     "top_keywords": {
         "iran": {
-            "count": 37,
+            "count": 40,
             "type": "LOC"
         },
         "china": {
             "count": 18,
             "type": "LOC"
         },
+        "trump": {
+            "count": 17,
+            "type": "PER"
+        },
         "france": {
             "count": 17,
-            "type": "LOC"
-        },
-        "trump": {
-            "count": 2,
             "type": "LOC"
         },
         "israel": {
@@ -27,23 +27,31 @@
             "count": 12,
             "type": "LOC"
         },
-        "brexit": {
-            "count": 12,
-            "type": "LOC"
-        },
-        "hong kong": {
-            "count": 10,
-            "type": "LOC"
-        },
         "u.s.": {
-            "count": 10,
-            "type": "LOC"
-        },
-        "japan": {
-            "count": 8,
+            "count": 9,
             "type": "LOC"
         },
         "\u0643\u0623\u0633": {
+            "count": 8,
+            "type": "ORG"
+        },
+        "hong kong": {
+            "count": 8,
+            "type": "LOC"
+        },
+        "brexit": {
+            "count": 8,
+            "type": "LOC"
+        },
+        "japan": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "tehran": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "nato": {
             "count": 7,
             "type": "ORG"
         },
@@ -51,49 +59,45 @@
             "count": 7,
             "type": "LOC"
         },
-        "direct": {
+        "strait of hormuz": {
             "count": 6,
+            "type": "LOC"
+        },
+        "netanyahu": {
+            "count": 5,
+            "type": "PER"
+        },
+        "idf": {
+            "count": 5,
             "type": "ORG"
         },
-        "tehran": {
-            "count": 6,
+        "europe": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "colombia": {
+            "count": 5,
             "type": "LOC"
         },
         "liban": {
-            "count": 6,
+            "count": 5,
+            "type": "LOC"
+        },
+        "ghana": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "england": {
+            "count": 4,
             "type": "LOC"
         },
         "donald trump": {
-            "count": 5,
+            "count": 4,
             "type": "PER"
         },
         "texas": {
-            "count": 5,
+            "count": 4,
             "type": "LOC"
-        },
-        "starmer": {
-            "count": 5,
-            "type": "PER"
-        },
-        "andy burnham": {
-            "count": 5,
-            "type": "PER"
-        },
-        "strait of hormuz": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "hormuz": {
-            "count": 5,
-            "type": "PER"
-        },
-        "lebanon": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "nato": {
-            "count": 5,
-            "type": "ORG"
         },
         "montreal": {
             "count": 4,
@@ -103,27 +107,19 @@
             "count": 4,
             "type": "LOC"
         },
-        "colombia": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "idf": {
+        "direct": {
             "count": 4,
             "type": "ORG"
         },
-        "taliban": {
-            "count": 4,
-            "type": "ORG"
-        },
-        "netanyahu": {
+        "hormuz": {
             "count": 4,
             "type": "PER"
         },
-        "ebola": {
+        "lebanon": {
             "count": 4,
             "type": "LOC"
         },
-        "paris": {
+        "ebola": {
             "count": 4,
             "type": "LOC"
         },
@@ -131,19 +127,27 @@
             "count": 4,
             "type": "LOC"
         },
+        "australia": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "new york": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "turkey": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "oman": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "kenya": {
+            "count": 3,
+            "type": "LOC"
+        },
         "germany": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "europe": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "ghana": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "england": {
             "count": 3,
             "type": "LOC"
         },
@@ -151,15 +155,11 @@
             "count": 3,
             "type": "PER"
         },
-        "messi": {
+        "starmer": {
             "count": 3,
             "type": "PER"
         },
-        "burnham": {
-            "count": 3,
-            "type": "PER"
-        },
-        "keir starmer": {
+        "andy burnham": {
             "count": 3,
             "type": "PER"
         },
@@ -170,6 +170,10 @@
         "cristiano ronaldo": {
             "count": 3,
             "type": "PER"
+        },
+        "taliban": {
+            "count": 3,
+            "type": "ORG"
         },
         "pentagon": {
             "count": 3,
@@ -187,19 +191,39 @@
             "count": 3,
             "type": "LOC"
         },
-        "washington": {
-            "count": 3,
-            "type": "LOC"
-        },
         "\u00e1balos": {
             "count": 3,
             "type": "LOC"
         },
-        "malaysia": {
+        "fifa": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "ronaldo": {
+            "count": 2,
+            "type": "PER"
+        },
+        "portugal": {
             "count": 2,
             "type": "LOC"
         },
-        "taiwan": {
+        "u.k.": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "west asia": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "iaea": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "sri lanka": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "north korea": {
             "count": 2,
             "type": "LOC"
         },
@@ -207,47 +231,27 @@
             "count": 2,
             "type": "PER"
         },
-        "north korea": {
+        "south korea": {
             "count": 2,
             "type": "LOC"
         },
-        "la chine": {
+        "eiffel tower": {
             "count": 2,
             "type": "LOC"
         },
-        "\u0643\u064a\u0641": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "hongrie": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "pantheon": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "labour": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "espriella": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "s\u00e1nchez": {
+        "\u0639\u0627\u062c\u0644": {
             "count": 2,
             "type": "PER"
         }
     },
     "top_domains": {
         "www.aljazeera.net": 67,
-        "www.lemonde.fr": 55,
-        "www.scmp.com": 47,
-        "www.france24.com": 40,
-        "www.thehindu.com": 37,
-        "www.straitstimes.com": 37,
-        "www.jpost.com": 34,
+        "www.france24.com": 47,
+        "www.thehindu.com": 46,
+        "www.lemonde.fr": 45,
+        "www.jpost.com": 39,
+        "www.scmp.com": 37,
+        "www.straitstimes.com": 30,
         "www.japantimes.co.jp": 28
     }
 }
