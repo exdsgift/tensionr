@@ -1,69 +1,81 @@
 {
     "date": "2026-07-02",
-    "gti": 71,
-    "sitrep": "Intelligence Synthesis Active: Multi-domain nodes reporting normal operational baseline.",
+    "gti": 77,
+    "sitrep": "French clash over air conditioners as another heatwave looms (VIDEOS) Ukrainian instant noodles linked to EU salmonella outbreak . Wien: Heinz-Christian Strache in Untreueue-Prozess freigesprochen .",
     "top_keywords": {
-        "china": {
+        "trump": {
             "count": 19,
+            "type": "PER"
+        },
+        "china": {
+            "count": 18,
             "type": "LOC"
         },
         "venezuela": {
-            "count": 18,
-            "type": "LOC"
-        },
-        "trump": {
-            "count": 18,
-            "type": "PER"
-        },
-        "ukraine": {
-            "count": 17,
-            "type": "LOC"
-        },
-        "japan": {
-            "count": 14,
+            "count": 16,
             "type": "LOC"
         },
         "iran": {
+            "count": 15,
+            "type": "LOC"
+        },
+        "ukraine": {
+            "count": 14,
+            "type": "LOC"
+        },
+        "japan": {
             "count": 13,
             "type": "LOC"
         },
-        "u.s.": {
-            "count": 11,
+        "hong kong": {
+            "count": 10,
             "type": "LOC"
         },
         "donald trump": {
             "count": 9,
             "type": "PER"
         },
-        "france": {
-            "count": 9,
-            "type": "LOC"
-        },
-        "empire state building": {
+        "u.s.": {
             "count": 8,
             "type": "LOC"
         },
-        "gaza": {
-            "count": 7,
-            "type": "LOC"
-        },
-        "hong kong": {
-            "count": 7,
-            "type": "LOC"
-        },
         "pakistan": {
-            "count": 6,
+            "count": 7,
             "type": "LOC"
         },
         "europe": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "france": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "germany": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "gaza": {
             "count": 6,
             "type": "LOC"
         },
         "israel": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "russia": {
             "count": 5,
             "type": "LOC"
         },
-        "germany": {
+        "nato": {
+            "count": 5,
+            "type": "ORG"
+        },
+        "empire state building": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "etats-unis": {
             "count": 5,
             "type": "LOC"
         },
@@ -71,19 +83,11 @@
             "count": 5,
             "type": "LOC"
         },
-        "taiwan": {
+        "venezuelan": {
             "count": 4,
-            "type": "LOC"
+            "type": "PER"
         },
-        "nato": {
-            "count": 4,
-            "type": "ORG"
-        },
-        "russia": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "syria": {
+        "vatican": {
             "count": 4,
             "type": "LOC"
         },
@@ -91,16 +95,20 @@
             "count": 4,
             "type": "LOC"
         },
-        "etats-unis": {
-            "count": 4,
+        "england": {
+            "count": 3,
             "type": "LOC"
         },
-        "\u0643\u0623\u0633": {
-            "count": 4,
-            "type": "ORG"
+        "usa": {
+            "count": 3,
+            "type": "LOC"
         },
-        "qatar": {
-            "count": 4,
+        "lebanon": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "canada": {
+            "count": 3,
             "type": "LOC"
         },
         "damascus": {
@@ -111,15 +119,11 @@
             "count": 3,
             "type": "LOC"
         },
-        "usa": {
+        "taiwan": {
             "count": 3,
             "type": "LOC"
         },
         "russland": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "vatican": {
             "count": 3,
             "type": "LOC"
         },
@@ -131,25 +135,17 @@
             "count": 3,
             "type": "LOC"
         },
+        "syria": {
+            "count": 3,
+            "type": "LOC"
+        },
         "senegal": {
             "count": 3,
             "type": "LOC"
         },
-        "england": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "dr congo": {
-            "count": 3,
-            "type": "ORG"
-        },
         "mercosur": {
             "count": 3,
             "type": "ORG"
-        },
-        "west asia": {
-            "count": 3,
-            "type": "LOC"
         },
         "nord stream": {
             "count": 3,
@@ -163,16 +159,68 @@
             "count": 3,
             "type": "ORG"
         },
+        "\u0643\u0623\u0633": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "qatar": {
+            "count": 3,
+            "type": "LOC"
+        },
         "california": {
             "count": 3,
             "type": "LOC"
         },
-        "lebanon": {
-            "count": 3,
+        "air force one\u00ab-jet": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "hern\u00e1n": {
+            "count": 2,
+            "type": "PER"
+        },
+        "philippine": {
+            "count": 2,
             "type": "LOC"
         },
-        "arabian sea": {
-            "count": 3,
+        "strait of hormuz": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "shehbaz sharif": {
+            "count": 2,
+            "type": "PER"
+        },
+        "hezbollah": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "idf": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "who": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "khamenei": {
+            "count": 2,
+            "type": "PER"
+        },
+        "allemagne": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "friedrich merz": {
+            "count": 2,
+            "type": "PER"
+        },
+        "burkina faso": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "niger": {
+            "count": 2,
             "type": "LOC"
         },
         "arabisches meer": {
@@ -194,64 +242,16 @@
         "assad": {
             "count": 2,
             "type": "PER"
-        },
-        "\u0643\u064a\u0641": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "ebola": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "nigeria": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "asia": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "uruguay": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "argentina": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "doha": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "cathay pacific": {
-            "count": 2,
-            "type": "PER"
-        },
-        "middle east": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "feij\u00f3o": {
-            "count": 2,
-            "type": "PER"
-        },
-        "fujimori": {
-            "count": 2,
-            "type": "PER"
-        },
-        "peru": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 76,
+        "www.aljazeera.net": 66,
+        "www.scmp.com": 47,
+        "www.straitstimes.com": 44,
         "www.lemonde.fr": 43,
-        "www.scmp.com": 43,
-        "www.straitstimes.com": 41,
-        "www.france24.com": 40,
+        "timesofindia.indiatimes.com": 36,
         "www.japantimes.co.jp": 36,
-        "timesofindia.indiatimes.com": 32,
-        "www.thehindu.com": 27
+        "www.france24.com": 31,
+        "www.rt.com": 27
     }
 }
