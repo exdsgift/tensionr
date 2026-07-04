@@ -1,25 +1,25 @@
 {
     "date": "2026-07-04",
     "gti": 71,
-    "sitrep": "India's P-8i maritime patrol aircraft in Hawaii for RIMPAC exercise . Iran\u2019s envoy to China says Beijing to get Hormuz concessions . Prince Harry's wife Meghan and their children will not join him in London next week .",
+    "sitrep": "Aid workers on life in Sudanese city pummelled by drone strikes . 'Massive surrender to Iran': former Israeli ambassador to US Danny Ayalon admonishes US-Iran MoU . Erdogan: 'Israel must not be allowed to spread smell of gunpowder and blood in our re",
     "top_keywords": {
         "iran": {
-            "count": 22,
+            "count": 23,
+            "type": "LOC"
+        },
+        "china": {
+            "count": 23,
             "type": "LOC"
         },
         "trump": {
-            "count": 21,
+            "count": 20,
             "type": "PER"
         },
-        "china": {
-            "count": 20,
+        "america": {
+            "count": 14,
             "type": "LOC"
         },
         "ukraine": {
-            "count": 15,
-            "type": "LOC"
-        },
-        "america": {
             "count": 13,
             "type": "LOC"
         },
@@ -35,19 +35,11 @@
             "count": 8,
             "type": "LOC"
         },
-        "nato": {
+        "u.s.": {
             "count": 8,
-            "type": "ORG"
+            "type": "LOC"
         },
         "argentina": {
-            "count": 7,
-            "type": "LOC"
-        },
-        "pakistan": {
-            "count": 7,
-            "type": "LOC"
-        },
-        "russia": {
             "count": 7,
             "type": "LOC"
         },
@@ -55,24 +47,40 @@
             "count": 7,
             "type": "LOC"
         },
-        "u.s.": {
-            "count": 7,
+        "japan": {
+            "count": 6,
             "type": "LOC"
-        },
-        "donald trump": {
-            "count": 7,
-            "type": "PER"
         },
         "israel": {
-            "count": 7,
+            "count": 6,
             "type": "LOC"
         },
-        "\u0643\u0623\u0633": {
+        "pakistan": {
             "count": 6,
-            "type": "ORG"
+            "type": "LOC"
+        },
+        "russia": {
+            "count": 6,
+            "type": "LOC"
         },
         "madison square garden": {
             "count": 6,
+            "type": "LOC"
+        },
+        "donald trump": {
+            "count": 6,
+            "type": "PER"
+        },
+        "nato": {
+            "count": 6,
+            "type": "ORG"
+        },
+        "india": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "hong kong": {
+            "count": 5,
             "type": "LOC"
         },
         "europe": {
@@ -95,11 +103,11 @@
             "count": 5,
             "type": "LOC"
         },
-        "japan": {
-            "count": 5,
+        "estados unidos": {
+            "count": 4,
             "type": "LOC"
         },
-        "india": {
+        "taiwan": {
             "count": 4,
             "type": "LOC"
         },
@@ -123,10 +131,6 @@
             "count": 4,
             "type": "LOC"
         },
-        "usa": {
-            "count": 4,
-            "type": "LOC"
-        },
         "direct": {
             "count": 4,
             "type": "ORG"
@@ -147,9 +151,9 @@
             "count": 4,
             "type": "PER"
         },
-        "estados unidos": {
+        "\u0643\u0623\u0633": {
             "count": 3,
-            "type": "LOC"
+            "type": "ORG"
         },
         "keir starmer": {
             "count": 3,
@@ -171,7 +175,7 @@
             "count": 3,
             "type": "LOC"
         },
-        "taiwan": {
+        "usa": {
             "count": 3,
             "type": "LOC"
         },
@@ -191,23 +195,11 @@
             "count": 3,
             "type": "LOC"
         },
-        "england": {
-            "count": 3,
-            "type": "LOC"
-        },
         "ghana": {
             "count": 3,
             "type": "LOC"
         },
         "australia": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "hezbollah": {
-            "count": 3,
-            "type": "ORG"
-        },
-        "hong kong": {
             "count": 3,
             "type": "LOC"
         },
@@ -219,35 +211,43 @@
             "count": 3,
             "type": "LOC"
         },
-        "erdogan": {
-            "count": 3,
-            "type": "PER"
-        },
-        "uruguay": {
+        "canada": {
             "count": 2,
             "type": "LOC"
         },
-        "congress": {
+        "egypt": {
             "count": 2,
             "type": "LOC"
         },
-        "lyra mckee": {
+        "palestinian": {
             "count": 2,
             "type": "PER"
         },
-        "texas": {
+        "ir\u00e1n": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "hawaii": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "lebanon": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "beijing": {
             "count": 2,
             "type": "LOC"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 94,
-        "timesofindia.indiatimes.com": 55,
-        "www.straitstimes.com": 47,
-        "www.thehindu.com": 37,
+        "www.aljazeera.net": 85,
+        "timesofindia.indiatimes.com": 57,
+        "www.scmp.com": 41,
+        "www.straitstimes.com": 41,
+        "www.thehindu.com": 38,
         "www.lemonde.fr": 37,
         "www.france24.com": 35,
-        "www.scmp.com": 31,
-        "www.spiegel.de": 28
+        "www.jpost.com": 31
     }
 }
