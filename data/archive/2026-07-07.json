@@ -1,37 +1,37 @@
 {
     "date": "2026-07-07",
-    "gti": 70,
-    "sitrep": "French President Emmanuel Macron speaks after Damascus blasts . German Gen Z joins Bundeswehr: The military becomes a plan B. Aerial Anomaly: AFR81FB .",
+    "gti": 80,
+    "sitrep": "Narrative Spike: NATO nation says it has no more weapons for Ukraine . Nigel Farage steps down to force election . Israel is practicing settlement on four fronts .",
     "top_keywords": {
         "trump": {
-            "count": 34,
+            "count": 32,
             "type": "PER"
         },
-        "china": {
-            "count": 22,
-            "type": "LOC"
-        },
         "nato": {
-            "count": 21,
+            "count": 25,
             "type": "ORG"
         },
+        "china": {
+            "count": 24,
+            "type": "LOC"
+        },
         "ukraine": {
-            "count": 19,
+            "count": 20,
             "type": "LOC"
         },
         "iran": {
-            "count": 15,
+            "count": 12,
+            "type": "LOC"
+        },
+        "damascus": {
+            "count": 11,
             "type": "LOC"
         },
         "syria": {
             "count": 11,
             "type": "LOC"
         },
-        "gaza": {
-            "count": 11,
-            "type": "LOC"
-        },
-        "damascus": {
+        "hong kong": {
             "count": 10,
             "type": "LOC"
         },
@@ -40,34 +40,50 @@
             "type": "LOC"
         },
         "russia": {
-            "count": 10,
-            "type": "LOC"
-        },
-        "hamas": {
-            "count": 10,
-            "type": "ORG"
-        },
-        "macron": {
-            "count": 4,
+            "count": 9,
             "type": "LOC"
         },
         "israel": {
             "count": 9,
             "type": "LOC"
         },
-        "hong kong": {
+        "gaza": {
+            "count": 9,
+            "type": "LOC"
+        },
+        "macron": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "europe": {
             "count": 8,
             "type": "LOC"
+        },
+        "hamas": {
+            "count": 8,
+            "type": "ORG"
         },
         "cuba": {
             "count": 7,
             "type": "LOC"
         },
-        "portugal": {
+        "marine le pen": {
+            "count": 6,
+            "type": "PER"
+        },
+        "france": {
             "count": 6,
             "type": "LOC"
         },
-        "sri lanka": {
+        "ankara": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "donald trump": {
+            "count": 6,
+            "type": "PER"
+        },
+        "portugal": {
             "count": 6,
             "type": "LOC"
         },
@@ -75,23 +91,15 @@
             "count": 6,
             "type": "LOC"
         },
-        "france": {
-            "count": 6,
+        "belgium": {
+            "count": 5,
             "type": "LOC"
         },
-        "fifa": {
-            "count": 6,
-            "type": "ORG"
+        "turkey": {
+            "count": 5,
+            "type": "LOC"
         },
         "spain": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "kyiv": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "europe": {
             "count": 5,
             "type": "LOC"
         },
@@ -99,31 +107,19 @@
             "count": 5,
             "type": "LOC"
         },
-        "lebanon": {
+        "fifa": {
             "count": 5,
-            "type": "LOC"
-        },
-        "donald trump": {
-            "count": 5,
-            "type": "PER"
-        },
-        "turkey": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "video": {
-            "count": 4,
             "type": "ORG"
         },
         "kiev": {
             "count": 4,
             "type": "LOC"
         },
-        "belgium": {
+        "u.s.": {
             "count": 4,
             "type": "LOC"
         },
-        "direct": {
+        "\u0643\u0623\u0633": {
             "count": 4,
             "type": "ORG"
         },
@@ -131,11 +127,39 @@
             "count": 4,
             "type": "LOC"
         },
-        "usa": {
+        "emmanuel macron": {
+            "count": 4,
+            "type": "PER"
+        },
+        "direct": {
+            "count": 4,
+            "type": "ORG"
+        },
+        "america": {
             "count": 4,
             "type": "LOC"
         },
-        "ankara": {
+        "otan": {
+            "count": 4,
+            "type": "ORG"
+        },
+        "video": {
+            "count": 4,
+            "type": "ORG"
+        },
+        "kyiv": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "lebanon": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "sri lanka": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "usa": {
             "count": 4,
             "type": "LOC"
         },
@@ -143,21 +167,25 @@
             "count": 4,
             "type": "LOC"
         },
-        "tehran": {
-            "count": 4,
-            "type": "LOC"
+        "nigel farage": {
+            "count": 3,
+            "type": "PER"
         },
-        "khamenei": {
+        "paraguayan": {
+            "count": 3,
+            "type": "PER"
+        },
+        "volodymyr zelensky": {
+            "count": 3,
+            "type": "PER"
+        },
+        "strait of hormuz": {
             "count": 3,
             "type": "LOC"
         },
         "monaco": {
             "count": 3,
             "type": "LOC"
-        },
-        "emmanuel macron": {
-            "count": 3,
-            "type": "PER"
         },
         "meloni": {
             "count": 3,
@@ -171,61 +199,25 @@
             "count": 3,
             "type": "LOC"
         },
-        "indonesia": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "u.s.": {
-            "count": 3,
-            "type": "LOC"
-        },
         "pakistan": {
             "count": 3,
             "type": "LOC"
-        },
-        "ayatollah ali khamenei": {
-            "count": 3,
-            "type": "PER"
-        },
-        "\u0643\u0623\u0633": {
-            "count": 3,
-            "type": "ORG"
         },
         "\u0643\u064a\u0641": {
             "count": 3,
             "type": "LOC"
         },
-        "marine le pen": {
-            "count": 3,
-            "type": "PER"
-        },
-        "america": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "nasa": {
-            "count": 3,
-            "type": "ORG"
-        },
         "hormuz": {
             "count": 3,
             "type": "PER"
-        },
-        "italy": {
-            "count": 3,
-            "type": "LOC"
         },
         "zelensky": {
             "count": 3,
             "type": "PER"
         },
-        "otan": {
+        "khamenei": {
             "count": 3,
-            "type": "ORG"
-        },
-        "putin": {
-            "count": 3,
-            "type": "PER"
+            "type": "LOC"
         },
         "charlie kirk": {
             "count": 3,
@@ -234,16 +226,28 @@
         "merino": {
             "count": 3,
             "type": "PER"
+        },
+        "assad": {
+            "count": 3,
+            "type": "PER"
+        },
+        "burkina faso": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "arctic": {
+            "count": 2,
+            "type": "LOC"
         }
     },
     "top_domains": {
-        "www.straitstimes.com": 57,
-        "timesofindia.indiatimes.com": 56,
-        "www.france24.com": 48,
+        "timesofindia.indiatimes.com": 55,
+        "www.aljazeera.net": 53,
+        "www.france24.com": 50,
+        "www.scmp.com": 49,
+        "www.straitstimes.com": 49,
         "www.lemonde.fr": 45,
-        "www.aljazeera.net": 43,
-        "www.scmp.com": 39,
-        "www.jpost.com": 30,
-        "feeds.elpais.com": 28
+        "feeds.elpais.com": 32,
+        "www.jpost.com": 30
     }
 }
