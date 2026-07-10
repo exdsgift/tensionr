@@ -1,14 +1,18 @@
 {
     "date": "2026-07-10",
     "gti": 65,
-    "sitrep": "One of Spain's deadliest wildfires has killed at least 12 people, with 23 others missing . Bangladesh\u2019s ousted leader Hasina plans December return with party colleagues to surrender . Bayeux Tapestry is at the British Museum after a secret journey fr",
+    "sitrep": "Narrative Spike: Ayatollah Khamenei\u2019s lesson from beyond the grave . Ukrainian drones hit southern Russian refineries, Azov port . Mysterious strikes target Iran after U.S. air attacks .",
     "top_keywords": {
         "iran": {
-            "count": 27,
+            "count": 31,
+            "type": "LOC"
+        },
+        "ukraine": {
+            "count": 18,
             "type": "LOC"
         },
         "china": {
-            "count": 21,
+            "count": 18,
             "type": "LOC"
         },
         "france": {
@@ -16,10 +20,6 @@
             "type": "LOC"
         },
         "hong kong": {
-            "count": 17,
-            "type": "LOC"
-        },
-        "ukraine": {
             "count": 16,
             "type": "LOC"
         },
@@ -28,15 +28,15 @@
             "type": "PER"
         },
         "israel": {
-            "count": 12,
+            "count": 13,
+            "type": "LOC"
+        },
+        "spain": {
+            "count": 9,
             "type": "LOC"
         },
         "almer\u00eda": {
             "count": 8,
-            "type": "LOC"
-        },
-        "spain": {
-            "count": 7,
             "type": "LOC"
         },
         "donald trump": {
@@ -47,8 +47,16 @@
             "count": 7,
             "type": "LOC"
         },
-        "nato": {
-            "count": 7,
+        "u.s.": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "\u0643\u0623\u0633": {
+            "count": 6,
+            "type": "ORG"
+        },
+        "direct": {
+            "count": 6,
             "type": "ORG"
         },
         "japan": {
@@ -57,6 +65,14 @@
         },
         "russia": {
             "count": 6,
+            "type": "LOC"
+        },
+        "\u0643\u064a\u0641": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "taiwan": {
+            "count": 5,
             "type": "LOC"
         },
         "turkey": {
@@ -71,49 +87,41 @@
             "count": 5,
             "type": "LOC"
         },
-        "direct": {
-            "count": 5,
+        "nato": {
+            "count": 4,
             "type": "ORG"
         },
         "typhoon bavi": {
             "count": 4,
             "type": "PER"
         },
-        "taiwan": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "u.s.": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "india": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "\u0643\u064a\u0641": {
-            "count": 4,
-            "type": "LOC"
-        },
-        "\u0643\u0623\u0633": {
-            "count": 4,
-            "type": "ORG"
-        },
-        "who": {
-            "count": 4,
-            "type": "ORG"
-        },
         "netanyahu": {
             "count": 4,
             "type": "PER"
         },
-        "mbapp\u00e9": {
-            "count": 4,
+        "mojtaba khamenei": {
+            "count": 3,
             "type": "PER"
         },
-        "charlie kirk": {
-            "count": 4,
-            "type": "PER"
+        "idf": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "gaza": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "paris": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "falklands": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "argentina": {
+            "count": 3,
+            "type": "LOC"
         },
         "andy burnham": {
             "count": 3,
@@ -139,11 +147,11 @@
             "count": 3,
             "type": "LOC"
         },
-        "khamenei": {
+        "who": {
             "count": 3,
-            "type": "LOC"
+            "type": "ORG"
         },
-        "espa\u00f1a": {
+        "khamenei": {
             "count": 3,
             "type": "LOC"
         },
@@ -155,19 +163,31 @@
             "count": 3,
             "type": "LOC"
         },
+        "mbapp\u00e9": {
+            "count": 3,
+            "type": "PER"
+        },
+        "charlie kirk": {
+            "count": 3,
+            "type": "PER"
+        },
         "syria": {
             "count": 3,
             "type": "LOC"
         },
-        "lebanon": {
-            "count": 3,
-            "type": "LOC"
+        "videos": {
+            "count": 2,
+            "type": "ORG"
         },
-        "zelensky": {
-            "count": 3,
+        "palestinian": {
+            "count": 2,
             "type": "PER"
         },
-        "bangladesh": {
+        "royaume-uni": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "uruguay": {
             "count": 2,
             "type": "LOC"
         },
@@ -195,10 +215,6 @@
             "count": 2,
             "type": "LOC"
         },
-        "moscow": {
-            "count": 2,
-            "type": "LOC"
-        },
         "ann widdecombe": {
             "count": 2,
             "type": "PER"
@@ -211,6 +227,10 @@
             "count": 2,
             "type": "PER"
         },
+        "india": {
+            "count": 2,
+            "type": "LOC"
+        },
         "graham platner": {
             "count": 2,
             "type": "PER"
@@ -219,39 +239,19 @@
             "count": 2,
             "type": "ORG"
         },
-        "argentina": {
-            "count": 2,
-            "type": "LOC"
-        },
         "cuba": {
             "count": 2,
             "type": "LOC"
-        },
-        "hormuz": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "tanker": {
-            "count": 2,
-            "type": "PER"
-        },
-        "strait of hormuz": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "pla": {
-            "count": 2,
-            "type": "ORG"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 80,
-        "www.scmp.com": 64,
-        "timesofindia.indiatimes.com": 60,
+        "www.aljazeera.net": 90,
+        "www.scmp.com": 54,
+        "timesofindia.indiatimes.com": 50,
+        "www.lemonde.fr": 44,
+        "www.france24.com": 42,
         "www.straitstimes.com": 41,
-        "www.lemonde.fr": 38,
-        "www.jpost.com": 32,
-        "www.france24.com": 32,
-        "feeds.elpais.com": 26
+        "www.jpost.com": 37,
+        "feeds.elpais.com": 20
     }
 }
