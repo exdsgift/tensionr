@@ -1,39 +1,51 @@
 {
     "date": "2026-07-12",
     "gti": 65,
-    "sitrep": "Narrative Spike: US resumes strikes against Iran after latest latest Hormuz attacks . White House subpoenas NYT reporters over article on Qatari-donated Air Force One .",
+    "sitrep": "Traffic accident in Mexico leaves 9 dead and 10 injured, four of them Americans . Senator Mitch McConnell says he is unable to return to US Senate yet . Spanish wildfires claim 13th victim as British woman, 93, dies of injuries . Al menos 27 people m",
     "top_keywords": {
         "iran": {
-            "count": 33,
+            "count": 36,
             "type": "LOC"
         },
         "lindsey graham": {
             "count": 30,
             "type": "PER"
         },
+        "ukraine": {
+            "count": 17,
+            "type": "LOC"
+        },
         "israel": {
-            "count": 18,
+            "count": 17,
             "type": "LOC"
         },
         "china": {
-            "count": 18,
-            "type": "LOC"
-        },
-        "ukraine": {
-            "count": 16,
+            "count": 17,
             "type": "LOC"
         },
         "strait of hormuz": {
             "count": 14,
             "type": "LOC"
         },
+        "u.s.": {
+            "count": 13,
+            "type": "LOC"
+        },
         "trump": {
             "count": 13,
             "type": "PER"
         },
-        "u.s.": {
-            "count": 13,
+        "hong kong": {
+            "count": 8,
             "type": "LOC"
+        },
+        "japan": {
+            "count": 8,
+            "type": "LOC"
+        },
+        "direct": {
+            "count": 7,
+            "type": "ORG"
         },
         "\u0643\u0623\u0633": {
             "count": 7,
@@ -47,10 +59,6 @@
             "count": 7,
             "type": "LOC"
         },
-        "japan": {
-            "count": 7,
-            "type": "LOC"
-        },
         "england": {
             "count": 7,
             "type": "LOC"
@@ -59,19 +67,15 @@
             "count": 7,
             "type": "LOC"
         },
-        "direct": {
+        "bangkok": {
             "count": 6,
-            "type": "ORG"
+            "type": "LOC"
         },
         "toronto": {
             "count": 6,
             "type": "LOC"
         },
         "gaza": {
-            "count": 6,
-            "type": "LOC"
-        },
-        "hong kong": {
             "count": 6,
             "type": "LOC"
         },
@@ -87,6 +91,10 @@
             "count": 5,
             "type": "LOC"
         },
+        "hormuz": {
+            "count": 4,
+            "type": "PER"
+        },
         "los gallardos": {
             "count": 4,
             "type": "LOC"
@@ -98,10 +106,6 @@
         "idf": {
             "count": 4,
             "type": "ORG"
-        },
-        "ro khanna": {
-            "count": 4,
-            "type": "PER"
         },
         "\u0643\u064a\u0641": {
             "count": 4,
@@ -139,7 +143,23 @@
             "count": 4,
             "type": "LOC"
         },
-        "bangkok": {
+        "europe": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "gulf states": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "wimbledon": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "volodymyr zelensky": {
+            "count": 3,
+            "type": "PER"
+        },
+        "beijing": {
             "count": 3,
             "type": "LOC"
         },
@@ -167,10 +187,6 @@
             "count": 3,
             "type": "ORG"
         },
-        "typhoon bavi": {
-            "count": 3,
-            "type": "PER"
-        },
         "\u0645\u0627\u0630\u0627": {
             "count": 3,
             "type": "PER"
@@ -183,10 +199,6 @@
             "count": 3,
             "type": "LOC"
         },
-        "pakistan": {
-            "count": 3,
-            "type": "LOC"
-        },
         "west asia": {
             "count": 3,
             "type": "LOC"
@@ -195,17 +207,17 @@
             "count": 3,
             "type": "LOC"
         },
-        "hormuz": {
-            "count": 2,
-            "type": "PER"
-        },
-        "air force one": {
+        "us senate": {
             "count": 2,
             "type": "ORG"
         },
-        "gulf states": {
+        "ioulia svyrydenko": {
             "count": 2,
-            "type": "LOC"
+            "type": "PER"
+        },
+        "mcconnell": {
+            "count": 2,
+            "type": "PER"
         },
         "kuwait": {
             "count": 2,
@@ -223,10 +235,6 @@
             "count": 2,
             "type": "LOC"
         },
-        "wimbledon": {
-            "count": 2,
-            "type": "LOC"
-        },
         "rusia": {
             "count": 2,
             "type": "LOC"
@@ -234,24 +242,16 @@
         "ucrania": {
             "count": 2,
             "type": "LOC"
-        },
-        "mamdani": {
-            "count": 2,
-            "type": "PER"
-        },
-        "lebanon": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 122,
-        "www.jpost.com": 42,
+        "www.aljazeera.net": 116,
+        "www.straitstimes.com": 43,
+        "www.jpost.com": 43,
         "www.france24.com": 40,
-        "timesofindia.indiatimes.com": 39,
-        "www.straitstimes.com": 36,
-        "www.thehindu.com": 32,
-        "www.scmp.com": 28,
-        "www.lemonde.fr": 26
+        "timesofindia.indiatimes.com": 37,
+        "www.scmp.com": 33,
+        "www.thehindu.com": 28,
+        "www.lemonde.fr": 27
     }
 }
