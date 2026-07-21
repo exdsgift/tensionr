@@ -1,21 +1,21 @@
 {
     "date": "2026-07-21",
-    "gti": 28,
-    "sitrep": "Narrative Spike: China\u2019s policy playbook took its EV sector from zero to hero \u2013 can other countries follow? US appeals court overturns release of pro-Palestinian advocate Mahdawi, citing lack of jurisdiction .",
+    "gti": 16,
+    "sitrep": "France lawmakers ban social media for children under 15; first EU nation to do so . China\u2019s policy playbook took its EV sector from zero to hero \u2013 can other countries follow?",
     "top_keywords": {
         "iran": {
-            "count": 34,
+            "count": 35,
             "type": "LOC"
         },
         "trump": {
-            "count": 19,
+            "count": 21,
             "type": "PER"
         },
-        "china": {
-            "count": 16,
+        "ukraine": {
+            "count": 18,
             "type": "LOC"
         },
-        "ukraine": {
+        "china": {
             "count": 16,
             "type": "LOC"
         },
@@ -32,30 +32,30 @@
             "type": "LOC"
         },
         "france": {
-            "count": 11,
+            "count": 12,
+            "type": "LOC"
+        },
+        "canada": {
+            "count": 10,
             "type": "LOC"
         },
         "gaza": {
             "count": 10,
             "type": "LOC"
         },
-        "canada": {
+        "direct": {
             "count": 9,
-            "type": "LOC"
+            "type": "ORG"
         },
         "lebanon": {
             "count": 9,
             "type": "LOC"
         },
-        "india": {
-            "count": 8,
-            "type": "LOC"
+        "zelensky": {
+            "count": 7,
+            "type": "PER"
         },
         "idf": {
-            "count": 7,
-            "type": "ORG"
-        },
-        "direct": {
             "count": 7,
             "type": "ORG"
         },
@@ -63,21 +63,29 @@
             "count": 7,
             "type": "PER"
         },
-        "zelensky": {
-            "count": 6,
-            "type": "PER"
-        },
-        "u.s.": {
-            "count": 6,
+        "india": {
+            "count": 7,
             "type": "LOC"
         },
         "europe": {
             "count": 6,
             "type": "LOC"
         },
+        "burnham": {
+            "count": 2,
+            "type": "LOC"
+        },
         "argentina": {
             "count": 5,
             "type": "LOC"
+        },
+        "u.s.": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "oleksandr syrsky": {
+            "count": 4,
+            "type": "PER"
         },
         "julio mart\u00ednez": {
             "count": 4,
@@ -91,20 +99,24 @@
             "count": 4,
             "type": "PER"
         },
-        "cuba": {
-            "count": 4,
-            "type": "LOC"
-        },
         "andy burnham": {
             "count": 4,
             "type": "PER"
         },
-        "burnham": {
-            "count": 2,
-            "type": "LOC"
-        },
         "madrid": {
             "count": 4,
+            "type": "LOC"
+        },
+        "guyana": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "london": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "pickaxe mountain": {
+            "count": 3,
             "type": "LOC"
         },
         "tehran": {
@@ -116,10 +128,6 @@
             "type": "LOC"
         },
         "netanyahu": {
-            "count": 3,
-            "type": "PER"
-        },
-        "oleksandr syrsky": {
             "count": 3,
             "type": "PER"
         },
@@ -144,6 +152,10 @@
             "type": "LOC"
         },
         "asia": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "cuba": {
             "count": 3,
             "type": "LOC"
         },
@@ -199,9 +211,25 @@
             "count": 3,
             "type": "LOC"
         },
+        "new jersey": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "ebola": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "drc": {
+            "count": 2,
+            "type": "LOC"
+        },
         "us-iran": {
             "count": 2,
             "type": "ORG"
+        },
+        "volodymyr zelensky": {
+            "count": 2,
+            "type": "PER"
         },
         "ortega": {
             "count": 2,
@@ -210,44 +238,16 @@
         "fifa": {
             "count": 2,
             "type": "ORG"
-        },
-        "london": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "oleksandr syrskyj": {
-            "count": 2,
-            "type": "PER"
-        },
-        "pickaxe mountain": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "\u0643\u0623\u0633": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "indien": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "white house": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "t\u00fcrkei": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
         "www.aljazeera.net": 69,
-        "www.scmp.com": 68,
+        "www.scmp.com": 67,
         "www.straitstimes.com": 55,
-        "timesofindia.indiatimes.com": 46,
-        "www.france24.com": 36,
-        "www.jpost.com": 33,
-        "www.lemonde.fr": 32,
+        "www.france24.com": 39,
+        "timesofindia.indiatimes.com": 38,
+        "www.jpost.com": 37,
+        "www.lemonde.fr": 35,
         "www.japantimes.co.jp": 30
     }
 }
