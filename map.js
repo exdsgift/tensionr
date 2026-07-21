@@ -1,64 +1,30 @@
-// map.js - Leaflet Map integration and marker rendering
-
-function initMaps() {
-    updateThemeColors();
-    
-    if (!maps.news) {
-        maps.news = L.map('map-news', { 
-            zoomControl: false,
-            dragging: false,
-            touchZoom: false,
-            doubleClickZoom: false,
-            scrollWheelZoom: false,
-            boxZoom: false,
-            keyboard: false,
-            zoomSnap: 0.1,
-            zoomDelta: 0.1
-        }).setView([25, 0], 1.3);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(maps.news);
-    }
-
-    if (!maps.flights) {
-        const flightContainer = document.getElementById('map-flights');
-        if (flightContainer) {
-            maps.flights = L.map('map-flights', { 
-                zoomControl: false,
-                dragging: false,
-                touchZoom: false,
-                doubleClickZoom: false,
-                scrollWheelZoom: false,
-                boxZoom: false,
-                keyboard: false,
-                zoomSnap: 0.1,
-                zoomDelta: 0.1
-            }).setView([25, 0], 1.1);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(maps.flights);
-        }
-    }
-}
+// map.js - News and flight overlays on the main tactical map.
 
 function renderMap(countries, articles) {
-    if (!maps.news) initMaps();
-    mapMarkers.news.forEach(m => maps.news.removeLayer(m));
-    mapMarkers.news = [];
+    if (!maps.main) initMainMap();
+    overlays.news.clearLayers();
 
     if (!countries || !articles) return;
     Object.keys(countries).forEach(country => {
         if (countryCoords[country]) {
             const count = countries[country];
             const snippet = articles.find(a => a.sourcecountry === country)?.title.toLowerCase() || 'multi-node activity';
+            // Two staggered rings make a continuous, fluid sonar sweep; the random
+            // offset keeps the markers from pulsing in lockstep.
+            const delay = Math.random() * 3;
             const icon = L.divIcon({
                 className: 'pulse-icon',
-                html: `<div class="pulse-ring" style="animation-delay: ${Math.random() * 2}s"></div><div class="pulse-dot"></div>`,
+                html: `<div class="pulse-ring" style="animation-delay: ${delay.toFixed(2)}s"></div>` +
+                      `<div class="pulse-ring" style="animation-delay: ${(delay + 1.6).toFixed(2)}s"></div>` +
+                      `<div class="pulse-dot"></div>`,
                 iconSize: [0, 0],
                 iconAnchor: [0, 0],
                 popupAnchor: [0, -10]
             });
-            const marker = L.marker(countryCoords[country], {icon: icon})
-              .addTo(maps.news)
-              .on('click', () => setGlobalFilter('country', country))
-              .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.7rem; color: var(--popup-text); background: transparent; padding: 5px; border: none;"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr style="margin:5px 0; border-color: var(--border);">"${snippet}"</div>`);
-            mapMarkers.news.push(marker);
+            L.marker(countryCoords[country], { icon: icon })
+                .addTo(overlays.news)
+                .on('click', () => setGlobalFilter('country', country))
+                .bindPopup(`<div class="map-popup"><b>${country.toLowerCase()}</b><br>${count} signals detected<br><hr>"${snippet}"</div>`);
         }
     });
 }
@@ -66,12 +32,8 @@ function renderMap(countries, articles) {
 let flightHistory = {};
 
 function renderFlightMap(intel) {
-    if (!maps.flights) initMaps();
-    mapMarkers.flights.forEach(m => maps.flights.removeLayer(m));
-    mapMarkers.flights = [];
-
-    const overlay = document.querySelector('#map-flights div[style*="z-index: 1000"]');
-    if (overlay && intel && intel.assets && intel.assets.length > 0) overlay.style.display = 'none';
+    if (!maps.main) initMainMap();
+    overlays.flights.clearLayers();
 
     if (!intel || !intel.assets) return;
     const activeIcaos = new Set();
@@ -89,26 +51,26 @@ function renderFlightMap(intel) {
             if (countryCoords[asset.origin]) {
                 const originPos = countryCoords[asset.origin];
                 const tacticalColor = asset.is_mil ? THEME_BRIGHT : THEME_MID;
-                const strategicLine = L.polyline([originPos, [asset.lat, asset.lon]], {
+                L.polyline([originPos, [asset.lat, asset.lon]], {
                     color: tacticalColor,
                     weight: 2,
                     opacity: 0.5,
                     dashArray: '6, 12',
-                    interactive: false
-                }).addTo(maps.flights);
-                mapMarkers.flights.push(strategicLine);
+                    interactive: false,
+                    renderer: window.flightRenderer
+                }).addTo(overlays.flights);
             }
 
             if (flightHistory[asset.icao24].length > 1) {
                 const trailColor = asset.is_mil ? THEME_BRIGHT : THEME_MID;
-                const glowTrail = L.polyline(flightHistory[asset.icao24], {
-                    color: trailColor, weight: 8, opacity: 0.5, lineCap: 'round'
-                }).addTo(maps.flights);
-                mapMarkers.flights.push(glowTrail);
-                const polyline = L.polyline(flightHistory[asset.icao24], {
-                    color: trailColor, weight: 3.5, opacity: 1.0, lineCap: 'round'
-                }).addTo(maps.flights);
-                mapMarkers.flights.push(polyline);
+                L.polyline(flightHistory[asset.icao24], {
+                    color: trailColor, weight: 8, opacity: 0.5, lineCap: 'round',
+                    renderer: window.flightRenderer
+                }).addTo(overlays.flights);
+                L.polyline(flightHistory[asset.icao24], {
+                    color: trailColor, weight: 3.5, opacity: 1.0, lineCap: 'round',
+                    renderer: window.flightRenderer
+                }).addTo(overlays.flights);
             }
 
             let rotation = 0;
@@ -124,10 +86,9 @@ function renderFlightMap(intel) {
                 iconSize: [0, 0],
                 iconAnchor: [0, 0]
             });
-            const marker = L.marker([asset.lat, asset.lon], {icon: icon})
-              .addTo(maps.flights)
-              .bindPopup(`<div style="font-family:'Fira Code'; font-size: 0.65rem; color: var(--popup-text); background:transparent; border:none; padding:5px;"><b>${asset.callsign}</b><br>ORIGIN: ${asset.origin}<br>ALT: ${asset.alt}m<br>VEL: ${asset.vel}km/h</div>`);
-            mapMarkers.flights.push(marker);
+            L.marker([asset.lat, asset.lon], { icon: icon })
+                .addTo(overlays.flights)
+                .bindPopup(`<div class="map-popup"><b>${asset.callsign}</b><br>ORIGIN: ${asset.origin}<br>ALT: ${asset.alt}m<br>VEL: ${asset.vel}km/h</div>`);
         }
     });
 

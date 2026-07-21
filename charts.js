@@ -46,7 +46,7 @@ function renderEmotions(articles) {
             plugins: { 
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    backgroundColor: TOOLTIP_BG,
                     titleFont: { family: "'Fira Code', monospace", size: 11 },
                     bodyFont: { family: "'Fira Code', monospace", size: 11 },
                     borderColor: chartColor,
@@ -60,12 +60,12 @@ function renderEmotions(articles) {
             },
             scales: {
                 r: {
-                    angleLines: { color: 'rgba(255,255,255,0.1)' },
-                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    angleLines: { color: CHART_GRID },
+                    grid: { color: CHART_GRID },
                     suggestedMin: 0,
-                    pointLabels: { 
-                        color: THEME_MID, 
-                        font: { family: "'Fira Code', monospace", size: 10 },
+                    pointLabels: {
+                        color: THEME_MID,
+                        font: { family: "'Fira Code', monospace", size: 11 },
                         padding: 15
                     },
                     ticks: { display: false, backdropColor: 'transparent' }
@@ -78,9 +78,9 @@ function renderEmotions(articles) {
 function renderGTI(score, history, forecast) {
     const scoreEl = document.getElementById('gti-score');
     const barEl = document.getElementById('gti-bar');
+    const miniEl = document.getElementById('gti-score-mini');
     if (!scoreEl || !barEl) return;
 
-    let current = 0;
     const target = score || 30;
     const duration = 1000;
     const start = performance.now();
@@ -93,6 +93,7 @@ function renderGTI(score, history, forecast) {
     }
     requestAnimationFrame(animate);
     barEl.style.width = `${target}%`;
+    if (miniEl) miniEl.textContent = target.toString().padStart(2, '0');
     
     if (target > 75) {
         scoreEl.style.color = THEME_BRIGHT; 
@@ -166,7 +167,7 @@ function renderGTI(score, history, forecast) {
                         legend: { display: false },
                         tooltip: {
                             enabled: true,
-                            backgroundColor: 'rgba(10, 10, 10, 0.9)',
+                            backgroundColor: TOOLTIP_BG,
                             titleFont: { size: 10, family: "'Fira Code', monospace" },
                             bodyFont: { size: 11, family: "'Fira Code', monospace" },
                             borderColor: THEME_BRIGHT + '44',
@@ -178,13 +179,14 @@ function renderGTI(score, history, forecast) {
                     },
                     scales: {
                         x: { display: false },
-                        y: { 
-                            min: 0, max: 100, 
-                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
-                            ticks: { 
-                                stepSize: 25, 
-                                font: { size: 8, family: "'Fira Code', monospace" },
-                                color: 'rgba(255,255,255,0.3)',
+                        y: {
+                            min: 0, max: 100,
+                            grid: { color: CHART_GRID },
+                            border: { display: false },
+                            ticks: {
+                                stepSize: 25,
+                                font: { size: 10, family: "'Fira Code', monospace" },
+                                color: CHART_TICK,
                                 callback: (value) => value + '%'
                             }
                         }
@@ -205,24 +207,23 @@ function renderWordCloud(keywords) {
     }
     const entries = Object.entries(keywords);
     const max = Math.max(...entries.map(e => (typeof e[1] === 'object' ? e[1].count : e[1])));
-    const typeColors = { "GPE": THEME_BRIGHT, "ORG": THEME_MID, "PERSON": COLOR_WHITE, "LOC": THEME_DIM, "NORP": THEME_MID };
+    // LOC uses --theme-mid, not --theme-dim: dim is a border/divider tone, below AA as text.
+    const typeColors = { "GPE": THEME_BRIGHT, "ORG": THEME_MID, "PERSON": COLOR_WHITE, "LOC": THEME_MID, "NORP": THEME_MID };
     entries.forEach(([word, info]) => {
         const count = typeof info === 'object' ? info.count : info;
         const type = typeof info === 'object' ? info.type : "UNKNOWN";
-        const size = 0.55 + (count / max) * 1.1;
-        const opacity = 0.4 + (count / max) * 0.6;
+        const size = 0.7 + (count / max) * 1.0;
+        const opacity = 0.5 + (count / max) * 0.5;
         const color = typeColors[type] || THEME_MID;
         const span = document.createElement('span');
         span.className = 'word-item';
         span.style.fontSize = `${size}rem`;
         span.style.opacity = opacity;
         span.style.color = color;
-        span.style.margin = '1px 4px';
         span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
         span.style.animationDelay = `${Math.random()}s`;
         span.textContent = word.toLowerCase();
         span.title = `Type: ${type} | Mentions: ${count} | Click to filter`;
-        span.style.cursor = 'pointer';
         span.onclick = () => setGlobalFilter('keyword', word);
         container.appendChild(span);
     });
@@ -236,22 +237,21 @@ function renderWordCloudEnriched(processedKeywords) {
         container.innerHTML = '<span class="text-dim">no tokens detected</span>';
         return;
     }
-    const typeColors = { "GPE": THEME_BRIGHT, "ORG": THEME_MID, "PERSON": COLOR_WHITE, "LOC": THEME_DIM, "NORP": THEME_MID };
+    // LOC uses --theme-mid, not --theme-dim: dim is a border/divider tone, below AA as text.
+    const typeColors = { "GPE": THEME_BRIGHT, "ORG": THEME_MID, "PERSON": COLOR_WHITE, "LOC": THEME_MID, "NORP": THEME_MID };
     processedKeywords.forEach(item => {
-        const size = 0.55 + (item.weight) * 1.1;
-        const opacity = 0.4 + (item.weight) * 0.6;
+        const size = 0.7 + (item.weight) * 1.0;
+        const opacity = 0.5 + (item.weight) * 0.5;
         const color = typeColors[item.type] || THEME_MID;
         const span = document.createElement('span');
         span.className = 'word-item';
         span.style.fontSize = `${size}rem`;
         span.style.opacity = opacity;
         span.style.color = color;
-        span.style.margin = '1px 4px';
         span.style.animation = `floatText ${2 + Math.random() * 2}s ease-in-out infinite`;
         span.style.animationDelay = `${Math.random()}s`;
         span.textContent = item.word.toLowerCase();
         span.title = `Type: ${item.type} | Mentions: ${item.count} | Click to filter`;
-        span.style.cursor = 'pointer';
         span.onclick = () => setGlobalFilter('keyword', item.word);
         container.appendChild(span);
     });

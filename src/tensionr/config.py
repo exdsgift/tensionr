@@ -1,0 +1,165 @@
+"""Central configuration: paths, credentials, feed lists and tuning constants."""
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Paths (overridable for tests / local runs)
+DATA_DIR = Path(os.getenv("TENSIONR_DATA_DIR", "data"))
+ARCHIVE_DIR = DATA_DIR / "archive"
+
+HF_TOKEN: str | None = os.getenv("HF_TOKEN")
+
+USER_AGENT = "tensionr_cyber_node/1.0"
+
+# Pipeline tuning
+MAX_NEW_ARTICLES = 200  # cap on per-run NLP work
+ARTICLE_CAP = 500  # rolling window size of news.json
+GTI_HISTORY_CAP = 50
+DEADLINE_SECONDS = int(
+    os.getenv("TENSIONR_DEADLINE", "480")
+)  # skip optional LLM stages past this
+HF_BATCH_SIZE = 32
+
+GDELT_BASE_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
+GDELT_QUERY = "war conflict economy military finance"
+GDELT_TIMELINE_QUERY = "war conflict economy"
+
+RSS_FEEDS: list[str] = [
+    "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "https://www.aljazeera.net/aljazeerarss/a7c986be-c2bd-44a7-82f1-104a5e6bb854/73d0e1b4-532f-45ef-b135-bfdff8b8cab9",
+    "https://www.theguardian.com/world/rss",
+    "https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+    "https://www.lemonde.fr/international/rss_full.xml",
+    "https://www.japantimes.co.jp/feed/",
+    "https://www.spiegel.de/ausland/index.rss",
+    "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+    "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",
+    "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",
+    "https://www.straitstimes.com/news/world/rss.xml",
+    "https://en.mercopress.com/rss/",
+    "https://www.chinadaily.com.cn/rss/world_rss.xml",
+    "https://www.rt.com/rss/news/",
+    "https://www.scmp.com/rss/91/feed",
+    "https://www.thehindu.com/news/international/feeder/default.rss",
+    "https://feeds.reuters.com/reuters/worldNews",
+    "https://www.france24.com/en/rss",
+    "https://www.dw.com/en/top-stories/s-9097/rss",
+    "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    "https://www.washingtonpost.com/arcfeed/rss/category/world/?itid=lk_inline_manual_41",
+    "https://www.cbc.ca/cctoc/rss/news/world",
+    "https://www.abc.net.au/news/feed/52278/rss.xml",
+]
+RSS_SAMPLE_SIZE = 15
+
+RSS_METADATA: dict[str, dict[str, str]] = {
+    "feeds.bbci.co.uk": {"country": "United Kingdom", "lang": "English"},
+    "www.aljazeera.net": {"country": "Qatar", "lang": "Arabic"},
+    "www.theguardian.com": {"country": "United Kingdom", "lang": "English"},
+    "feeds.a.dj.com": {"country": "United States", "lang": "English"},
+    "www.lemonde.fr": {"country": "France", "lang": "French"},
+    "www.japantimes.co.jp": {"country": "Japan", "lang": "Japanese"},
+    "www.spiegel.de": {"country": "Germany", "lang": "English"},
+    "feeds.elpais.com": {"country": "Spain", "lang": "Spanish"},
+    "timesofindia.indiatimes.com": {"country": "India", "lang": "English"},
+    "www.jpost.com": {"country": "Israel", "lang": "English"},
+    "www.straitstimes.com": {"country": "Singapore", "lang": "English"},
+    "en.mercopress.com": {"country": "Uruguay", "lang": "Spanish"},
+    "www.chinadaily.com.cn": {"country": "China", "lang": "English"},
+    "www.rt.com": {"country": "Russia", "lang": "Russian"},
+    "www.scmp.com": {"country": "China", "lang": "English"},
+    "www.thehindu.com": {"country": "India", "lang": "English"},
+    "feeds.reuters.com": {"country": "Global", "lang": "English"},
+    "www.france24.com": {"country": "France", "lang": "English"},
+    "www.dw.com": {"country": "Germany", "lang": "English"},
+    "rss.nytimes.com": {"country": "United States", "lang": "English"},
+    "www.washingtonpost.com": {"country": "United States", "lang": "English"},
+    "www.cbc.ca": {"country": "Canada", "lang": "English"},
+    "www.abc.net.au": {"country": "Australia", "lang": "English"},
+}
+
+KNOWN_COUNTRIES: list[str] = [
+    "United States",
+    "United Kingdom",
+    "Qatar",
+    "France",
+    "Russia",
+    "Japan",
+    "Australia",
+    "India",
+    "Israel",
+    "Ukraine",
+    "Singapore",
+    "Canada",
+    "Saudi Arabia",
+    "Uruguay",
+    "Iran",
+    "China",
+    "Germany",
+    "Turkey",
+    "Egypt",
+    "United Arab Emirates",
+    "South Korea",
+    "North Korea",
+    "Taiwan",
+    "Pakistan",
+    "Syria",
+    "Lebanon",
+    "Yemen",
+    "Iraq",
+    "Afghanistan",
+    "Mexico",
+    "Brazil",
+    "Venezuela",
+    "Colombia",
+    "South Africa",
+    "Nigeria",
+    "Kenya",
+    "Somalia",
+    "Sudan",
+    "Ethiopia",
+    "Poland",
+    "Italy",
+    "Spain",
+    "Palestine",
+]
+
+TICKERS: dict[str, str] = {
+    "VIX (VOLATILITY)": "^VIX",
+    "GOLD (XAU)": "GC=F",
+    "CRUDE OIL": "CL=F",
+    "RAYTHEON (RTX)": "RTX",
+    "LOCKHEED (LMT)": "LMT",
+    "NORTHROP (NOC)": "NOC",
+    "GEN DYNAMICS (GD)": "GD",
+    "BTC/USD": "BTC-USD",
+    "EUR/USD": "EURUSD=X",
+    "S&P 500": "^GSPC",
+    "NASDAQ 100": "^IXIC",
+}
+
+MIL_CALLSIGN_PREFIXES: list[str] = [
+    "RCH",
+    "SPAR",
+    "SAM",
+    "USAF",
+    "AF",
+    "RRR",
+    "FAF",
+    "GAF",
+    "IAM",
+    "BAF",
+    "PLF",
+    "CFC",
+    "ASY",
+    "RSF",
+    "SUI",
+    "AME",
+]
+
+CYBER_FEED_URL = "https://feeds.feedburner.com/TheHackersNews"
+CHATTER_FEED_URL = "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10"
+OPENSKY_URL = "https://opensky-network.org/api/states/all"

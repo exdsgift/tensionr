@@ -25,29 +25,37 @@ function updateThemeColors() {
     window.THEME_DIM = root.getPropertyValue('--theme-dim').trim();
     window.COLOR_WHITE = root.getPropertyValue('--text-main').trim();
     window.COLOR_BORDER = root.getPropertyValue('--border').trim();
+    window.CHART_GRID = root.getPropertyValue('--chart-grid').trim();
+    window.CHART_TICK = root.getPropertyValue('--chart-tick').trim();
+    window.TOOLTIP_BG = root.getPropertyValue('--tooltip-bg').trim();
 
     Chart.defaults.color = root.getPropertyValue('--text-dim').trim();
     Chart.defaults.font.family = "'Fira Code', monospace";
-    Chart.defaults.font.size = 10;
-    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
-    
+    Chart.defaults.font.size = 11;
+    Chart.defaults.borderColor = window.CHART_GRID;
+
     const liveIndicator = document.getElementById('live-indicator');
     if(liveIndicator) liveIndicator.style.color = window.THEME_BRIGHT;
 }
 
+const VALID_THEMES = ['phosphor', 'tactical', 'ghost'];
+
 /**
  * Sets the application theme and triggers necessary re-renders.
- * @param {string} themeName - The name of the theme ('ghost' or 'phosphor').
+ * @param {string} themeName - One of VALID_THEMES.
  */
 function setTheme(themeName) {
+    if (!VALID_THEMES.includes(themeName)) themeName = VALID_THEMES[0];
     document.documentElement.setAttribute('data-theme', themeName);
     localStorage.setItem('tensionr_theme', themeName);
     updateThemeColors();
-    
-    // Re-render components with new colors if data is available
+
+    // Re-render everything that captured theme colors at render time.
     if (window.lastData) {
         safeRender('emotions', () => renderEmotions(window.lastData.articles));
+        safeRender('gti', () => renderGTI(window.lastData.global_tension_index, window.lastData.gti_history, window.lastData.gti_forecast));
         safeRender('map', () => renderMap(window.lastData.stats.source_countries, window.lastData.articles));
+        safeRender('flightmap', () => renderFlightMap(window.lastData.flight_intel));
         if (Array.isArray(window.lastData.stats.top_keywords)) {
             safeRender('wordcloud', () => renderWordCloudEnriched(window.lastData.stats.top_keywords));
         } else {
@@ -55,22 +63,7 @@ function setTheme(themeName) {
         }
         const dedupedArticles = deduplicateArticles(window.lastData.articles);
         safeRender('articles', () => initRotatingFeed('articles-list', dedupedArticles, 7));
-    }
-}
-
-function toggleMode() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = (current === 'ghost') ? 'phosphor' : 'ghost';
-    setTheme(next);
-    const themeSelect = document.getElementById('theme-select');
-    if (themeSelect) themeSelect.value = next;
-    
-    const toggle = document.getElementById('theme-toggle');
-    if (toggle) {
-        toggle.style.transform = 'rotate(180deg) scale(1.2)';
-        setTimeout(() => {
-            toggle.style.transform = 'rotate(0deg) scale(1)';
-        }, 300);
+        safeRender('market', () => renderMarketTicker(window.lastData.market_intel));
     }
 }
 
@@ -101,12 +94,7 @@ function type() {
 }
 
 function logSystem(msg) {
-    const log = document.getElementById('system-log');
-    if (log) {
-        const time = new Date().toLocaleTimeString().toLowerCase();
-        log.innerHTML += `[${time}] ${msg}<br>`;
-        log.scrollTop = log.scrollHeight;
-    }
+    console.debug('[tensionr]', msg);
 }
 
 function updateFilterUI() {

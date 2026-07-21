@@ -1,0 +1,30 @@
+[project]
+name = "tensionr"
+version = "1.0.0"
+description = "tensionr static data pipeline: fetch, score and publish global-intelligence JSON"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.32",
+    "feedparser>=6.0",
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "scikit-learn>=1.5",
+    "spacy>=3.8,<3.9",
+    # spaCy's CLI imports click at import time but recent typer releases no
+    # longer pull it in; without this the bare `import spacy` crashes.
+    "click>=8",
+    "yfinance>=0.2.50",
+    "python-dotenv>=1.0",
+    # spaCy model pinned as a wheel so neither CI nor runtime needs `spacy download`
+    "xx-ent-wiki-sm @ https://github.com/explosion/spacy-models/releases/download/xx_ent_wiki_sm-3.8.0/xx_ent_wiki_sm-3.8.0-py3-none-any.whl",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[project.scripts]
+tensionr = "tensionr.pipeline:main"
+
+[build-system]
+requires = ["uv_build>=0.6"]
+build-backend = "uv_build"
