@@ -1,18 +1,14 @@
 {
     "date": "2026-07-21",
-    "gti": 68,
-    "sitrep": "NATO state\u2019s PM calls pro-Ukraine coalitions \u2018all talk\u2019. Russia summons Moldovan ambassador in protest against actions against Russian embassy staff . Houthis warn shipping companies to avoid Saudi ports, email shows . West African bloc calls for Gui",
+    "gti": 28,
+    "sitrep": "Narrative Spike: 144 dead or missing off Mauritania trying to reach Europe, UN agency says . Trump expects to keep launching strikes on Iran from British bases .",
     "top_keywords": {
         "iran": {
             "count": 28,
             "type": "LOC"
         },
         "trump": {
-            "count": 21,
-            "type": "PER"
-        },
-        "andy burnham": {
-            "count": 17,
+            "count": 20,
             "type": "PER"
         },
         "china": {
@@ -23,19 +19,23 @@
             "count": 13,
             "type": "LOC"
         },
+        "andy burnham": {
+            "count": 13,
+            "type": "PER"
+        },
         "hong kong": {
             "count": 11,
-            "type": "LOC"
-        },
-        "ukraine": {
-            "count": 9,
             "type": "LOC"
         },
         "gaza": {
             "count": 9,
             "type": "LOC"
         },
-        "u.s.": {
+        "direct": {
+            "count": 8,
+            "type": "ORG"
+        },
+        "ukraine": {
             "count": 8,
             "type": "LOC"
         },
@@ -55,29 +55,33 @@
             "count": 7,
             "type": "PER"
         },
-        "direct": {
+        "canada": {
             "count": 6,
-            "type": "ORG"
+            "type": "LOC"
+        },
+        "u.s.": {
+            "count": 6,
+            "type": "LOC"
         },
         "new york": {
             "count": 6,
             "type": "LOC"
         },
-        "hamas": {
-            "count": 6,
-            "type": "ORG"
+        "france": {
+            "count": 5,
+            "type": "LOC"
         },
-        "canada": {
+        "madrid": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "etats-unis": {
             "count": 5,
             "type": "LOC"
         },
         "idf": {
             "count": 5,
             "type": "ORG"
-        },
-        "spain": {
-            "count": 5,
-            "type": "LOC"
         },
         "brazil": {
             "count": 5,
@@ -87,11 +91,11 @@
             "count": 5,
             "type": "LOC"
         },
-        "khalil al-hayya": {
+        "hamas": {
             "count": 5,
-            "type": "PER"
+            "type": "ORG"
         },
-        "moscow": {
+        "europe": {
             "count": 4,
             "type": "LOC"
         },
@@ -99,21 +103,17 @@
             "count": 4,
             "type": "LOC"
         },
-        "france": {
+        "burnham": {
             "count": 4,
-            "type": "LOC"
+            "type": "PER"
         },
-        "madrid": {
+        "spain": {
             "count": 4,
             "type": "LOC"
         },
         "netanyahu": {
             "count": 4,
             "type": "PER"
-        },
-        "etats-unis": {
-            "count": 4,
-            "type": "LOC"
         },
         "\u0643\u064a\u0641": {
             "count": 4,
@@ -127,8 +127,20 @@
             "count": 4,
             "type": "LOC"
         },
+        "khalil al-hayya": {
+            "count": 4,
+            "type": "PER"
+        },
         "royaume-uni": {
             "count": 4,
+            "type": "LOC"
+        },
+        "isra\u00ebl": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "mauritania": {
+            "count": 3,
             "type": "LOC"
         },
         "bahrain": {
@@ -139,11 +151,15 @@
             "count": 3,
             "type": "PER"
         },
-        "malaysia": {
+        "black sea": {
             "count": 3,
             "type": "LOC"
         },
-        "tehran": {
+        "asean": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "malaysia": {
             "count": 3,
             "type": "LOC"
         },
@@ -158,10 +174,6 @@
         "usa": {
             "count": 3,
             "type": "LOC"
-        },
-        "burnham": {
-            "count": 3,
-            "type": "PER"
         },
         "cuba": {
             "count": 3,
@@ -183,17 +195,29 @@
             "count": 3,
             "type": "PER"
         },
-        "u.k.": {
-            "count": 3,
+        "t\u00e9h\u00e9ran": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "acropolis": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "greece": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "uganda": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "moscow": {
+            "count": 2,
             "type": "LOC"
         },
         "woman": {
             "count": 2,
             "type": "PER"
-        },
-        "mauritania": {
-            "count": 2,
-            "type": "LOC"
         },
         "west african": {
             "count": 2,
@@ -215,43 +239,19 @@
             "count": 2,
             "type": "LOC"
         },
-        "shenzhen": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "black sea": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "west asia": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "asean": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "gro\u00dfbritannien": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "ann widdecombe": {
+        "kanishka narayan": {
             "count": 2,
             "type": "PER"
-        },
-        "florida": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
         "www.aljazeera.net": 65,
-        "www.straitstimes.com": 55,
+        "www.straitstimes.com": 58,
         "www.scmp.com": 55,
-        "timesofindia.indiatimes.com": 41,
-        "www.france24.com": 38,
-        "www.lemonde.fr": 35,
+        "www.lemonde.fr": 45,
+        "timesofindia.indiatimes.com": 43,
         "www.japantimes.co.jp": 29,
-        "feeds.elpais.com": 29
+        "feeds.elpais.com": 29,
+        "www.france24.com": 29
     }
 }
