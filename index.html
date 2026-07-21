@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="ghost">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,228 +24,162 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text y='70' x='50' font-family='monospace' font-size='80' font-weight='bold' fill='white' text-anchor='middle'>t</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <script>
+        // Apply the saved theme before first paint to avoid a flash of the wrong theme.
+        (function () {
+            var valid = { phosphor: 1, tactical: 1, ghost: 1 };
+            var theme = 'phosphor';
+            try {
+                var saved = localStorage.getItem('tensionr_theme');
+                if (valid[saved]) theme = saved;
+                else if (saved) localStorage.setItem('tensionr_theme', theme);
+            } catch (e) { /* storage unavailable: fall back to default */ }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="nav-bar">
-    <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
-        <div style="display: flex; align-items: center; min-width: 120px;">
-            <span style="font-weight: bold;" id="site-title"></span><span class="terminal-cursor"></span>
+<!-- Full-viewport tactical map: the base layer everything else floats over -->
+<div id="map-main"></div>
+<div id="crt-overlay" aria-hidden="true"></div>
+
+<!-- Top HUD strip: brand / KPIs / clock, market ticker, SITREP -->
+<header id="hud-top" class="hud-panel">
+    <div class="hud-top-row hud-nav-row">
+        <div id="brand">
+            <span id="site-title"></span><span class="terminal-cursor"></span>
         </div>
-        <div class="d-flex align-items-center gap-3 gap-md-4" style="font-size: 0.7rem;">
-            <div id="top-telemetry-ticker" class="d-flex align-items-center gap-3 gap-md-4"></div>
-            <div class="d-flex align-items-center gap-3" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
-                <input type="text" id="time-machine-date" class="minimal-select" placeholder="select_date" style="width: 85px; text-align: center;">
-                <span class="text-dim" id="last-updated">sync: --</span>
-                <span style="color: var(--theme-bright);" id="live-indicator">● live_feed</span>
-                <span class="text-dim" id="clock">00:00:00</span>
+        <div id="kpi-strip">
+            <span class="kpi" id="kpi-signals">signals: --</span>
+            <span class="kpi" id="kpi-integrity">integrity: --</span>
+            <span class="kpi kpi-gti">gti <b id="gti-score-mini">--</b>
+                <span class="gti-microbar"><i id="gti-bar"></i></span>
+            </span>
+        </div>
+        <div id="clock-cluster">
+            <input type="text" id="time-machine-date" class="minimal-select" placeholder="select_date">
+            <span class="text-dim" id="last-updated">sync: --</span>
+            <span id="live-indicator">● live_feed</span>
+            <span class="text-dim" id="clock">00:00:00</span>
+        </div>
+    </div>
+    <div class="hud-top-row hud-ticker-row">
+        <div class="market-ticker-wrapper">
+            <div class="market-ticker-content" id="market-ticker">
+                <span class="text-dim">initializing market telemetry... sync in progress...</span>
             </div>
         </div>
+    </div>
+    <div class="hud-top-row hud-sitrep-row">
+        <span class="sitrep-tag">[ sitrep ]</span>
+        <div class="sitrep-container">
+            <div id="sitrep-text" class="sitrep-marquee">
+                <span>intelligence synthesis active: multi-domain nodes reporting normal operational baseline...</span>
+            </div>
+        </div>
+        <span id="sitrep-status" class="text-dim">verified_stream</span>
+        <div id="filter-status">
+            <span class="filter-label"></span>
+            <button id="clear-filters-btn" class="minimal-select">clear_x</button>
+        </div>
+    </div>
+</header>
+
+<!-- Right HUD: live intercept feed -->
+<aside id="hud-feed" class="hud-panel" data-open="true">
+    <header class="panel-head">
+        <h5>live intercept feed</h5>
+        <button class="panel-toggle" id="feed-toggle" aria-label="collapse feed">▾</button>
+    </header>
+    <div class="insight-line">
+        <span class="insight-tag">[ analyst ]</span>
+        <span id="strategic-insight">analyzing multi-domain vectors...</span>
+    </div>
+    <div id="articles-list"></div>
+</aside>
+
+<!-- Bottom-left HUD: map layer toggles + flight mini-stats + credit -->
+<div id="hud-legend" class="hud-panel" data-open="true">
+    <header class="panel-head">
+        <h5>layers</h5>
+        <button class="panel-toggle" id="legend-toggle" aria-label="collapse layers">▾</button>
+    </header>
+    <div class="legend-body">
+        <label class="layer-toggle"><input type="checkbox" id="toggle-news" checked> intel_nodes</label>
+        <label class="layer-toggle"><input type="checkbox" id="toggle-flights" checked disabled> aerial_telemetry <span class="text-dim" id="flights-availability">[offline]</span></label>
+        <div id="flight-intel-mini" hidden></div>
+        <div class="legend-credit">tensionr © 2026 // <a href="https://github.com/exdsgift" target="_blank">github/exdsgift</a></div>
     </div>
 </div>
 
-<div class="market-ticker-wrapper">
-    <div class="market-ticker-content" id="market-ticker">
-        <span class="text-dim">initializing market telemetry... sync in progress...</span>
-    </div>
-</div>
+<!-- Bottom-right HUD: live map coordinates -->
+<div id="tactical-coord-overlay" class="hud-coords" aria-hidden="true"></div>
 
-<div class="container-fluid">
-
-    <!-- Filter Status Indicator -->
-    <div id="filter-status" style="display: none; align-items: center; gap: 10px; margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--theme-bright); font-size: 0.65rem;">
-        <span class="filter-label" style="color: var(--theme-bright); font-weight: bold;"></span>
-        <button onclick="clearFilters()" class="minimal-select" style="padding: 0.1rem 0.4rem; font-size: 0.6rem;">CLEAR_X</button>
-    </div>
-
-    <!-- SITREP Alert Row -->
-    <div class="row mb-3">
-        <div class="col-md-8">
-            <div class="card h-100" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-bright); min-height: 48px; display: flex; align-items: center; margin-bottom: 0;">
-                <div class="d-flex align-items-center gap-3" style="width: 100%;">
-                    <span style="color: var(--theme-bright); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; white-space: nowrap;">[ tactical_sitrep ]</span>
-                    <div class="sitrep-container">
-                        <div id="sitrep-text" class="sitrep-marquee" style="font-size: 0.75rem; color: var(--text-main); font-style: italic;">
-                            <span>intelligence synthesis active: multi-domain nodes reporting normal operational baseline...</span>
-                        </div>
-                    </div>
-                    <span id="sitrep-status" class="text-dim" style="font-size: 0.5rem; text-transform: uppercase; white-space: nowrap;">verified_stream</span>
+<!-- Bottom drawer: intel panels -->
+<section id="hud-drawer" class="hud-panel" data-open="true">
+    <header class="drawer-head">
+        <button id="drawer-handle" class="panel-toggle" aria-label="collapse intel panels">▾ intel_panels</button>
+        <nav id="drawer-tabs">
+            <button data-tab="radar" class="active">resonance</button>
+            <button data-tab="gti">gti</button>
+            <button data-tab="words">entities</button>
+            <button data-tab="cyber">cyber</button>
+            <button data-tab="chatter">chatter</button>
+            <button data-tab="feed" class="mobile-only">feed</button>
+        </nav>
+    </header>
+    <div class="drawer-body">
+        <div class="drawer-pane active" id="pane-radar">
+            <div class="chart-container"><canvas id="emotionChart"></canvas></div>
+        </div>
+        <div class="drawer-pane" id="pane-gti">
+            <div class="gti-split">
+                <div class="gti-score-block">
+                    <div class="gti-value" id="gti-score">--</div>
+                    <div class="gti-label">current index</div>
                 </div>
+                <div class="chart-container"><canvas id="gtiHistoryChart"></canvas></div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100" style="padding: 0.5rem 1rem; border-left: 3px solid var(--theme-mid); min-height: 48px; display: flex; align-items: center; margin-bottom: 0;">
-                <div class="d-flex align-items-center gap-3" style="width: 100%;">
-                    <span style="color: var(--theme-mid); font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; white-space: nowrap;">[ strategic_analyst ]</span>
-                    <div id="strategic-insight" style="font-size: 0.65rem; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        analyzing multi-domain vectors...
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Map & Feeds Row -->
-    <div class="map-feed-row">
-        <div class="card" id="map-carousel-card">
-            <!-- Map Carousel Navigation Dots -->
-            <div class="intel-nav" id="map-nav-dots">
-                <div class="intel-dot active" data-index="0"></div>
-                <div class="intel-dot" data-index="1"></div>
-                <div class="intel-dot" data-index="2"></div>
-            </div>
-
-            <div class="intel-carousel">
-                <!-- Slide 0: Tactical Situation Map (NEW) -->
-                <div class="intel-slide active" id="slide-map-tactical">
-                    <h5>tactical situational awareness [ beta ]</h5>
-                    <p class="chart-desc">vector-grid analysis of global resonance. identifies signal concentration via hexagonal binning and tactical drift vectors.</p>
-                    <div id="map-tactical" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border); position: relative; background: #000;">
-                        <div class="tactical-scanline"></div>
-                        <div id="tactical-coord-overlay" class="tactical-coords"></div>
-                    </div>
-                </div>
-
-                <!-- Slide 1: News Hotspots Map -->
-                <div class="intel-slide" id="slide-map-news">
-                    <h5>geospatial intelligence vectors</h5>
-                    <p class="chart-desc">displays the physical origin of intercepted intelligence nodes. flashing rings indicate active signal hotspots.</p>
-                    <div id="map-news" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border);"></div>
-                </div>
-
-                <!-- Slide 2: Strategic Flights Map -->
-                <div class="intel-slide" id="slide-map-flights">
-                    <h5>strategic aerial telemetry map</h5>
-                    <p class="chart-desc">real-time tracking of transponder-active military assets. [ awaiting live ads-b telemetry ]</p>
-                    <div id="map-flights" style="height: 350px; filter: var(--map-filter); border: 1px solid var(--border); position: relative;">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; text-align: center; width: 100%;">
-                            <div class="text-dim" style="font-size: 0.65rem; letter-spacing: 2px; animation: terminalBlink 1.5s ease-in-out infinite;">[ connection_pending ]</div>
-                            <div class="text-dim" style="font-size: 0.55rem; margin-top: 5px;">awaiting ads-b handshake...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card" style="display: flex; flex-direction: column;">
-            <h5>live intercept telemetry feed</h5>
-            <p class="chart-desc">real-time stream of intercepted intelligence events. tags show origin domain and the extracted narrative emotion (e.g. fear, surprise).</p>
-            <div id="articles-list" style="flex: 1; height: 364px; max-height: 364px; overflow: hidden; contain: content;"></div>
-        </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="chart-row">
-        <div class="card">
-            <h5>entity extraction network</h5>
-            <p class="chart-desc">entity extraction from recent chatter. larger, brighter text indicates higher frequency of mentions across the global data pool. hover to highlight specific entities.</p>
+        <div class="drawer-pane" id="pane-words">
             <div id="word-cloud" class="word-cloud"></div>
         </div>
-        <div class="card" id="intel-carousel-card">
-            <!-- Manual Navigation Dots -->
-            <div class="intel-nav" id="intel-nav-dots">
-                <div class="intel-dot active" data-index="0"></div>
-                <div class="intel-dot" data-index="1"></div>
-                <div class="intel-dot" data-index="2"></div>
-                <div class="intel-dot" data-index="3"></div>
-                <div class="intel-dot" data-index="4"></div>
-            </div>
-            
-            <div class="intel-carousel">
-                <!-- Slide 1: Sentiment Radar -->
-                <div class="intel-slide active" id="slide-sentiment">
-                    <h5>narrative resonance & sentiment</h5>
-                    <p class="chart-desc">polar distribution of emotional undertones detected via nlp models. larger areas represent a higher volume of articles exhibiting the corresponding narrative emotion.</p>
-                    <div class="chart-container"><canvas id="emotionChart"></canvas></div>
-                </div>
-                
-                <!-- Slide 2: Global Tension Index -->
-                <div class="intel-slide" id="slide-gti">
-                    <h5>global tension index (gti)</h5>
-                    <p class="chart-desc">proprietary algorithmic score calculating global instability. based on signal volume, sentiment volatility, and geopolitical escalation vectors.</p>
-                    <div class="gti-display">
-                        <div class="gti-mobile-row" style="display: flex; width: 100%; height: 100%;">
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid var(--border);">
-                                <div class="gti-value" id="gti-score">--</div>
-                                <div class="gti-label">current index</div>
-                                <div class="gti-bar-container" style="width: 80%;">
-                                    <div class="gti-bar" id="gti-bar" style="width: 0%"></div>
-                                </div>
-                            </div>
-                            <div style="flex: 2; padding-left: 1rem;">
-                                <div class="chart-container" style="height: 180px;"><canvas id="gtiHistoryChart"></canvas></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 3: Military Flight Intel -->
-                <div class="intel-slide" id="slide-flights">
-                    <h5>strategic aerial telemetry</h5>
-                    <p class="chart-desc">intercepted movements of transponder-active military assets and high-value strategic airframes in contested theater zones.</p>
-                    <div class="flight-intel-display">
-                        <div class="text-dim" style="font-size: 0.7rem; letter-spacing: 3px; animation: terminalBlink 1.5s ease-in-out infinite; text-align: center;">[ telemetry_offline ]</div>
-                        <div class="gti-label" style="margin-top: 1rem; text-align: center;">awaiting live ads-b data stream...</div>
-                    </div>
-                </div>
-
-                <!-- Slide 4: Cyber Intelligence -->
-                <div class="intel-slide" id="slide-cyber">
-                    <h5>cyber threat intelligence (cti)</h5>
-                    <p class="chart-desc">monitoring global network anomalies and zero-day vulnerability exploitations. data source: the hacker news.</p>
-                    <div id="cyber-threat-list" style="padding: 0.5rem; display: flex; flex-direction: column; gap: 8px;">
-                        <div class="text-dim" style="font-size: 0.6rem; text-align: center; margin-top: 2rem;">initializing cti feed...</div>
-                    </div>
-                </div>
-
-                <!-- Slide 5: Raw Chatter -->
-                <div class="intel-slide" id="slide-chatter">
-                    <h5>unverified raw chatter</h5>
-                    <p class="chart-desc">real-time tactical alerts and intercepted osint signals. [ verified source authenticity pending ]</p>
-                    <div id="raw-chatter-list" style="padding: 0.5rem; display: flex; flex-direction: column; gap: 8px;">
-                        <div class="text-dim" style="font-size: 0.6rem; text-align: center; margin-top: 2rem;">scanning raw frequencies...</div>
-                    </div>
-                </div>
+        <div class="drawer-pane" id="pane-cyber">
+            <div id="cyber-threat-list" class="intel-list">
+                <div class="text-dim intel-list-empty">initializing cti feed...</div>
             </div>
         </div>
+        <div class="drawer-pane" id="pane-chatter">
+            <div id="raw-chatter-list" class="intel-list">
+                <div class="text-dim intel-list-empty">scanning raw frequencies...</div>
+            </div>
+        </div>
+        <div class="drawer-pane" id="pane-feed"><!-- #articles-list moves here on mobile --></div>
     </div>
+</section>
 
-</div>
-
-<footer class="text-center py-4" style="font-size: 0.65rem; text-transform: lowercase; color: var(--text-dim);">
-    tensionr © 2026 // <a href="https://github.com/exdsgift" target="_blank" style="color: var(--theme-bright); text-decoration: none;">github/exdsgift</a>
-</footer>
-
-<div class="theme-selector d-flex align-items-center gap-2">
-    <div id="theme-toggle" onclick="toggleMode()" style="cursor: pointer; font-size: 1.2rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; color: var(--text-dim); transition: all 0.3s;" title="toggle dark/light mode">
-        <span id="theme-icon">◐</span>
-    </div>
-    <select onchange="setTheme(this.value)" id="theme-select" class="minimal-select">
+<div class="theme-selector">
+    <label class="visually-hidden" for="theme-select">theme</label>
+    <select id="theme-select" class="minimal-select">
         <option value="phosphor">phosphor</option>
         <option value="tactical">tactical</option>
-        <option value="ember">ember</option>
         <option value="ghost">ghost</option>
-        <option value="terminal">terminal</option>
-        <option value="neon">neon</option>
-        <option value="blood">blood</option>
-        <option value="abyss">abyss</option>
     </select>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
 <script src="state.js"></script>
 <script src="utils.js"></script>
 <script src="ui.js"></script>
 <script src="charts.js"></script>
 <script src="map.js"></script>
 <script src="tactical_map.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
 <script src="api.js"></script>
 <script src="app.js"></script>
 </body>

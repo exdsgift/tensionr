@@ -45,52 +45,62 @@ async function updateDashboard() {
             return r.json();
         });
 
-        const [status, news, markets, telemetry, intel] = await Promise.all([
-            fetchFile('status.json'),
-            fetchFile('news.json'),
-            fetchFile('markets.json'),
-            fetchFile('telemetry.json'),
-            fetchFile('intelligence.json')
-        ]);
-        
-        window.lastData = { ...status, ...news, ...markets, ...telemetry, ...intel };
+        const fileNames = ['status.json', 'news.json', 'markets.json', 'telemetry.json', 'intelligence.json'];
+        const results = await Promise.allSettled(fileNames.map(fetchFile));
+        const [status, news, markets, telemetry, intel] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+        const failed = fileNames.filter((_, i) => results[i].status === 'rejected');
 
-        document.getElementById('last-updated').textContent = `sync: ${new Date(status.last_updated).toLocaleTimeString().toLowerCase()}`;
-        document.getElementById('live-indicator').textContent = '● live_feed';
-        document.getElementById('live-indicator').style.color = window.THEME_BRIGHT;
+        if (failed.length === fileNames.length) throw new Error('all_sources_down');
+
+        // Keep previously synced data for the sources that failed instead of blanking them.
+        window.lastData = { ...(window.lastData || {}), ...(status || {}), ...(news || {}), ...(markets || {}), ...(telemetry || {}), ...(intel || {}) };
+
+        if (status) {
+            document.getElementById('last-updated').textContent = `sync: ${new Date(status.last_updated).toLocaleTimeString().toLowerCase()}`;
+        }
+        const liveIndicator = document.getElementById('live-indicator');
+        if (failed.length > 0) {
+            liveIndicator.textContent = `● degraded_link (${failed.map(f => f.replace('.json', '')).join(',')})`;
+            liveIndicator.style.color = window.THEME_MID;
+            logSystem(`degraded sync: ${failed.join(', ')} unreachable`);
+        } else {
+            liveIndicator.textContent = '● live_feed';
+            liveIndicator.style.color = window.THEME_BRIGHT;
+        }
 
         refreshFilteredUI();
 
-        intelligenceWorker.postMessage({
-            type: 'PROCESS_DATA',
-            data: {
-                articles: news.articles,
-                keywords: news.stats.top_keywords
-            }
-        });
+        if (news) {
+            intelligenceWorker.postMessage({
+                type: 'PROCESS_DATA',
+                data: {
+                    articles: news.articles,
+                    keywords: news.stats.top_keywords
+                }
+            });
+        }
 
-        safeRender('sitrep', () => renderSITREP(intel.sitrep || "synthesizing tactical reports..."));
-        safeRender('insight', () => renderStrategicInsight(intel.strategic_insight));
-        safeRender('gti', () => renderGTI(status.global_tension_index, status.gti_history, status.gti_forecast));
-        safeRender('flights', () => renderFlightIntel(telemetry.flight_intel));
+        if (intel) {
+            safeRender('sitrep', () => renderSITREP(intel.sitrep || "synthesizing tactical reports..."));
+            safeRender('insight', () => renderStrategicInsight(intel.strategic_insight));
+            safeRender('cyber', () => renderCyberIntel(intel.cyber_intel));
+            safeRender('chatter', () => renderRawChatter(intel.raw_chatter));
+        }
+        if (status) safeRender('gti', () => renderGTI(status.global_tension_index, status.gti_history, status.gti_forecast));
+        if (telemetry) safeRender('flights', () => renderFlightIntel(telemetry.flight_intel));
         safeRender('map', () => {
-            renderMap(news.stats.source_countries, news.articles);
-            renderFlightMap(telemetry.flight_intel);
-            if (typeof renderTacticalMap === 'function') {
-                renderTacticalMap(news.articles);
-            }
+            if (news) renderMap(news.stats.source_countries, news.articles);
+            if (telemetry) renderFlightMap(telemetry.flight_intel);
         });
-        safeRender('cyber', () => renderCyberIntel(intel.cyber_intel));
-        safeRender('chatter', () => renderRawChatter(intel.raw_chatter));
-        safeRender('market', () => renderMarketTicker(markets.market_intel));
-        safeRender('stats', () => renderQuickStats(news, status));
-        
-        logSystem(`handshake success. ${news.articles.length} nodes active.`);
+        if (markets) safeRender('market', () => renderMarketTicker(markets.market_intel));
+        if (news) safeRender('stats', () => renderQuickStats(news));
 
-        document.querySelectorAll('.card').forEach(card => {
-            card.classList.remove('fade-update');
-            void card.offsetWidth;
-            card.classList.add('fade-update');
+        logSystem(`handshake success. ${news ? news.articles.length : 0} nodes active.`);
+
+        document.querySelectorAll('.hud-panel').forEach(panel => {
+            panel.classList.remove('fade-update');
+            void panel.offsetWidth;
+            panel.classList.add('fade-update');
         });
     } catch (error) {
         logSystem("sync failed: packet loss");

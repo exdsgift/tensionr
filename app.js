@@ -1,4 +1,4 @@
-// app.js - Main Orchestrator and Global State
+// app.js - Main Orchestrator and HUD controllers
 
 function setGlobalFilter(type, value) {
     if (globalFilter[type] === value) {
@@ -64,15 +64,15 @@ function initRotatingFeed(containerId, articles, maxVisible) {
         const item = document.createElement('div');
         item.className = 'article-item';
         const emotion = art.narrative_emotion && art.narrative_emotion !== 'unknown' ? art.narrative_emotion : '';
-        const domainsHtml = art.domain.split(', ').map(d => `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-dim)">${d}</span>`).join('');
-        const emotionTag = emotion ? `<span class="tag" style="color:var(--theme-bright); border-color:var(--theme-bright)">${emotion}</span>` : '';
+        const domainsHtml = art.domain.split(', ').map(d => `<span class="tag tag-domain">${d}</span>`).join('');
+        const emotionTag = emotion ? `<span class="tag tag-emotion">${emotion}</span>` : '';
         item.innerHTML = `
-            <div class="article-title-wrapper" style="overflow: hidden; white-space: nowrap; margin-bottom: 4px;">
+            <div class="article-title-wrapper">
                 <a href="${art.url}" target="_blank" class="article-title">${art.title.toLowerCase()}</a>
             </div>
-            <div class="article-meta" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-                <span style="font-size: 0.52rem; white-space: nowrap; color: var(--theme-mid);">[${formatDate(art.seendate)}]</span>
-                <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+            <div class="article-meta">
+                <span class="article-time">[${formatDate(art.seendate)}]</span>
+                <div class="article-tags">
                     ${emotionTag} ${domainsHtml}
                 </div>
             </div>
@@ -140,8 +140,6 @@ function initRotatingFeed(containerId, articles, maxVisible) {
     }
 }
 
-let feedsIntervals = {};
-
 function renderMarketTicker(markets) {
     const container = document.getElementById('market-ticker');
     if (!container || !markets || markets.length === 0) return;
@@ -151,10 +149,10 @@ function renderMarketTicker(markets) {
         const colorClass = isUp ? 'ticker-up' : 'ticker-down';
         const arrow = isUp ? '▲' : '▼';
         const changeStr = (m.change > 0 ? '+' : '') + m.change.toFixed(2) + '%';
-        html += `<span class="market-ticker-item"><span class="ticker-symbol">${m.symbol}</span><span class="ticker-price">${m.price.toLocaleString()}</span><span class="${colorClass}" style="font-size: 0.55rem;">${arrow} ${changeStr}</span><span style="margin-left: 1.5rem; color: var(--border);">|</span></span>`;
+        html += `<span class="market-ticker-item"><span class="ticker-symbol">${m.symbol}</span><span class="ticker-price">${m.price.toLocaleString()}</span><span class="${colorClass} ticker-change">${arrow} ${changeStr}</span><span class="ticker-sep">|</span></span>`;
     });
     const measure = document.createElement('div');
-    measure.style.cssText = "position:absolute; visibility:hidden; display:flex; white-space:nowrap; font-size:0.65rem; letter-spacing:1px; font-family:'Fira Code', monospace;";
+    measure.style.cssText = "position:absolute; visibility:hidden; display:flex; white-space:nowrap; font-size:0.7rem; letter-spacing:1px; font-family:'Fira Code', monospace;";
     measure.innerHTML = html;
     document.body.appendChild(measure);
     const contentWidth = measure.offsetWidth;
@@ -168,26 +166,46 @@ function renderMarketTicker(markets) {
     container.style.setProperty('--ticker-duration', `${duration}s`);
 }
 
-function renderQuickStats(news, status) {
-    const container = document.getElementById('top-telemetry-ticker');
-    if (!container) return;
-    container.innerHTML = `<div>signals: <span style="color:var(--theme-bright)">${news.articles.length}</span></div><div>integrity: <span style="color: var(--theme-bright)">verified</span></div>`;
+function renderQuickStats(news) {
+    const signalsEl = document.getElementById('kpi-signals');
+    const integrityEl = document.getElementById('kpi-integrity');
+    if (signalsEl) signalsEl.innerHTML = `signals: <b>${news.articles.length}</b>`;
+    if (integrityEl) integrityEl.innerHTML = `integrity: <b>verified</b>`;
 }
 
 function renderFlightIntel(intel) {
-    if (!intel || intel.status !== 'active') return;
-    const display = document.querySelector('#slide-flights .flight-intel-display');
-    if (display.querySelector('.text-dim')) {
-        display.innerHTML = `<div class="flight-stat-row"><span class="flight-stat-label">active assets</span><span class="flight-stat-value" id="flight-count">--</span></div><div class="flight-stat-row"><span class="flight-stat-label">primary theater</span><span id="flight-zone" class="hot-zone-tag">--</span></div><div class="flight-stat-row"><span class="flight-stat-label">stream status</span><span class="flight-stat-value" id="flight-status">--</span></div><div class="flight-stat-row"><span class="flight-stat-label">strategic alerts</span><span class="flight-stat-value" id="flight-anomalies" style="color: var(--theme-bright)">--</span></div>`;
+    const toggle = document.getElementById('toggle-flights');
+    const availability = document.getElementById('flights-availability');
+    const mini = document.getElementById('flight-intel-mini');
+    const active = !!(intel && intel.status === 'active');
+
+    if (toggle) toggle.disabled = !active;
+    if (availability) availability.textContent = active ? '' : '[offline]';
+    if (!mini) return;
+    if (!active) {
+        mini.hidden = true;
+        return;
     }
-    const countEl = document.getElementById('flight-count');
-    const zoneEl = document.getElementById('flight-zone');
-    const statusEl = document.getElementById('flight-status');
-    const anomalyEl = document.getElementById('flight-anomalies');
-    if (countEl) countEl.textContent = intel.count;
-    if (zoneEl) zoneEl.textContent = intel.theater;
-    if (statusEl) statusEl.textContent = 'active_link';
-    if (anomalyEl) anomalyEl.textContent = intel.assets.filter(a => !a.is_mil).length + ' outliers';
+    mini.hidden = false;
+    const outliers = intel.assets.filter(a => !a.is_mil).length;
+    mini.innerHTML = `
+        <div class="flight-stat-row"><span class="flight-stat-label">active assets</span><span class="flight-stat-value">${intel.count}</span></div>
+        <div class="flight-stat-row"><span class="flight-stat-label">primary theater</span><span class="hot-zone-tag">${intel.theater}</span></div>
+        <div class="flight-stat-row"><span class="flight-stat-label">strategic alerts</span><span class="flight-stat-value">${outliers} outliers</span></div>
+    `;
+}
+
+function createIntelItem(tagClass, tagText, srcText, link, title) {
+    const item = document.createElement('div');
+    item.className = 'intel-item';
+    item.innerHTML = `
+        <div class="intel-item-head">
+            <span class="tag ${tagClass}">${tagText}</span>
+            <span class="intel-item-src">${srcText}</span>
+        </div>
+        <a href="${link}" target="_blank" class="intel-item-link">${title.toLowerCase()}</a>
+    `;
+    return item;
 }
 
 function renderRawChatter(chatter) {
@@ -195,11 +213,7 @@ function renderRawChatter(chatter) {
     if (!container || !chatter) return;
     container.innerHTML = '';
     chatter.forEach(item => {
-        const div = document.createElement('div');
-        div.style.borderBottom = '1px solid var(--border)';
-        div.style.paddingBottom = '4px';
-        div.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px;"><div style="display:flex; gap:5px; align-items:center;"><span class="tag" style="color: var(--theme-mid); border-color: var(--theme-mid); font-size: 0.45rem;">UNVERIFIED</span><span style="font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase;">SRC: ${item.source}</span></div><a href="${item.link}" target="_blank" style="color: var(--text-main); font-size: 0.62rem; text-decoration: none; line-height: 1.2;">${item.title.toLowerCase()}</a></div>`;
-        container.appendChild(div);
+        container.appendChild(createIntelItem('tag-unverified', 'UNVERIFIED', `SRC: ${item.source}`, item.link, item.title));
     });
 }
 
@@ -208,11 +222,7 @@ function renderCyberIntel(intel) {
     if (!container || !intel) return;
     container.innerHTML = '';
     intel.forEach(threat => {
-        const item = document.createElement('div');
-        item.style.borderBottom = '1px solid var(--border)';
-        item.style.paddingBottom = '4px';
-        item.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px;"><div style="display:flex; gap:5px; align-items:center;"><span class="tag" style="color: var(--theme-bright); border-color: var(--theme-bright); font-size: 0.45rem;">SEC_ALERT</span><span style="font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase;">HANDSHAKE_ACTIVE</span></div><a href="${threat.link}" target="_blank" style="color: var(--text-main); font-size: 0.62rem; text-decoration: none; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${threat.title.toLowerCase()}</a></div>`;
-        container.appendChild(item);
+        container.appendChild(createIntelItem('tag-alert', 'SEC_ALERT', 'HANDSHAKE_ACTIVE', threat.link, threat.title));
     });
 }
 
@@ -225,60 +235,145 @@ function renderSITREP(text, isHistorical = false) {
     if (statusEl) statusEl.textContent = isHistorical ? 'archived_intel' : 'live_stream';
 }
 
-let intelCarouselInterval, mapCarouselInterval;
-let currentIntelIndex = 0, currentMapIndex = 0;
+/* ---------------------------------------------------------------------------
+ * HUD controllers
+ * ------------------------------------------------------------------------- */
 
-function startIntelCarousel() {
-    const slides = document.querySelectorAll('#intel-carousel-card .intel-slide');
-    const dots = document.querySelectorAll('#intel-nav-dots .intel-dot');
-    if (!slides.length) return;
-    function goToSlide(index) {
-        slides[currentIntelIndex].classList.remove('active');
-        dots[currentIntelIndex].classList.remove('active');
-        currentIntelIndex = index;
-        slides[currentIntelIndex].classList.add('active');
-        dots[currentIntelIndex].classList.add('active');
-        if (slides[currentIntelIndex].id === 'slide-sentiment' && charts.emotions) charts.emotions.resize();
-        if (slides[currentIntelIndex].id === 'slide-gti' && charts.gtiHistory) charts.gtiHistory.resize();
-    }
-    dots.forEach((dot, idx) => dot.addEventListener('click', () => { goToSlide(idx); clearInterval(intelCarouselInterval); }));
-    intelCarouselInterval = setInterval(() => goToSlide((currentIntelIndex + 1) % slides.length), 15000);
+function initDrawer() {
+    const drawer = document.getElementById('hud-drawer');
+    const handle = document.getElementById('drawer-handle');
+    const tabs = document.querySelectorAll('#drawer-tabs button');
+    const panes = document.querySelectorAll('.drawer-pane');
+    if (!drawer || !handle) return;
+
+    // Legend/coords anchor above the drawer via --drawer-h, and the feed panel
+    // hangs below the top strip via --hud-top-h; keep both in sync with reality.
+    const hudTop = document.getElementById('hud-top');
+    const syncDrawerVar = () => {
+        const open = drawer.getAttribute('data-open') === 'true';
+        document.documentElement.style.setProperty('--drawer-h', open ? `${drawer.offsetHeight}px` : '38px');
+        if (hudTop) document.documentElement.style.setProperty('--hud-top-h', `${hudTop.offsetHeight}px`);
+    };
+
+    const setOpen = (open) => {
+        drawer.setAttribute('data-open', String(open));
+        handle.textContent = open ? '▾ intel_panels' : '▴ intel_panels';
+        syncDrawerVar();
+    };
+
+    handle.addEventListener('click', () => {
+        setOpen(drawer.getAttribute('data-open') !== 'true');
+    });
+
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+        tabs.forEach(b => b.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const pane = document.getElementById(`pane-${btn.dataset.tab}`);
+        if (pane) pane.classList.add('active');
+        if (drawer.getAttribute('data-open') !== 'true') setOpen(true);
+        // Chart.js canvases render 0x0 while their pane is display:none.
+        if (btn.dataset.tab === 'radar' && charts.emotions) charts.emotions.resize();
+        if (btn.dataset.tab === 'gti' && charts.gtiHistory) charts.gtiHistory.resize();
+    }));
+
+    syncDrawerVar();
+    window.addEventListener('resize', syncDrawerVar);
 }
 
-function startMapCarousel() {
-    const slides = document.querySelectorAll('#map-carousel-card .intel-slide');
-    const dots = document.querySelectorAll('#map-nav-dots .intel-dot');
-    if (!slides.length) return;
-    function goToMap(index) {
-        slides[currentMapIndex].classList.remove('active');
-        dots[currentMapIndex].classList.remove('active');
-        currentMapIndex = index;
-        slides[currentMapIndex].classList.add('active');
-        dots[currentMapIndex].classList.add('active');
-        setTimeout(() => {
-            if (currentMapIndex === 0 && maps.tactical) maps.tactical.invalidateSize();
-            if (currentMapIndex === 1 && maps.news) maps.news.invalidateSize();
-            if (currentMapIndex === 2 && maps.flights) maps.flights.invalidateSize();
-        }, 300);
-    }
-    dots.forEach((dot, idx) => dot.addEventListener('click', () => { goToMap(idx); clearInterval(mapCarouselInterval); }));
-    mapCarouselInterval = setInterval(() => goToMap((currentMapIndex + 1) % slides.length), 20000);
+function initPanelToggles() {
+    [['hud-feed', 'feed-toggle'], ['hud-legend', 'legend-toggle']].forEach(([panelId, btnId]) => {
+        const panel = document.getElementById(panelId);
+        const btn = document.getElementById(btnId);
+        if (!panel || !btn) return;
+        btn.addEventListener('click', () => {
+            const open = panel.getAttribute('data-open') === 'true';
+            panel.setAttribute('data-open', String(!open));
+            btn.textContent = open ? '▸' : '▾';
+        });
+    });
+}
+
+function initLayerToggles() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('tensionr_layers'));
+        if (saved && typeof saved === 'object') {
+            // Pick only known keys: older saved states carried a removed hex layer.
+            if (typeof saved.news === 'boolean') layerToggles.news = saved.news;
+            if (typeof saved.flights === 'boolean') layerToggles.flights = saved.flights;
+        }
+    } catch (e) { /* corrupt saved state: keep defaults */ }
+    const save = () => localStorage.setItem('tensionr_layers', JSON.stringify(layerToggles));
+
+    const newsBox = document.getElementById('toggle-news');
+    const flightsBox = document.getElementById('toggle-flights');
+    if (!newsBox || !flightsBox) return;
+    newsBox.checked = layerToggles.news;
+    flightsBox.checked = layerToggles.flights;
+
+    newsBox.addEventListener('change', e => {
+        layerToggles.news = e.target.checked;
+        if (maps.main && overlays.news) e.target.checked ? overlays.news.addTo(maps.main) : overlays.news.remove();
+        save();
+    });
+    flightsBox.addEventListener('change', e => {
+        layerToggles.flights = e.target.checked;
+        if (maps.main && overlays.flights) e.target.checked ? overlays.flights.addTo(maps.main) : overlays.flights.remove();
+        save();
+    });
+}
+
+/**
+ * On mobile the right feed panel is hidden and its article list lives in the
+ * drawer's "feed" tab. Moving the node preserves rotation intervals/observers.
+ */
+function relocateFeed() {
+    const list = document.getElementById('articles-list');
+    const feedPanel = document.getElementById('hud-feed');
+    const pane = document.getElementById('pane-feed');
+    if (!list || !feedPanel || !pane) return;
+    const mobile = window.matchMedia('(max-width: 767px)').matches;
+    if (mobile && list.parentElement !== pane) pane.appendChild(list);
+    else if (!mobile && list.parentElement !== feedPanel) feedPanel.appendChild(list);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     logSystem("booting intelligence engine...");
     loadStateFromURL();
     if (document.fonts) await document.fonts.ready;
-    const savedTheme = localStorage.getItem('tensionr_theme') || 'phosphor';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Theme is applied before first paint by the inline head script; sync + wire the selector.
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = document.documentElement.getAttribute('data-theme');
+        themeSelect.addEventListener('change', e => setTheme(e.target.value));
+    }
     updateThemeColors();
+
+    // Map-first on mobile: drawer and legend start collapsed (before initDrawer
+    // so the layout var is computed from the collapsed state).
+    if (window.matchMedia('(max-width: 767px)').matches) {
+        document.getElementById('hud-drawer').setAttribute('data-open', 'false');
+        document.getElementById('drawer-handle').textContent = '▴ intel_panels';
+        document.getElementById('hud-legend').setAttribute('data-open', 'false');
+        document.getElementById('legend-toggle').textContent = '▸';
+    }
+
+    initDrawer();
+    initPanelToggles();
+    initLayerToggles();
+    relocateFeed();
+    window.matchMedia('(max-width: 767px)').addEventListener('change', relocateFeed);
+
+    const clearBtn = document.getElementById('clear-filters-btn');
+    if (clearBtn) clearBtn.addEventListener('click', clearFilters);
+
+    initMainMap();
 
     setTimeout(async () => {
         const today = new Date().toISOString().split('T')[0];
         if (activeDate !== today) await loadHistoricalData(activeDate);
         else await updateDashboard();
-        startIntelCarousel();
-        startMapCarousel();
         window.dispatchEvent(new Event('resize'));
         type();
     }, 300);

@@ -11,7 +11,7 @@
 
 ## 🛰️ Core Capabilities
 
-- **LLM-Powered SITREP:** Real-time tactical bulletins synthesized via **Mistral-7B**, providing a concise "Situation Report" of global alerts and anomalies.
+- **LLM-Powered SITREP & Insight:** Tactical bulletins summarized via **DistilBART**, plus a cross-domain "Strategic Insight" correlation synthesized via **Mistral-7B-Instruct**.
 - **Geopolitical Time Machine:** A "Static Data Lake" of daily archives, allowing users to select past dates and visualize historical geopolitical shifts.
 - **Narrative Resonance Mapping:** Uses NLP (GoEmotions) to extract granular emotional undertones (Fear, Anger, Sadness, etc.) from global news nodes.
 - **Strategic Aerial Telemetry:** Real-time tracking of military assets with automated anomaly detection for strategic airframes.
@@ -29,8 +29,8 @@
 
 - **Backend:** Python (Data harvesting, GDELT integration, NLP sentiment analysis).
 - **Frontend:** Vanilla JS / Bootstrap 5 / Leaflet.js (Tactical mapping and hardware-accelerated UI).
-- **Orchestration:** GitHub Actions (Automated telemetry sync every 40 minutes).
-- **Virtualization:** Managed via `uv` for ultra-fast, reproducible environments.
+- **Orchestration:** GitHub Actions (automated telemetry sync every hour).
+- **Environments:** Managed via `uv` with a committed `uv.lock` for reproducible builds.
 
 ## 🚀 Quick Start
 
@@ -42,17 +42,24 @@
 
 2. **Setup environment:**
    ```bash
-   uv venv
-   source .venv/bin/activate # or .venv\Scripts\activate on Windows
-   uv pip install -r requirements.txt
+   uv sync
    ```
 
 3. **Launch the Engine:**
-   Run the data harvester to populate the dashboard:
+   Run the data pipeline to populate the dashboard (set `HF_TOKEN` in `.env` to enable the ML stages):
    ```bash
-   python src/fetch_gdelt.py
+   uv run tensionr
    ```
-   Then simply open `index.html` in your browser.
+   Then serve the dashboard locally (the app fetches `data/*.json`, so it needs an HTTP server, not `file://`):
+   ```bash
+   python -m http.server 8123
+   ```
+   and open <http://localhost:8123>.
+
+4. **Run the tests:**
+   ```bash
+   uv run pytest
+   ```
 
 ---
 
