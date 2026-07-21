@@ -1,53 +1,45 @@
 {
     "date": "2026-07-21",
-    "gti": 28,
-    "sitrep": "Narrative Spike: 144 dead or missing off Mauritania trying to reach Europe, UN agency says . Trump expects to keep launching strikes on Iran from British bases .",
+    "gti": 15,
+    "sitrep": "Tactical Alerts: Aerial Anomaly: AFR35SN. AFR75EB. GAF175. Aerial Anomalas: GAF894.",
     "top_keywords": {
         "iran": {
-            "count": 28,
+            "count": 30,
+            "type": "LOC"
+        },
+        "china": {
+            "count": 19,
             "type": "LOC"
         },
         "trump": {
-            "count": 20,
+            "count": 19,
             "type": "PER"
-        },
-        "china": {
-            "count": 16,
-            "type": "LOC"
         },
         "japan": {
             "count": 13,
             "type": "LOC"
-        },
-        "andy burnham": {
-            "count": 13,
-            "type": "PER"
         },
         "hong kong": {
             "count": 11,
             "type": "LOC"
         },
         "gaza": {
-            "count": 9,
-            "type": "LOC"
-        },
-        "direct": {
-            "count": 8,
-            "type": "ORG"
-        },
-        "ukraine": {
-            "count": 8,
+            "count": 10,
             "type": "LOC"
         },
         "israel": {
-            "count": 8,
+            "count": 10,
             "type": "LOC"
         },
-        "india": {
+        "andy burnham": {
+            "count": 10,
+            "type": "PER"
+        },
+        "ukraine": {
             "count": 7,
             "type": "LOC"
         },
-        "argentina": {
+        "india": {
             "count": 7,
             "type": "LOC"
         },
@@ -55,19 +47,35 @@
             "count": 7,
             "type": "PER"
         },
+        "idf": {
+            "count": 6,
+            "type": "ORG"
+        },
         "canada": {
             "count": 6,
             "type": "LOC"
+        },
+        "direct": {
+            "count": 6,
+            "type": "ORG"
         },
         "u.s.": {
             "count": 6,
             "type": "LOC"
         },
-        "new york": {
+        "argentina": {
             "count": 6,
             "type": "LOC"
         },
-        "france": {
+        "burnham": {
+            "count": 5,
+            "type": "PER"
+        },
+        "europe": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "\u0643\u064a\u0641": {
             "count": 5,
             "type": "LOC"
         },
@@ -75,27 +83,27 @@
             "count": 5,
             "type": "LOC"
         },
-        "etats-unis": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "idf": {
-            "count": 5,
-            "type": "ORG"
-        },
         "brazil": {
             "count": 5,
             "type": "LOC"
         },
-        "espa\u00f1a": {
+        "new york": {
             "count": 5,
             "type": "LOC"
         },
-        "hamas": {
-            "count": 5,
-            "type": "ORG"
+        "lebanon": {
+            "count": 4,
+            "type": "LOC"
         },
-        "europe": {
+        "ann widdecombe": {
+            "count": 4,
+            "type": "PER"
+        },
+        "houthis": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "france": {
             "count": 4,
             "type": "LOC"
         },
@@ -103,36 +111,36 @@
             "count": 4,
             "type": "LOC"
         },
-        "burnham": {
+        "\u0643\u0623\u0633": {
             "count": 4,
-            "type": "PER"
+            "type": "ORG"
+        },
+        "etats-unis": {
+            "count": 4,
+            "type": "LOC"
         },
         "spain": {
             "count": 4,
             "type": "LOC"
         },
-        "netanyahu": {
-            "count": 4,
-            "type": "PER"
-        },
-        "\u0643\u064a\u0641": {
-            "count": 4,
+        "russia": {
+            "count": 3,
             "type": "LOC"
         },
-        "guyana": {
-            "count": 4,
+        "cuba": {
+            "count": 3,
             "type": "LOC"
         },
-        "nicaragua": {
-            "count": 4,
+        "hungary": {
+            "count": 3,
             "type": "LOC"
         },
-        "khalil al-hayya": {
-            "count": 4,
-            "type": "PER"
+        "taiwan": {
+            "count": 3,
+            "type": "LOC"
         },
-        "royaume-uni": {
-            "count": 4,
+        "bologna": {
+            "count": 3,
             "type": "LOC"
         },
         "isra\u00ebl": {
@@ -151,10 +159,6 @@
             "count": 3,
             "type": "PER"
         },
-        "black sea": {
-            "count": 3,
-            "type": "LOC"
-        },
         "asean": {
             "count": 3,
             "type": "ORG"
@@ -163,25 +167,17 @@
             "count": 3,
             "type": "LOC"
         },
-        "houthis": {
+        "netanyahu": {
             "count": 3,
-            "type": "LOC"
-        },
-        "lebanon": {
-            "count": 3,
-            "type": "LOC"
+            "type": "PER"
         },
         "usa": {
             "count": 3,
             "type": "LOC"
         },
-        "cuba": {
+        "guyana": {
             "count": 3,
             "type": "LOC"
-        },
-        "\u0643\u0623\u0633": {
-            "count": 3,
-            "type": "ORG"
         },
         "paramount": {
             "count": 3,
@@ -194,6 +190,34 @@
         "judit polgar": {
             "count": 3,
             "type": "PER"
+        },
+        "nicaragua": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "hamas": {
+            "count": 3,
+            "type": "ORG"
+        },
+        "netherlands": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "hezbollah": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "tehran": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "new uk": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "asia": {
+            "count": 2,
+            "type": "LOC"
         },
         "t\u00e9h\u00e9ran": {
             "count": 2,
@@ -218,40 +242,16 @@
         "woman": {
             "count": 2,
             "type": "PER"
-        },
-        "west african": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "bologna": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "kuwait": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "zapatero": {
-            "count": 2,
-            "type": "PER"
-        },
-        "indonesia": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "kanishka narayan": {
-            "count": 2,
-            "type": "PER"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 65,
-        "www.straitstimes.com": 58,
-        "www.scmp.com": 55,
-        "www.lemonde.fr": 45,
-        "timesofindia.indiatimes.com": 43,
+        "www.aljazeera.net": 70,
+        "www.scmp.com": 65,
+        "www.straitstimes.com": 64,
+        "timesofindia.indiatimes.com": 41,
+        "www.lemonde.fr": 32,
         "www.japantimes.co.jp": 29,
-        "feeds.elpais.com": 29,
-        "www.france24.com": 29
+        "www.france24.com": 29,
+        "www.jpost.com": 27
     }
 }
