@@ -8,7 +8,7 @@
             "type": "LOC"
         },
         "trump": {
-            "count": 31,
+            "count": 32,
             "type": "PER"
         },
         "ukraine": {
@@ -19,6 +19,10 @@
             "count": 19,
             "type": "LOC"
         },
+        "direct": {
+            "count": 12,
+            "type": "ORG"
+        },
         "france": {
             "count": 12,
             "type": "LOC"
@@ -27,21 +31,21 @@
             "count": 11,
             "type": "LOC"
         },
-        "direct": {
-            "count": 11,
-            "type": "ORG"
-        },
         "israel": {
             "count": 10,
             "type": "LOC"
         },
         "zelensky": {
-            "count": 10,
+            "count": 9,
             "type": "PER"
         },
         "hong kong": {
             "count": 8,
             "type": "LOC"
+        },
+        "donald trump": {
+            "count": 7,
+            "type": "PER"
         },
         "netanyahu": {
             "count": 7,
@@ -55,15 +59,15 @@
             "count": 7,
             "type": "LOC"
         },
+        "ebola": {
+            "count": 6,
+            "type": "LOC"
+        },
         "epstein": {
             "count": 6,
             "type": "PER"
         },
         "pete hegseth": {
-            "count": 6,
-            "type": "PER"
-        },
-        "donald trump": {
             "count": 6,
             "type": "PER"
         },
@@ -75,6 +79,14 @@
             "count": 6,
             "type": "LOC"
         },
+        "etats-unis": {
+            "count": 5,
+            "type": "LOC"
+        },
+        "saudi arabia": {
+            "count": 5,
+            "type": "LOC"
+        },
         "venezuela": {
             "count": 5,
             "type": "LOC"
@@ -83,29 +95,21 @@
             "count": 5,
             "type": "LOC"
         },
-        "lebanon": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "ebola": {
-            "count": 5,
-            "type": "LOC"
-        },
-        "nicaragua": {
-            "count": 5,
-            "type": "LOC"
-        },
         "argentina": {
             "count": 5,
             "type": "LOC"
         },
-        "idf": {
+        "cia": {
             "count": 4,
             "type": "ORG"
         },
-        "etats-unis": {
+        "strait of hormuz": {
             "count": 4,
             "type": "LOC"
+        },
+        "mamdani": {
+            "count": 4,
+            "type": "PER"
         },
         "hitler": {
             "count": 4,
@@ -123,11 +127,31 @@
             "count": 4,
             "type": "LOC"
         },
+        "lebanon": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "nicaragua": {
+            "count": 4,
+            "type": "LOC"
+        },
         "pickaxe mountain": {
             "count": 4,
             "type": "LOC"
         },
-        "cia": {
+        "congo": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "red sea": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "new jersey": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "idf": {
             "count": 3,
             "type": "ORG"
         },
@@ -135,13 +159,13 @@
             "count": 3,
             "type": "LOC"
         },
+        "\u0639\u0627\u062c\u0644": {
+            "count": 3,
+            "type": "PER"
+        },
         "california": {
             "count": 3,
             "type": "LOC"
-        },
-        "mamdani": {
-            "count": 3,
-            "type": "PER"
         },
         "hamas": {
             "count": 3,
@@ -155,19 +179,11 @@
             "count": 3,
             "type": "LOC"
         },
-        "strait of hormuz": {
-            "count": 3,
-            "type": "LOC"
-        },
         "icc": {
             "count": 3,
             "type": "ORG"
         },
         "espagne": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "saudi arabia": {
             "count": 3,
             "type": "LOC"
         },
@@ -191,10 +207,6 @@
             "count": 3,
             "type": "PER"
         },
-        "zapatero": {
-            "count": 3,
-            "type": "PER"
-        },
         "hegseth": {
             "count": 3,
             "type": "PER"
@@ -207,11 +219,11 @@
             "count": 2,
             "type": "ORG"
         },
-        "gaza": {
+        "houthis": {
             "count": 2,
             "type": "LOC"
         },
-        "red sea": {
+        "gaza": {
             "count": 2,
             "type": "LOC"
         },
@@ -230,28 +242,16 @@
         "us senate": {
             "count": 2,
             "type": "ORG"
-        },
-        "madrid": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "saudi-arabien": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "russie": {
-            "count": 2,
-            "type": "LOC"
         }
     },
     "top_domains": {
-        "www.straitstimes.com": 65,
-        "timesofindia.indiatimes.com": 55,
-        "www.jpost.com": 53,
-        "www.aljazeera.net": 50,
-        "www.scmp.com": 49,
-        "www.lemonde.fr": 46,
-        "www.france24.com": 38,
-        "feeds.elpais.com": 26
+        "www.straitstimes.com": 72,
+        "timesofindia.indiatimes.com": 57,
+        "www.aljazeera.net": 53,
+        "www.jpost.com": 50,
+        "www.lemonde.fr": 47,
+        "www.scmp.com": 47,
+        "www.france24.com": 39,
+        "feeds.elpais.com": 23
     }
 }
