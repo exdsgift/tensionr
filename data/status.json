@@ -1,17 +1,13 @@
 {
-    "last_updated": "2026-07-24T14:42:08.783898",
-    "global_tension_index": 34,
+    "last_updated": "2026-07-24T18:10:59.992718",
+    "global_tension_index": 28,
     "gti_components": {
         "base": 5.0,
         "narrative": 9.5,
-        "market": 7.8,
+        "market": 1.4,
         "telemetry": 12.0
     },
     "gti_history": [
-        {
-            "timestamp": "2026-07-20T17:15:43.841372",
-            "score": 65
-        },
         {
             "timestamp": "2026-07-20T19:21:55.593942",
             "score": 65
@@ -207,40 +203,44 @@
         {
             "timestamp": "2026-07-24T14:42:08.783898",
             "score": 34
+        },
+        {
+            "timestamp": "2026-07-24T18:10:59.992718",
+            "score": 28
         }
     ],
     "gti_forecast": [
         {
-            "timestamp": "2026-07-24T20:42:08.783898",
-            "score": 44
-        },
-        {
-            "timestamp": "2026-07-25T02:42:08.783898",
-            "score": 44
-        },
-        {
-            "timestamp": "2026-07-25T08:42:08.783898",
-            "score": 44
-        },
-        {
-            "timestamp": "2026-07-25T14:42:08.783898",
-            "score": 44
-        },
-        {
-            "timestamp": "2026-07-25T20:42:08.783898",
-            "score": 44
-        },
-        {
-            "timestamp": "2026-07-26T02:42:08.783898",
+            "timestamp": "2026-07-25T00:10:59.992718",
             "score": 43
         },
         {
-            "timestamp": "2026-07-26T08:42:08.783898",
+            "timestamp": "2026-07-25T06:10:59.992718",
             "score": 43
         },
         {
-            "timestamp": "2026-07-26T14:42:08.783898",
+            "timestamp": "2026-07-25T12:10:59.992718",
             "score": 43
+        },
+        {
+            "timestamp": "2026-07-25T18:10:59.992718",
+            "score": 43
+        },
+        {
+            "timestamp": "2026-07-26T00:10:59.992718",
+            "score": 43
+        },
+        {
+            "timestamp": "2026-07-26T06:10:59.992718",
+            "score": 43
+        },
+        {
+            "timestamp": "2026-07-26T12:10:59.992718",
+            "score": 42
+        },
+        {
+            "timestamp": "2026-07-26T18:10:59.992718",
+            "score": 42
         }
     ],
     "forecast_confidence": "medium"
