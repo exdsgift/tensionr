@@ -1,19 +1,19 @@
 {
     "date": "2026-07-27",
-    "gti": 40,
-    "sitrep": "Tactical Alerts: Aerial Anomaly: AFR51GN. Aerial Anomalas: ASY165. Tactical Alert: CFC3181.",
+    "gti": 34,
+    "sitrep": "Narrative Spike: En Cisjordanie, a femme perd son enfant \u00e0 na\u00eetre \u00e0 un barrage, l\u2019arm\u00e9e isra\u00e9lienne se d\u00e9douane .",
     "top_keywords": {
         "iran": {
-            "count": 35,
+            "count": 33,
+            "type": "LOC"
+        },
+        "israel": {
+            "count": 19,
             "type": "LOC"
         },
         "trump": {
-            "count": 19,
+            "count": 16,
             "type": "PER"
-        },
-        "israel": {
-            "count": 18,
-            "type": "LOC"
         },
         "ukraine": {
             "count": 16,
@@ -24,14 +24,10 @@
             "type": "LOC"
         },
         "france": {
-            "count": 15,
+            "count": 14,
             "type": "LOC"
         },
         "berlin": {
-            "count": 11,
-            "type": "LOC"
-        },
-        "spain": {
             "count": 10,
             "type": "LOC"
         },
@@ -39,11 +35,11 @@
             "count": 9,
             "type": "PER"
         },
-        "brazil": {
-            "count": 8,
+        "spain": {
+            "count": 9,
             "type": "LOC"
         },
-        "bordeaux": {
+        "brazil": {
             "count": 8,
             "type": "LOC"
         },
@@ -51,19 +47,23 @@
             "count": 8,
             "type": "LOC"
         },
-        "direct": {
-            "count": 8,
-            "type": "ORG"
-        },
-        "hong kong": {
-            "count": 8,
-            "type": "LOC"
-        },
-        "india": {
+        "paris": {
             "count": 7,
             "type": "LOC"
         },
         "russia": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "direct": {
+            "count": 7,
+            "type": "ORG"
+        },
+        "bordeaux": {
+            "count": 7,
+            "type": "LOC"
+        },
+        "hong kong": {
             "count": 7,
             "type": "LOC"
         },
@@ -75,28 +75,28 @@
             "count": 6,
             "type": "LOC"
         },
-        "zelensky": {
+        "\u0645\u0627\u0630\u0627": {
             "count": 6,
             "type": "PER"
         },
-        "paris": {
-            "count": 5,
+        "india": {
+            "count": 6,
             "type": "LOC"
+        },
+        "zelensky": {
+            "count": 6,
+            "type": "PER"
         },
         "syria": {
             "count": 5,
             "type": "LOC"
         },
-        "\u0645\u0627\u0630\u0627": {
-            "count": 5,
-            "type": "PER"
-        },
         "japan": {
             "count": 5,
             "type": "LOC"
         },
-        "honduras": {
-            "count": 5,
+        "gaza": {
+            "count": 4,
             "type": "LOC"
         },
         "hezbollah": {
@@ -119,16 +119,20 @@
             "count": 4,
             "type": "LOC"
         },
-        "north korea": {
-            "count": 4,
-            "type": "LOC"
-        },
         "seattle": {
             "count": 4,
             "type": "LOC"
         },
-        "gaza": {
-            "count": 4,
+        "cuba": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "nicaragua": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "argentina": {
+            "count": 3,
             "type": "LOC"
         },
         "lula": {
@@ -151,15 +155,7 @@
             "count": 3,
             "type": "LOC"
         },
-        "\u00e1vila": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "madrid": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "russie": {
+        "north korea": {
             "count": 3,
             "type": "LOC"
         },
@@ -183,11 +179,19 @@
             "count": 3,
             "type": "ORG"
         },
-        "hernandez": {
+        "honduras": {
             "count": 3,
-            "type": "PER"
+            "type": "LOC"
         },
         "lebanon": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "marco rubio": {
+            "count": 2,
+            "type": "PER"
+        },
+        "espriella": {
             "count": 2,
             "type": "LOC"
         },
@@ -219,21 +223,9 @@
             "count": 2,
             "type": "LOC"
         },
-        "cuba": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "nicaragua": {
-            "count": 2,
-            "type": "LOC"
-        },
         "shots": {
             "count": 2,
             "type": "PER"
-        },
-        "romania": {
-            "count": 2,
-            "type": "LOC"
         },
         "california": {
             "count": 2,
@@ -242,16 +234,24 @@
         "pinochet": {
             "count": 2,
             "type": "PER"
+        },
+        "burnham": {
+            "count": 2,
+            "type": "PER"
+        },
+        "international criminal court": {
+            "count": 2,
+            "type": "ORG"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 103,
-        "www.jpost.com": 57,
-        "www.straitstimes.com": 48,
-        "www.scmp.com": 42,
-        "www.thehindu.com": 40,
-        "timesofindia.indiatimes.com": 37,
-        "www.france24.com": 29,
-        "www.lemonde.fr": 28
+        "www.aljazeera.net": 107,
+        "www.jpost.com": 56,
+        "www.straitstimes.com": 44,
+        "timesofindia.indiatimes.com": 41,
+        "www.thehindu.com": 37,
+        "www.scmp.com": 37,
+        "www.lemonde.fr": 30,
+        "www.france24.com": 29
     }
 }
