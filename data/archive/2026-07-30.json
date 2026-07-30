@@ -1,37 +1,45 @@
 {
     "date": "2026-07-30",
-    "gti": 41,
-    "sitrep": "Tactical Alerts: Aerial Anomaly: AFR51PD. Aerial Anomalies: A FR020. AFR88QJ. Tactical Alert: CFC2977.",
+    "gti": 37,
+    "sitrep": "Tactical Alerts: Aerial Anomaly: IAM1434, IFR42VQ. Aerial Anomalas: AFR702, AFR2N and AFR505 .",
     "top_keywords": {
         "iran": {
-            "count": 30,
+            "count": 29,
+            "type": "LOC"
+        },
+        "china": {
+            "count": 19,
             "type": "LOC"
         },
         "ukraine": {
-            "count": 18,
+            "count": 19,
             "type": "LOC"
         },
         "trump": {
-            "count": 18,
+            "count": 17,
             "type": "PER"
-        },
-        "china": {
-            "count": 16,
-            "type": "LOC"
         },
         "france": {
             "count": 15,
             "type": "LOC"
         },
         "russia": {
-            "count": 14,
+            "count": 12,
             "type": "LOC"
         },
         "hong kong": {
             "count": 12,
             "type": "LOC"
         },
-        "spain": {
+        "ceuta": {
+            "count": 11,
+            "type": "LOC"
+        },
+        "direct": {
+            "count": 10,
+            "type": "ORG"
+        },
+        "u.s.": {
             "count": 9,
             "type": "LOC"
         },
@@ -39,32 +47,32 @@
             "count": 9,
             "type": "LOC"
         },
-        "direct": {
-            "count": 8,
-            "type": "ORG"
-        },
         "netanyahu": {
             "count": 8,
             "type": "PER"
+        },
+        "spain": {
+            "count": 7,
+            "type": "LOC"
         },
         "fifa": {
             "count": 7,
             "type": "ORG"
         },
-        "u.s.": {
-            "count": 7,
-            "type": "LOC"
-        },
         "salman rushdie": {
             "count": 7,
             "type": "PER"
         },
-        "washington": {
+        "poland": {
             "count": 6,
             "type": "LOC"
         },
-        "ceuta": {
-            "count": 5,
+        "pakistan": {
+            "count": 6,
+            "type": "LOC"
+        },
+        "washington": {
+            "count": 6,
             "type": "LOC"
         },
         "donald trump": {
@@ -79,10 +87,6 @@
             "count": 5,
             "type": "LOC"
         },
-        "poland": {
-            "count": 5,
-            "type": "LOC"
-        },
         "egypt": {
             "count": 5,
             "type": "LOC"
@@ -90,6 +94,14 @@
         "fed": {
             "count": 5,
             "type": "ORG"
+        },
+        "saudi arabia": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "marruecos": {
+            "count": 4,
+            "type": "LOC"
         },
         "brazil": {
             "count": 4,
@@ -103,33 +115,49 @@
             "count": 4,
             "type": "LOC"
         },
-        "pakistan": {
-            "count": 4,
-            "type": "LOC"
-        },
         "etats-unis": {
             "count": 4,
             "type": "LOC"
         },
-        "anthony fauci": {
-            "count": 4,
-            "type": "PER"
+        "argentine": {
+            "count": 3,
+            "type": "LOC"
         },
-        "madrid": {
+        "houthis": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "iraq": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "canada": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "kenya": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "india": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "africa": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "russie": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "singapore": {
             "count": 3,
             "type": "LOC"
         },
         "us-iran": {
             "count": 3,
             "type": "ORG"
-        },
-        "turkey": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "england": {
-            "count": 3,
-            "type": "LOC"
         },
         "japon": {
             "count": 3,
@@ -143,18 +171,6 @@
             "count": 3,
             "type": "ORG"
         },
-        "ugandan": {
-            "count": 3,
-            "type": "LOC"
-        },
-        "xenia fedorova": {
-            "count": 3,
-            "type": "PER"
-        },
-        "india": {
-            "count": 3,
-            "type": "LOC"
-        },
         "gaza": {
             "count": 3,
             "type": "LOC"
@@ -163,19 +179,15 @@
             "count": 3,
             "type": "LOC"
         },
-        "hezbollah": {
-            "count": 3,
-            "type": "ORG"
-        },
-        "iraq": {
-            "count": 3,
-            "type": "LOC"
-        },
         "gavi": {
             "count": 3,
             "type": "LOC"
         },
-        "australia": {
+        "t\u00fcrkei": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "romania": {
             "count": 2,
             "type": "LOC"
         },
@@ -183,75 +195,63 @@
             "count": 2,
             "type": "LOC"
         },
-        "us senate": {
+        "congo": {
             "count": 2,
-            "type": "ORG"
+            "type": "LOC"
+        },
+        "pologne": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "madrid": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "australia": {
+            "count": 2,
+            "type": "LOC"
         },
         "lula": {
             "count": 2,
             "type": "PER"
         },
+        "turkey": {
+            "count": 2,
+            "type": "LOC"
+        },
         "hamas": {
             "count": 2,
             "type": "ORG"
+        },
+        "kyiv": {
+            "count": 2,
+            "type": "PER"
+        },
+        "\u0645\u0627\u0630\u0627": {
+            "count": 2,
+            "type": "PER"
+        },
+        "ankara": {
+            "count": 2,
+            "type": "LOC"
         },
         "syria": {
             "count": 2,
             "type": "LOC"
         },
-        "jordanie": {
+        "ugandan": {
             "count": 2,
             "type": "LOC"
-        },
-        "greece": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "europe": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "beijing": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "cuba": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "rohingya": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "kiev": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "charles": {
-            "count": 2,
-            "type": "PER"
-        },
-        "drones": {
-            "count": 2,
-            "type": "PER"
-        },
-        "russie": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "fifth amendment": {
-            "count": 2,
-            "type": "PER"
         }
     },
     "top_domains": {
-        "www.aljazeera.net": 64,
-        "www.straitstimes.com": 62,
-        "www.scmp.com": 60,
-        "timesofindia.indiatimes.com": 56,
-        "www.lemonde.fr": 36,
-        "www.jpost.com": 34,
-        "www.france24.com": 34,
-        "www.japantimes.co.jp": 32
+        "www.straitstimes.com": 64,
+        "www.scmp.com": 59,
+        "www.aljazeera.net": 59,
+        "timesofindia.indiatimes.com": 57,
+        "www.lemonde.fr": 42,
+        "www.france24.com": 32,
+        "www.japantimes.co.jp": 32,
+        "www.jpost.com": 30
     }
 }
