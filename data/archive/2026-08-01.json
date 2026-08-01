@@ -1,71 +1,67 @@
 {
     "date": "2026-08-01",
     "gti": 26,
-    "sitrep": "Tactical Alerts: Aerial Anomaly: AFR025. AFR44XC. Aerial Anomalas: AFL1212. Aerial anomaly: AFL1587. Aerial anomalies: AFL1004, AFL735, AFL795 .",
+    "sitrep": "Tactical Alerts: Aerial Anomaly: AFR1854. AFR51LP. Aerial Anomalas: RCH126. Aerial anomaly: AFL5807. Aerial anomaly: AFL1364.",
     "top_keywords": {
         "ceuta": {
-            "count": 62,
+            "count": 67,
             "type": "LOC"
         },
         "spain": {
-            "count": 20,
+            "count": 21,
             "type": "LOC"
+        },
+        "trump": {
+            "count": 17,
+            "type": "PER"
         },
         "iran": {
             "count": 17,
             "type": "LOC"
         },
-        "hamas": {
+        "israel": {
             "count": 16,
+            "type": "LOC"
+        },
+        "hamas": {
+            "count": 15,
             "type": "ORG"
         },
-        "trump": {
-            "count": 16,
-            "type": "PER"
-        },
         "ukraine": {
-            "count": 15,
-            "type": "LOC"
-        },
-        "israel": {
-            "count": 15,
-            "type": "LOC"
-        },
-        "japan": {
-            "count": 13,
+            "count": 14,
             "type": "LOC"
         },
         "china": {
-            "count": 12,
-            "type": "LOC"
-        },
-        "india": {
-            "count": 10,
-            "type": "LOC"
-        },
-        "morocco": {
-            "count": 9,
+            "count": 13,
             "type": "LOC"
         },
         "pakistan": {
-            "count": 9,
+            "count": 10,
+            "type": "LOC"
+        },
+        "japan": {
+            "count": 10,
             "type": "LOC"
         },
         "direct": {
             "count": 3,
             "type": "LOC"
         },
-        "hong kong": {
-            "count": 8,
+        "india": {
+            "count": 9,
             "type": "LOC"
         },
-        "donald trump": {
-            "count": 7,
-            "type": "PER"
+        "morocco": {
+            "count": 8,
+            "type": "LOC"
         },
         "netanyahu": {
             "count": 7,
             "type": "PER"
+        },
+        "europe": {
+            "count": 6,
+            "type": "LOC"
         },
         "france": {
             "count": 6,
@@ -75,7 +71,11 @@
             "count": 6,
             "type": "LOC"
         },
-        "europe": {
+        "donald trump": {
+            "count": 6,
+            "type": "PER"
+        },
+        "hong kong": {
             "count": 6,
             "type": "LOC"
         },
@@ -83,11 +83,11 @@
             "count": 6,
             "type": "LOC"
         },
-        "greece": {
+        "s\u00e1nchez": {
             "count": 5,
-            "type": "LOC"
+            "type": "PER"
         },
-        "singapore": {
+        "greece": {
             "count": 5,
             "type": "LOC"
         },
@@ -99,25 +99,45 @@
             "count": 5,
             "type": "LOC"
         },
-        "u.s.": {
-            "count": 5,
-            "type": "LOC"
-        },
         "oman": {
             "count": 4,
             "type": "LOC"
         },
-        "fifa": {
+        "kiev": {
             "count": 4,
-            "type": "ORG"
+            "type": "LOC"
         },
-        "s\u00e1nchez": {
+        "maroc": {
             "count": 4,
+            "type": "LOC"
+        },
+        "singapore": {
+            "count": 4,
+            "type": "LOC"
+        },
+        "nirmal purja": {
+            "count": 3,
             "type": "PER"
+        },
+        "etats-unis": {
+            "count": 3,
+            "type": "LOC"
         },
         "russia": {
             "count": 3,
             "type": "LOC"
+        },
+        "naples": {
+            "count": 3,
+            "type": "LOC"
+        },
+        "pedro s\u00e1nchez": {
+            "count": 3,
+            "type": "PER"
+        },
+        "fifa": {
+            "count": 3,
+            "type": "ORG"
         },
         "pedro sanchez": {
             "count": 3,
@@ -135,10 +155,6 @@
             "count": 3,
             "type": "PER"
         },
-        "kiev": {
-            "count": 3,
-            "type": "LOC"
-        },
         "beijing": {
             "count": 3,
             "type": "LOC"
@@ -151,13 +167,13 @@
             "count": 3,
             "type": "LOC"
         },
-        "maroc": {
-            "count": 3,
-            "type": "LOC"
-        },
         "patriot": {
             "count": 3,
             "type": "PER"
+        },
+        "u.s.": {
+            "count": 3,
+            "type": "LOC"
         },
         "cyprus": {
             "count": 3,
@@ -171,8 +187,16 @@
             "count": 3,
             "type": "LOC"
         },
-        "la france": {
-            "count": 3,
+        "jerusalem": {
+            "count": 2,
+            "type": "LOC"
+        },
+        "bbc": {
+            "count": 2,
+            "type": "ORG"
+        },
+        "antarctica": {
+            "count": 2,
             "type": "LOC"
         },
         "ukmto": {
@@ -182,10 +206,6 @@
         "kuwait": {
             "count": 2,
             "type": "LOC"
-        },
-        "uefa": {
-            "count": 2,
-            "type": "ORG"
         },
         "bruselas": {
             "count": 2,
@@ -211,10 +231,6 @@
             "count": 2,
             "type": "PER"
         },
-        "pedro s\u00e1nchez": {
-            "count": 2,
-            "type": "PER"
-        },
         "africa": {
             "count": 2,
             "type": "LOC"
@@ -222,32 +238,16 @@
         "taiwan": {
             "count": 2,
             "type": "LOC"
-        },
-        "\u0643\u0623\u0633": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "london": {
-            "count": 2,
-            "type": "LOC"
-        },
-        "massive attack": {
-            "count": 2,
-            "type": "ORG"
-        },
-        "white house": {
-            "count": 2,
-            "type": "ORG"
         }
     },
     "top_domains": {
-        "www.scmp.com": 67,
         "www.aljazeera.net": 65,
-        "timesofindia.indiatimes.com": 48,
+        "www.scmp.com": 62,
+        "timesofindia.indiatimes.com": 57,
+        "www.jpost.com": 47,
         "www.straitstimes.com": 44,
-        "www.jpost.com": 42,
+        "www.lemonde.fr": 40,
         "www.france24.com": 36,
-        "www.lemonde.fr": 36,
-        "www.japantimes.co.jp": 29
+        "feeds.elpais.com": 28
     }
 }
