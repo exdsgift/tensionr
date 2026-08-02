@@ -210,7 +210,9 @@ BAND_TOLERANCE = 0.005
 # the form the embeddings feed uses. A single timestamp joins only ~23% of a window;
 # accumulating slots reaches ~95% (#22).
 GKG_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.gkg.csv.zip"
-GKG_TRANSLATION_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.translation.gkg.csv.zip"
+GKG_TRANSLATION_URL = (
+    "http://data.gdeltproject.org/gdeltv2/{stamp}.translation.gkg.csv.zip"
+)
 GKG_LAG_MINUTES = 30
 GKG_COLUMNS = 27
 FIELD_SIZE_LIMIT = 4 * 1024 * 1024
@@ -222,6 +224,25 @@ FIELD_SIZE_LIMIT = 4 * 1024 * 1024
 WIKIDATA_SEARCH_URL = "https://www.wikidata.org/w/api.php"
 WIKIDATA_ENTITY_URL = "https://www.wikidata.org/w/api.php"
 ALIAS_LANGUAGES = [
-    "en", "es", "de", "it", "fr", "pt", "ru", "tr", "el", "ar",
-    "zh", "sr", "hr", "uk", "fa", "he", "ja", "id", "nl", "pl", "ro",
+    "en",
+    "es",
+    "de",
+    "it",
+    "fr",
+    "pt",
+    "ru",
+    "tr",
+    "el",
+    "ar",
+    "zh",
+    "sr",
+    "hr",
+    "uk",
+    "fa",
+    "he",
+    "ja",
+    "id",
+    "nl",
+    "pl",
+    "ro",
 ]
