@@ -34,6 +34,9 @@ build-backend = "uv_build"
 # rule set changes between minor releases, and CI must not start failing because
 # a new ruff shipped.
 target-version = "py312"
+# Research documents are a record of what was measured, and ruff formats Python
+# blocks inside markdown. Reformatting a sample silently edits the evidence.
+exclude = ["docs"]
 line-length = 88
 src = ["src", "tests"]
 
