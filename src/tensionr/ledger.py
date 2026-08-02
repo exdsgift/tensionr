@@ -32,6 +32,29 @@ def esc(text: Any) -> str:
     return html.escape(str(text), quote=True)
 
 
+def labels(data: Path) -> dict[str, str]:
+    """Display names for actor keys, from the curated seeds.
+
+    The key is a slug the pipeline matches on; the label is what a reader should see,
+    and the two are not interchangeable — `hormuz` is the Strait of Hormuz and `trump`
+    is Donald Trump. Titlecasing the key would print neither. The seeds are the same
+    file the alias table was built from, so the name on the page is the name whose
+    Wikidata id was checked by hand (#22).
+    """
+    seeds = data / "actors" / "seeds.json"
+    if not seeds.exists():
+        return {}
+    return {
+        key: value["label"]
+        for key, value in json.loads(seeds.read_text("utf-8"))["actors"].items()
+        if value.get("label")
+    }
+
+
+def name(actor: str, names: dict[str, str]) -> str:
+    return esc(names.get(actor, actor.replace("-", " ").title()))
+
+
 def cell(lat: float, lon: float, projection: dict[str, Any]) -> tuple[float, float]:
     """Fractional character cell for a coordinate, in the coastline's own projection.
 
@@ -91,9 +114,9 @@ def _lead(story: dict[str, Any]) -> dict[str, Any]:
     return by_actor[story["band"][0]]
 
 
-def evidence_table(story: dict[str, Any]) -> str:
+def evidence_table(story: dict[str, Any], names: dict[str, str]) -> str:
     actors = story["band"]
-    head = "".join(f'<th class="m">{esc(a.title())}</th>' for a in actors)
+    head = "".join(f'<th class="m">{name(a, names)}</th>' for a in actors)
     body = []
     for row in story.get("evidence", []):
         marks = "".join(
@@ -113,7 +136,7 @@ def evidence_table(story: dict[str, Any]) -> str:
     )
 
 
-def _split(story: dict[str, Any]) -> str:
+def _split(story: dict[str, Any], names: dict[str, str]) -> str:
     """Where the disagreement runs, in polities rather than in adjectives.
 
     This is the sentence the prototype wrote by hand. It is stated only as counts and
@@ -133,7 +156,7 @@ def _split(story: dict[str, Any]) -> str:
     if not every or not none:
         return ""
     return (
-        f"Every source in {_series(every[:4])} named {esc(actor)}; "
+        f"Every source in {_series(every[:4])} named {name(actor, names)}; "
         f"none of those in {_series(none[:4])} did."
     )
 
@@ -145,20 +168,20 @@ def _series(names: list[str]) -> str:
     return ", ".join(names[:-1]) + " and " + names[-1]
 
 
-def row_counts(story: dict[str, Any]) -> str:
+def row_counts(story: dict[str, Any], names: dict[str, str]) -> str:
     out = []
     for actor in story["band"]:
         figure = next(f for f in story["figures"] if f["actor"] == actor)
         rate = figure["named"] / figure["evaluable"] if figure["evaluable"] else 0
         miss = ' class="miss"' if rate < 0.4 else ""
         out.append(
-            f"<span{miss}><b>{esc(actor.title())}</b> "
+            f"<span{miss}><b>{name(actor, names)}</b> "
             f"{figure['named']}/{figure['evaluable']}</span>"
         )
     return " · ".join(out)
 
 
-def story_row(story: dict[str, Any], *, first: bool) -> str:
+def story_row(story: dict[str, Any], names: dict[str, str], *, first: bool) -> str:
     figure = _lead(story)
     unresolved = figure["unresolved"]
     note = (
@@ -175,7 +198,7 @@ def story_row(story: dict[str, Any], *, first: bool) -> str:
     sentence = (
         f"{story['sources']} publishers across {len(story['polities'])} polities "
         f"carried this. {figure['named']} of {figure['evaluable']} named "
-        f"<b>{esc(story['band'][0])}</b>"
+        f"<b>{name(story['band'][0], names)}</b>"
     )
     if figure["balanced_rate"] is not None:
         sentence += (
@@ -183,7 +206,7 @@ def story_row(story: dict[str, Any], *, first: bool) -> str:
             "equally rather than every source"
         )
     sentence += "."
-    if split := _split(story):
+    if split := _split(story, names):
         sentence += " " + split
     reading = f'<p class="read">{sentence}</p>'
     band_note = (
@@ -199,13 +222,13 @@ def story_row(story: dict[str, Any], *, first: bool) -> str:
           <small>{story["sources"]} sources · {len(story["polities"])} polities · division {figure["division"]:.3f}</small></span>
         <span class="cell num" data-l="sources">{story["sources"]}</span>
         <span class="cell num" data-l="polities">{len(story["polities"])}</span>
-        <span class="actors">{row_counts(story)}</span>
+        <span class="actors">{row_counts(story, names)}</span>
       </div></summary>
       {reading}
       {band_note}
       <details class="ev"{" open" if first else ""}>
         <summary>{"▾" if first else "▸"} All {story["sources"]} sources, and who each one named</summary>
-        {evidence_table(story)}
+        {evidence_table(story, names)}
         <p class="ev-note">{note}</p>
       </details>
     </details>
@@ -217,8 +240,10 @@ def render(
     coastline: dict[str, Any],
     coordinates: dict[str, list[float]],
     template: str,
+    names: dict[str, str] | None = None,
 ) -> str:
     """One page from one run. Raises if the run published nothing worth showing."""
+    names = names or {}
     banded = [s for s in stories["stories"] if s.get("band") and s.get("evidence")]
     if not banded:
         raise ValueError("no story in this run cleared both floors — nothing to render")
@@ -234,7 +259,7 @@ def render(
 
     say = (
         f"{hero['sources']} publishers in {len(hero['polities'])} polities carried this "
-        f"story. {figure['named']} named {esc(hero['band'][0])} and "
+        f"story. {figure['named']} named {name(hero['band'][0], names)} and "
         f"{figure['evaluable'] - figure['named']} did not — the widest split this run "
         f"measured."
     )
@@ -257,12 +282,12 @@ def render(
         .replace("@@MAP_H@@", str(coastline["height"]))
         .replace("@@PANEL@@", json.dumps(marks, ensure_ascii=False))
         .replace("@@PLOTTED@@", str(plotted))
-        .replace("@@HERO_ACTOR@@", esc(hero["band"][0]))
+        .replace("@@HERO_ACTOR@@", name(hero["band"][0], names))
         .replace("@@HERO_NAMED@@", str(figure["named"]))
         .replace("@@HERO_EVAL@@", str(figure["evaluable"]))
         .replace("@@HERO_POLN@@", str(len(hero["polities"])))
         .replace("@@HERO_SAY@@", say)
-        .replace("@@HERO_COUNTS@@", row_counts(hero))
+        .replace("@@HERO_COUNTS@@", row_counts(hero, names))
         .replace("@@BANDED@@", str(report["published"]["with_a_band"]))
         .replace("@@STORIES@@", str(report["published"]["stories"]))
         .replace("@@ARTICLES@@", f"{report['window']['articles']:,}")
@@ -271,7 +296,7 @@ def render(
         .replace("@@WHEN@@", stamp.strftime("%-d %b · %H:%M UTC"))
         .replace(
             "@@ROWS@@",
-            "".join(story_row(s, first=i == 0) for i, s in enumerate(banded)),
+            "".join(story_row(s, names, first=i == 0) for i, s in enumerate(banded)),
         )
         .replace("@@FOOT@@", foot)
     )
@@ -289,6 +314,7 @@ def build(data: Path, out: Path) -> Path:
             "polities"
         ],
         template,
+        labels(data),
     )
     out.write_text(page, "utf-8")
     logger.info("wrote %s (%d bytes)", out, len(page.encode()))

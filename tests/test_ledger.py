@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from tensionr.ledger import cell, evidence_table, panel, render, row_counts
+from tensionr.ledger import cell, evidence_table, labels, panel, render, row_counts
 from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
 
 # The real file's shape, small enough to reason about: 4 cells wide, 2 tall.
@@ -19,6 +19,7 @@ PROJECTION = {
 }
 
 COORDS = {"Iran": [35.7, 51.4], "Spain": [40.4, -3.7], "Chile": [-33.5, -70.7]}
+NAMES = {"hormuz": "Strait of Hormuz"}
 
 
 def source(domain, polity, marks, title="a headline", language="en"):
@@ -109,14 +110,14 @@ def test_a_polity_with_no_coordinate_is_counted_but_not_plotted():
 
 def test_unplaced_sources_appear_in_the_table_rather_than_vanishing():
     s = story(evidence=[source("a.xx", None, {"hormuz": PRESENT})])
-    table = evidence_table(s)
+    table = evidence_table(s, NAMES)
     assert "a.xx" in table
     assert "—" in table
 
 
 def test_the_third_state_is_rendered_as_itself_and_not_as_an_absence():
     s = story(evidence=[source("a.ir", "Iran", {"hormuz": UNRESOLVED})])
-    table = evidence_table(s)
+    table = evidence_table(s, NAMES)
     assert "–" in table and "ne" in table
     assert "●" not in table
 
@@ -137,13 +138,13 @@ def test_the_page_leads_with_the_widest_split():
             }
         ],
     )
-    page = render(run([thin, story()]), PROJECTION, COORDS, TEMPLATE)
+    page = render(run([thin, story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert page.index("A headline about the strait") < page.index("A narrower one")
 
 
 def test_a_run_with_nothing_measurable_refuses_to_render():
     with pytest.raises(ValueError, match="cleared both floors"):
-        render(run([story(band=[], evidence=[])]), PROJECTION, COORDS, TEMPLATE)
+        render(run([story(band=[], evidence=[])]), PROJECTION, COORDS, TEMPLATE, NAMES)
 
 
 def test_the_split_sentence_is_only_written_when_the_split_is_clean():
@@ -156,17 +157,17 @@ def test_the_split_sentence_is_only_written_when_the_split_is_clean():
             source("d.es", "Spain", {"hormuz": ABSENT}),
         ]
     )
-    page = render(run([mixed]), PROJECTION, COORDS, TEMPLATE)
+    page = render(run([mixed]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert "Every source in" not in page
 
 
 def test_every_placeholder_is_filled():
-    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE)
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert "@@" not in page
 
 
 def test_the_map_size_the_script_uses_is_the_map_that_was_drawn():
-    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE)
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert "W=4, H=2" in page
 
 
@@ -184,7 +185,7 @@ def test_row_counts_flags_a_low_naming_rate():
             }
         ]
     )
-    assert "miss" in row_counts(quiet)
+    assert "miss" in row_counts(quiet, NAMES)
     loud = story(
         figures=[
             {
@@ -198,11 +199,11 @@ def test_row_counts_flags_a_low_naming_rate():
             }
         ]
     )
-    assert "miss" not in row_counts(loud)
+    assert "miss" not in row_counts(loud, NAMES)
 
 
 def test_the_balanced_twin_is_published_beside_the_figure():
-    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE)
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert "every language counts" in page
 
 
@@ -222,6 +223,47 @@ TEMPLATE = """<!doctype html><title>t</title>
 
 
 def test_the_marks_are_valid_json_for_the_script():
-    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE)
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     payload = page.split("const PANEL=")[1].split(", W=")[0]
     assert isinstance(json.loads(payload), list)
+
+
+def test_the_page_prints_the_curated_label_not_a_titlecased_slug():
+    """`hormuz` is the Strait of Hormuz and `trump` is Donald Trump (#22)."""
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "Strait of Hormuz" in page
+    # the bare titlecased slug must not appear as a label of its own
+    assert ">Hormuz<" not in page
+
+
+def test_an_actor_with_no_curated_label_still_reads_as_a_name():
+    page = render(
+        run(
+            [
+                story(
+                    band=["white-house"],
+                    figures=[
+                        {
+                            "actor": "white-house",
+                            "named": 2,
+                            "evaluable": 3,
+                            "unresolved": 0,
+                            "division": 0.9183,
+                            "balanced_rate": 0.5,
+                            "measurable": True,
+                        }
+                    ],
+                    evidence=[source("a.ir", "Iran", {"white-house": PRESENT})],
+                )
+            ]
+        ),
+        PROJECTION,
+        COORDS,
+        TEMPLATE,
+        {},
+    )
+    assert "White House" in page
+
+
+def test_labels_are_optional_and_absent_seeds_are_not_an_error(tmp_path):
+    assert labels(tmp_path) == {}
