@@ -214,3 +214,14 @@ GKG_TRANSLATION_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.translation.
 GKG_LAG_MINUTES = 30
 GKG_COLUMNS = 27
 FIELD_SIZE_LIMIT = 4 * 1024 * 1024
+
+# The alias table. Languages are the thirteen with a resilient two-polity panel
+# (#21) plus the scripts our corpus actually carries, so an actor is answerable
+# wherever a story might be told. QIDs live in data, never in source: 34 of 65
+# hand-written ids pointed at the wrong entity and failed silently (#22).
+WIKIDATA_SEARCH_URL = "https://www.wikidata.org/w/api.php"
+WIKIDATA_ENTITY_URL = "https://www.wikidata.org/w/api.php"
+ALIAS_LANGUAGES = [
+    "en", "es", "de", "it", "fr", "pt", "ru", "tr", "el", "ar",
+    "zh", "sr", "hr", "uk", "fa", "he", "ja", "id", "nl", "pl", "ro",
+]
