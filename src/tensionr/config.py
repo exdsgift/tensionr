@@ -191,3 +191,15 @@ MIN_STORY_SIZE = 5
 # rather than Jaccard, because a story that doubles still shares every earlier
 # article and must not read as a new one.
 IDENTITY_CONTAINMENT = 0.5
+
+# Floors on a published figure. Both measured rather than chosen: below M = 20 the
+# language artefact moves a figure 4.9pp at the median and 16.7pp at p90, against
+# 0.7 / 3.7 at M >= 50, and top-ten ranking stability rises from 3/10 at a floor of
+# 10 to 8/10 at 30 (#23). Two polities because one voice cannot disagree (#20).
+MIN_EVALUABLE = 30
+MIN_POLITIES = 2
+
+# Several rows sit within 0.005 of the top division score while the artefact moves a
+# figure by as much again, so the lead is a band and its internal order is not a
+# claim (#23).
+BAND_TOLERANCE = 0.005

@@ -1,0 +1,157 @@
+"""Three-state presence, denominators, floors, division and the balanced twin."""
+
+import pytest
+
+from tensionr.stories.measure import (
+    ABSENT,
+    PRESENT,
+    UNRESOLVED,
+    collapse_syndication,
+    division,
+    measure_story,
+    top_band,
+)
+
+
+def row(domain, title, language="en", polity="A"):
+    return {"domain": domain, "title": title, "language": language, "polity": polity}
+
+
+def resolver(named_by: dict[str, str]):
+    """Answer from a table keyed by domain, so tests state marks directly."""
+
+    def resolve(title, actor):
+        return named_by.get(f"{title}|{actor}", ABSENT)
+
+    return resolve
+
+
+def test_verbatim_reprints_collapse_to_one_voice():
+    rows = [
+        row("a.test", "Same wire headline"),
+        row("b.test", "Same wire headline"),
+        row("c.test", "Same Wire  Headline!"),
+        row("d.test", "A different headline"),
+    ]
+    kept, collapsed = collapse_syndication(rows)
+    assert [r["domain"] for r in kept] == ["a.test", "d.test"]
+    assert collapsed == 2
+
+
+def test_one_publisher_counts_once_even_with_two_headlines():
+    rows = [row("a.test", "first"), row("a.test", "second")]
+    kept, collapsed = collapse_syndication(rows)
+    assert len(kept) == 1
+    assert collapsed == 1
+
+
+@pytest.mark.parametrize(
+    "named,evaluable,expected",
+    [(0, 10, 0.0), (10, 10, 0.0), (5, 10, 1.0), (0, 0, 0.0)],
+)
+def test_division_peaks_when_sources_are_split_evenly(named, evaluable, expected):
+    assert division(named, evaluable) == pytest.approx(expected)
+
+
+def test_division_ranks_an_even_split_above_a_near_universal_actor():
+    assert division(50, 100) > division(95, 100)
+
+
+def test_unresolved_leaves_the_denominator_rather_than_counting_as_absent():
+    rows = [row(f"{i}.test", f"t{i}") for i in range(4)]
+    marks = {
+        "t0|iran": PRESENT,
+        "t1|iran": PRESENT,
+        "t2|iran": UNRESOLVED,
+        "t3|iran": ABSENT,
+    }
+    out = measure_story(
+        rows, ["iran"], resolver(marks), min_evaluable=1, min_polities=1
+    )
+    figure = out["figures"][0]
+
+    assert figure["evaluable"] == 3, (
+        "the undecidable row must not sit in the denominator"
+    )
+    assert figure["named"] == 2
+    assert figure["unresolved"] == 1
+
+
+def test_the_denominator_differs_between_actors_in_one_story():
+    rows = [row("a.test", "t0"), row("b.test", "t1")]
+    marks = {
+        "t0|iran": PRESENT,
+        "t1|iran": ABSENT,
+        "t0|hormuz": PRESENT,
+        "t1|hormuz": UNRESOLVED,
+    }
+    out = measure_story(
+        rows, ["iran", "hormuz"], resolver(marks), min_evaluable=1, min_polities=1
+    )
+    assert [f["evaluable"] for f in out["figures"]] == [2, 1]
+
+
+def test_a_story_below_the_polity_quorum_produces_no_figure():
+    rows = [row(f"{i}.test", f"t{i}", polity="A") for i in range(40)]
+    out = measure_story(rows, ["iran"], resolver({}), min_evaluable=1, min_polities=2)
+    assert out["below_quorum"] is True
+    assert out["figures"][0]["measurable"] is False
+    assert out["figures"][0]["division"] is None
+    assert out["figures"][0]["named"] == 0, (
+        "raw counts survive; only the figure is withheld"
+    )
+
+
+def test_a_story_below_the_evaluable_floor_produces_no_figure():
+    rows = [row(f"{i}.test", f"t{i}", polity="A" if i else "B") for i in range(10)]
+    out = measure_story(rows, ["iran"], resolver({}), min_evaluable=30, min_polities=2)
+    assert out["figures"][0]["measurable"] is False
+    assert out["figures"][0]["division"] is None
+
+
+def test_the_balanced_twin_weights_languages_not_sources():
+    # eight English sources all naming the actor, two Arabic sources naming neither.
+    # Pooled says 0.8; weighting the two languages equally says 0.5.
+    rows = [row(f"e{i}.test", f"e{i}", language="en", polity="A") for i in range(8)]
+    rows += [row(f"a{i}.test", f"a{i}", language="ar", polity="B") for i in range(2)]
+    marks = {f"e{i}|iran": PRESENT for i in range(8)}
+    out = measure_story(
+        rows, ["iran"], resolver(marks), min_evaluable=1, min_polities=2
+    )
+    figure = out["figures"][0]
+
+    assert figure["named"] / figure["evaluable"] == pytest.approx(0.8)
+    assert figure["balanced_rate"] == pytest.approx(0.5)
+
+
+def test_the_band_holds_every_row_that_leads_and_orders_none_of_them():
+    figures = [
+        {"actor": "b", "division": 0.900, "measurable": True},
+        {"actor": "a", "division": 0.898, "measurable": True},
+        {"actor": "c", "division": 0.700, "measurable": True},
+        {"actor": "d", "division": None, "measurable": False},
+    ]
+    band = top_band(figures, tolerance=0.005)
+    assert [f["actor"] for f in band] == ["a", "b"], (
+        "alphabetical, so no rank is implied"
+    )
+
+
+def test_the_band_is_empty_when_nothing_is_measurable():
+    assert top_band([{"actor": "a", "division": None, "measurable": False}]) == []
+
+
+def test_a_band_of_zeros_is_no_band_at_all():
+    # Found on live data: a story where nobody named any tracked actor put three
+    # rows at division 0.000 into the band, headlining "nothing happened".
+    figures = [
+        {"actor": "iran", "division": 0.0, "measurable": True},
+        {"actor": "trump", "division": 0.0, "measurable": True},
+        {"actor": "israel", "division": 0.0, "measurable": True},
+    ]
+    assert top_band(figures) == []
+
+
+def test_a_row_indistinguishable_from_undivided_does_not_lead():
+    figures = [{"actor": "a", "division": 0.004, "measurable": True}]
+    assert top_band(figures, tolerance=0.005) == []
