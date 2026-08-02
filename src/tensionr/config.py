@@ -185,3 +185,43 @@ THEME_MAX_SHARE = 0.05
 STORY_MAX_SHARE = 0.35
 MIN_THEME_SIZE = 8
 MIN_STORY_SIZE = 5
+
+# Identity across runs. Windows overlap in time, so a story seen twice shares
+# concrete articles: the join is exact rather than a similarity. Containment
+# rather than Jaccard, because a story that doubles still shares every earlier
+# article and must not read as a new one.
+IDENTITY_CONTAINMENT = 0.5
+
+# Floors on a published figure. Both measured rather than chosen: below M = 20 the
+# language artefact moves a figure 4.9pp at the median and 16.7pp at p90, against
+# 0.7 / 3.7 at M >= 50, and top-ten ranking stability rises from 3/10 at a floor of
+# 10 to 8/10 at 30 (#23). Two polities because one voice cannot disagree (#20).
+MIN_EVALUABLE = 30
+MIN_POLITIES = 2
+
+# Several rows sit within 0.005 of the top division score while the artefact moves a
+# figure by as much again, so the lead is a band and its internal order is not a
+# claim (#23).
+BAND_TOLERANCE = 0.005
+
+# GDELT's knowledge graph, the second channel for actor resolution. Its name fields
+# arrive in Latin script for every language because GDELT machine-translates and then
+# runs the English extractor, and V2DOCUMENTIDENTIFIER is the article URL in exactly
+# the form the embeddings feed uses. A single timestamp joins only ~23% of a window;
+# accumulating slots reaches ~95% (#22).
+GKG_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.gkg.csv.zip"
+GKG_TRANSLATION_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.translation.gkg.csv.zip"
+GKG_LAG_MINUTES = 30
+GKG_COLUMNS = 27
+FIELD_SIZE_LIMIT = 4 * 1024 * 1024
+
+# The alias table. Languages are the thirteen with a resilient two-polity panel
+# (#21) plus the scripts our corpus actually carries, so an actor is answerable
+# wherever a story might be told. QIDs live in data, never in source: 34 of 65
+# hand-written ids pointed at the wrong entity and failed silently (#22).
+WIKIDATA_SEARCH_URL = "https://www.wikidata.org/w/api.php"
+WIKIDATA_ENTITY_URL = "https://www.wikidata.org/w/api.php"
+ALIAS_LANGUAGES = [
+    "en", "es", "de", "it", "fr", "pt", "ru", "tr", "el", "ar",
+    "zh", "sr", "hr", "uk", "fa", "he", "ja", "id", "nl", "pl", "ro",
+]
