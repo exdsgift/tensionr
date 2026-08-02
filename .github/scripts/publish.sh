@@ -17,7 +17,9 @@
 #
 #   history  Each file is added under <prefix> and the branch is extended. Existing
 #            paths are never overwritten: the mode refuses rather than rewrite, because
-#            this is the one store time cannot rebuild.
+#            this is the one store time cannot rebuild. Set IF_ABSENT=1 to skip a path
+#            that is already there instead of failing — for a caller that offers the
+#            same file every run and only needs the first offer to stick.
 #
 # Neither mode can lose a concurrent run's work: history must fast-forward, and state
 # pushes with --force-with-lease. Either way a race makes the loser rebuild on the new
@@ -74,6 +76,10 @@ build_tree() {
     if [[ "$mode" == history ]]; then
       dest="$prefix/$(basename "$path")"
       if [[ -n "$base" ]] && git cat-file -e "$base:$dest" 2>/dev/null; then
+        if [[ "${IF_ABSENT:-}" == 1 ]]; then
+          echo "publish: $dest is already on '$branch' — left as it is"
+          continue
+        fi
         die "$dest is already on '$branch' — history is append-only, never rewritten"
       fi
     else

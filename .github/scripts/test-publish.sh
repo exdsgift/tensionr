@@ -109,6 +109,19 @@ out="$(bash "$PUB" history history history/2026/08/02/1400 record.json 2>&1)"
 check "refused" "1" "$(echo "$out" | grep -c 'append-only')"
 check "original untouched" '{"run":1}' "$(at show history:history/2026/08/02/1400/record.json)"
 
+echo "== IF_ABSENT turns a repeat offer into a no-op =="
+# The v1 job offers yesterday's snapshot every run and only the first offer should
+# stick; without this it would fail eleven times a day.
+out="$(IF_ABSENT=1 bash "$PUB" history history history/2026/08/02/1400 record.json 2>&1)"
+check "skipped, not failed" "1" "$(echo "$out" | grep -c 'left as it is')"
+check "no new commit" "2" "$(at rev-list --count history)"
+check "original untouched" '{"run":1}' "$(at show history:history/2026/08/02/1400/record.json)"
+echo '{"run":3}' > record.json
+IF_ABSENT=1 bash "$PUB" history history history/2026/08/02/1430 record.json > /dev/null \
+  || echo "  FAIL exit $?"
+check "a genuinely new path still lands" '{"run":3}' \
+  "$(at show history:history/2026/08/02/1430/record.json)"
+
 echo "== a missing file is an error, not a silent empty commit =="
 out="$(bash "$PUB" state data data/news.json data/absent.json 2>&1)"
 check "refused" "1" "$(echo "$out" | grep -c 'no such file')"
