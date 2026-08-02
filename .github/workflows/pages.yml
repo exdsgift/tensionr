@@ -1,0 +1,179 @@
+name: Pages
+
+# Publishes the site through GitHub Actions instead of letting Pages serve
+# whatever happens to sit on `master` (#6, decision 1 and 3):
+#
+#   production            <- the `master` tip
+#   preview/<branch>/     <- the tip of every branch with an open pull request
+#
+# actions/deploy-pages publishes ONE artifact as the entire site root, so every
+# deployment replaces the whole site. The site is therefore reassembled from git
+# refs on every run - see .github/scripts/assemble-site.sh for why that is the
+# only safe shape, and note the consequence: a preview deployment also refreshes
+# production from the current `master`, and never takes it down.
+#
+# Previews appear when a pull request opens and disappear when it closes, because
+# the set of previews is derived from the open pull requests rather than stored
+# anywhere.
+#
+# The data pipeline is not involved. It lives in update_data.yml on `schedule` +
+# `workflow_dispatch` and must never run on a pull request (#6).
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+  workflow_dispatch:
+    inputs:
+      skip_deploy:
+        description: "Assemble and upload the artifact but do not publish it. Use this to verify the build before switching the Pages build type."
+        type: boolean
+        default: false
+
+# Pages allows one deployment at a time, and cancelling mid-flight can leave the
+# site half-published, so runs queue instead of superseding one another.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: Assemble site
+    runs-on: ubuntu-latest
+    # A fork's pull request gets a read-only token and must never be able to
+    # publish to this Pages site.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: read
+      pages: read
+    outputs:
+      pages_build_type: ${{ steps.pages_state.outputs.build_type }}
+      site_base_url: ${{ steps.pages_state.outputs.html_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read the current Pages configuration
+        id: pages_state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # `build_type` is `legacy` until the repository setting is switched to
+          # "GitHub Actions". The deploy job below stays skipped while that is
+          # the case, so this workflow can land and be verified without taking
+          # the live legacy site down. See the checklist on #18.
+          if pages_json="$(gh api "repos/${GITHUB_REPOSITORY}/pages" 2>/dev/null)"; then
+            build_type="$(jq -r '.build_type // "unknown"' <<< "$pages_json")"
+            html_url="$(jq -r '.html_url // ""' <<< "$pages_json")"
+          else
+            build_type="unavailable"
+            html_url=""
+          fi
+          echo "build_type=$build_type" >> "$GITHUB_OUTPUT"
+          echo "html_url=$html_url" >> "$GITHUB_OUTPUT"
+          echo "Pages build_type: $build_type"
+
+      - name: Collect the branches that should have a preview
+        id: previews
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # On a `closed` event the pull request may still be listed as open for
+          # a moment; drop it explicitly so a merged branch's preview goes away
+          # in the same run that removes it.
+          CLOSING_BRANCH: >-
+            ${{ github.event_name == 'pull_request' && github.event.action == 'closed'
+                && github.event.pull_request.head.ref || '' }}
+        run: |
+          branches="$(
+            gh pr list --state open --limit 100 \
+              --json headRefName,isCrossRepository \
+              --jq '.[] | select(.isCrossRepository == false) | .headRefName' \
+            | sort -u
+          )"
+          if [[ -n "$CLOSING_BRANCH" ]]; then
+            branches="$(grep -vxF "$CLOSING_BRANCH" <<< "$branches" || true)"
+          fi
+          {
+            echo "branches<<__EOF__"
+            printf '%s\n' "$branches"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+          echo "Previews to publish:"
+          printf '%s\n' "${branches:-  (none)}"
+
+      - name: Assemble the site
+        id: assemble
+        env:
+          PRODUCTION_BRANCH: master
+          PREVIEW_BRANCHES: ${{ steps.previews.outputs.branches }}
+          SITE_BASE_URL: ${{ steps.pages_state.outputs.html_url }}
+        run: .github/scripts/assemble-site.sh _site
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Summary
+        env:
+          BASE_URL: ${{ steps.pages_state.outputs.html_url }}
+          BRANCHES: ${{ steps.previews.outputs.branches }}
+          BUILD_TYPE: ${{ steps.pages_state.outputs.build_type }}
+        run: |
+          {
+            echo "### Pages artifact assembled"
+            echo
+            echo "- Pages \`build_type\`: \`$BUILD_TYPE\`"
+            echo "- production: ${BASE_URL:-<Pages base URL unknown>}"
+            if [[ -n "${BRANCHES// /}" ]]; then
+              echo "- previews:"
+              while IFS= read -r b; do
+                [[ -n "$b" ]] || continue
+                echo "  - \`$b\`: ${BASE_URL%/}/preview/$b/"
+              done <<< "$BRANCHES"
+            else
+              echo "- previews: none (no open pull requests on this repository)"
+            fi
+            if [[ "$BUILD_TYPE" != "workflow" ]]; then
+              echo
+              echo "> The deploy job was skipped: Pages is still a \`$BUILD_TYPE\` build."
+              echo "> Switch **Settings -> Pages -> Build and deployment -> Source** to"
+              echo "> **GitHub Actions** and re-run this workflow. Until then the artifact"
+              echo "> above is built but not published, and the existing live site is"
+              echo "> untouched."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    # Two guards, both deliberate:
+    #  - `workflow` build type: the very first run of this workflow happens while
+    #    Pages is still a `legacy` build, when actions/deploy-pages cannot
+    #    succeed. Skipping keeps the check green and makes the workflow start
+    #    publishing by itself once the setting is switched.
+    #  - `skip_deploy`: a manual dry run that assembles and uploads only.
+    if: >-
+      needs.build.outputs.pages_build_type == 'workflow' &&
+      github.event.inputs.skip_deploy != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
