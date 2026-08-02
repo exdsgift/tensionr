@@ -4,7 +4,7 @@ import calendar
 import logging
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import feedparser
@@ -67,9 +67,9 @@ def _entry_seendate(entry: Any) -> str:
     """Real publish time (UTC, GDELT seendate format); fetch time only as last resort."""
     parsed = entry.get("published_parsed") or entry.get("updated_parsed")
     if parsed:
-        dt = datetime.fromtimestamp(calendar.timegm(parsed), tz=timezone.utc)
+        dt = datetime.fromtimestamp(calendar.timegm(parsed), tz=UTC)
     else:
-        dt = datetime.now(timezone.utc)
+        dt = datetime.now(UTC)
     return dt.strftime(SEENDATE_FORMAT)
 
 
