@@ -1,0 +1,289 @@
+<title>tensionr — Ledger</title>
+
+<style>
+  :root{
+    --ink:#140c1c; --raise:#1c1226; --hair:#241730;
+    --slate:#4e4a4e; --grey:#757161; --steel:#8595a1;
+    --orange:#d27d2c; --cyan:#6dc2ca; --yellow:#dad45e; --paper:#deeed6;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem; --s8:4rem;
+    --barh:44px;
+    /* one definition, used by the header and every row, in root-relative units so
+       the tracks resolve identically whatever font-size each container carries */
+    --cols:minmax(0,1fr) 6rem 7.5rem minmax(0,19rem);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:var(--paper); font-family:var(--mono);
+       font-size:15px; line-height:1.55; -webkit-text-size-adjust:100%}
+  h2{margin:0}
+  .num{font-variant-numeric:tabular-nums}
+  .dim{color:var(--steel)}
+
+  .bar{position:sticky; top:0; z-index:30; background:var(--ink); border-bottom:1px solid var(--grey)}
+  .bar .in{max-width:1200px; margin-inline:auto; padding:var(--s3) var(--s5);
+           display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); align-items:baseline}
+  .bar strong{font-size:.76rem; letter-spacing:.16em; text-transform:uppercase; font-weight:600}
+  .bar .sub,.bar .when{font-size:.72rem; color:var(--steel)}
+  .bar .when{margin-left:auto}
+
+  .wrap{max-width:1200px; margin-inline:auto; padding:var(--s6) var(--s5) var(--s8)}
+
+  .hook{display:grid; gap:var(--s6) var(--s7); align-items:center;
+        grid-template-columns:minmax(26ch,34ch) minmax(0,1fr)}
+  .lede{font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; color:var(--steel); display:block}
+  .fig{margin:var(--s3) 0 0}
+  .fig b{display:block; font-weight:400; font-size:clamp(3rem,6vw,4.4rem); line-height:.9;
+         color:var(--yellow); letter-spacing:-.035em}
+  .fig b i{font-style:normal; font-size:.38em; color:var(--steel); letter-spacing:0}
+  .fig .unit{display:block; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase;
+             color:var(--paper); margin-top:var(--s2)}
+  .say{font-size:.98rem; max-width:38ch; margin:var(--s4) 0 0}
+  .say em{font-style:normal; color:var(--cyan)}
+  .from{margin:var(--s4) 0 0; padding-top:var(--s3); border-top:1px solid var(--slate);
+        display:flex; flex-wrap:wrap; gap:var(--s2) var(--s5); font-size:.75rem; color:var(--steel)}
+  .from b{font-weight:400; color:var(--paper)}
+  .from .miss b{color:var(--orange)}
+
+  .earth{position:relative; width:100%; max-width:44rem; margin-inline:auto}
+  .earth pre{margin:0; font-family:var(--mono); line-height:1.15em; letter-spacing:0;
+             white-space:pre; color:var(--slate); width:max-content}
+  .earth .layer{position:absolute; inset:0}
+  #probe{position:absolute; visibility:hidden; white-space:pre; font-family:var(--mono); letter-spacing:0}
+  .blip{position:absolute; transform:translate(-50%,-50%); display:grid; place-items:center}
+  .blip .dot{width:calc(var(--cw,6px) * .9); height:calc(var(--cw,6px) * .9); border-radius:50%; background:var(--cyan); position:relative; z-index:2}
+  .blip.off .dot{background:transparent; box-shadow:inset 0 0 0 1px var(--grey)}
+  .blip .r{position:absolute; width:calc(var(--cw,6px) * 1.6); height:calc(var(--cw,6px) * 1.6); border-radius:50%; border:1px solid var(--cyan);
+           opacity:0; animation:sonar 4.2s ease-out infinite}
+  .blip.off .r{border-color:var(--grey); animation-duration:6.6s}
+  @keyframes sonar{0%{transform:scale(.3); opacity:.9} 65%{opacity:.14} 100%{transform:scale(9); opacity:0}}
+  .blip::after{content:attr(data-n); position:absolute; left:calc(var(--cw,6px) * 2); top:50%; transform:translateY(-50%);
+               white-space:nowrap; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+               color:var(--paper); background:var(--ink); padding:.1em .4em; opacity:0; transition:opacity .12s; z-index:4}
+  .blip:hover::after,.blip:focus-visible::after{opacity:1}
+  .earth .cap{display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s2) var(--s5);
+              margin-top:var(--s4); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+              color:var(--steel); text-align:center}
+  @media (prefers-reduced-motion:reduce){.blip .r{animation:none; opacity:.28; transform:scale(2)}}
+
+  .agg{margin-top:var(--s7); border-block:1px solid var(--grey); display:flex; flex-wrap:wrap}
+  .agg > div{padding:var(--s4) var(--s5) var(--s4) 0; flex:1 1 15ch; min-width:14ch}
+  .agg .lab{font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--steel); display:block}
+  .agg .v{font-size:.98rem; display:block; margin-top:3px}
+  .agg .v.na{color:var(--orange)}
+  .rule{margin-top:var(--s2); height:3px; background:var(--hair); position:relative}
+  .rule i{position:absolute; inset:0 auto 0 0; background:var(--orange)}
+
+  .i{font:inherit; font-size:.58rem; line-height:1; background:transparent; color:var(--cyan);
+     border:1px solid var(--grey); border-radius:50%; width:1.35em; height:1.35em; padding:0;
+     cursor:pointer; margin-left:.5em; flex:none; display:grid; place-items:center}
+  .i:hover{background:var(--cyan); color:var(--ink); border-color:var(--cyan)}
+  .i:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+  [popover]{background:var(--raise); color:var(--paper); border:1px solid var(--cyan);
+            padding:var(--s5); max-width:min(48ch,92vw); font-family:var(--mono); font-size:.83rem; line-height:1.65}
+  [popover]::backdrop{background:#140c1cd4}
+  [popover] h3{font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--yellow); margin:0 0 var(--s3)}
+  [popover] p{margin:0 0 var(--s3)}
+  [popover] em{font-style:normal; color:var(--cyan)}
+  [popover] .close{font-size:.64rem; letter-spacing:.12em; text-transform:uppercase; background:transparent;
+                   border:1px solid var(--grey); color:var(--steel); padding:.3rem .6rem; cursor:pointer; font-family:inherit}
+
+  .rows{margin-top:var(--s6)}
+  .rows > h2{font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--yellow);
+             border-bottom:1px solid var(--grey); padding-bottom:var(--s2)}
+  .grid{display:grid; grid-template-columns:var(--cols); gap:var(--s2) var(--s4); align-items:baseline}
+  .colhead{position:sticky; top:var(--barh); z-index:10; background:var(--ink);
+           padding:var(--s4) 0 var(--s2); border-bottom:1px solid var(--slate)}
+  .colhead > span{display:flex; align-items:center; white-space:nowrap;
+                  font-size:.62rem; letter-spacing:.13em; text-transform:uppercase; color:var(--steel)}
+  .row{border-bottom:1px solid var(--slate)}
+  .row > summary{padding:var(--s4) 0; cursor:pointer; list-style:none}
+  .row > summary::-webkit-details-marker{display:none}
+  .row > summary:hover{background:var(--raise)}
+  .row > summary:focus-visible{outline:2px solid var(--cyan); outline-offset:-2px}
+  .title{font-size:.92rem; padding-left:1.4em; text-indent:-1.4em}
+  .title small{display:block; color:var(--steel); font-size:.72rem; margin-top:4px; text-indent:0}
+  .cell{font-size:.84rem}
+  .actors{font-size:.76rem; line-height:1.55}
+  .actors b{font-weight:400; color:var(--paper)}
+  .actors .miss{color:var(--orange)}
+  .glyph{display:inline-block; color:var(--grey); transition:transform .12s; width:1.4em}
+  .row[open] .glyph{transform:rotate(90deg)}
+  .read{margin:0 0 var(--s4); padding-left:var(--s4); border-left:2px solid var(--grey);
+        max-width:84ch; font-size:.86rem; line-height:1.7}
+  .read.sub{border-left-color:var(--slate)}
+  .read .q{color:var(--cyan)}
+  .row[data-quiet] .read{border-left-color:var(--slate); color:var(--steel)}
+  .pips{display:inline-flex; gap:2px}
+  .pip{width:7px; height:13px; background:var(--cyan)}
+  .pip.off{background:transparent; box-shadow:inset 0 0 0 1px var(--grey)}
+
+  .ev{margin:0 0 var(--s5); padding-left:var(--s4)}
+  .ev > summary{font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--cyan);
+                cursor:pointer; list-style:none; padding:var(--s2) 0}
+  .ev > summary::-webkit-details-marker{display:none}
+  .ev > summary:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+  .ev-scroll{overflow-x:auto; border-top:1px solid var(--slate); max-height:26rem; overflow-y:auto}
+  table.src{border-collapse:collapse; font-size:.74rem; width:100%; min-width:620px}
+  table.src thead th{position:sticky; top:0; background:var(--ink); text-align:left; font-weight:400;
+               font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--steel);
+               padding:var(--s2) var(--s3) var(--s2) 0; white-space:nowrap; border-bottom:1px solid var(--slate)}
+  table.src th.m,table.src td.m{text-align:center; padding-inline:var(--s2); width:3.4rem}
+  table.src td{padding:.32rem var(--s3) .32rem 0; border-bottom:1px solid var(--hair); vertical-align:top}
+  table.src td.who{white-space:nowrap; color:var(--paper)}
+  table.src td.pol{white-space:nowrap; color:var(--steel)}
+  table.src td.hl{color:var(--steel)}
+  table.src tr:hover td{background:var(--raise)}
+  .yes{color:var(--cyan)} .no{color:var(--grey)} .ne{color:var(--orange)}
+  .ev-note{font-size:.7rem; color:var(--steel); margin:var(--s3) 0 0; max-width:80ch; line-height:1.65}
+  .ev-note b{color:var(--orange); font-weight:400}
+
+  .foot{margin-top:var(--s7); border-top:1px solid var(--grey); padding-top:var(--s4);
+        font-size:.74rem; color:var(--steel); max-width:88ch; line-height:1.7}
+
+  @media (max-width:980px){ .hook{grid-template-columns:1fr} .say{max-width:none} }
+  @media (max-width:760px){
+    :root{--cols:1fr}
+    .wrap{padding:var(--s5) var(--s4) var(--s7)}
+    .bar .in{padding:var(--s3) var(--s4)} .bar .when{margin-left:0; flex:1 1 100%}
+    .colhead{display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4)}
+    .row .cell::before{content:attr(data-l) " "; color:var(--steel); font-size:.62rem;
+                       letter-spacing:.1em; text-transform:uppercase}
+    .row .cell{display:flex; align-items:center; gap:.4em}
+    .agg > div{flex:1 1 45%}
+  }
+</style>
+
+<div class="bar"><div class="in">
+  <strong>tensionr</strong>
+  <span class="sub">who is telling it differently</span>
+  <span class="when">@@WHEN@@</span>
+</div></div>
+
+<div class="wrap">
+
+  <div class="hook">
+    <div>
+      <span class="lede">Sharpest disagreement in this window</span>
+      <div class="fig"><b class="num">@@HERO_NAMED@@<i>/@@HERO_EVAL@@</i></b>
+        <span class="unit">sources named @@HERO_ACTOR@@</span></div>
+      <p class="say">@@HERO_SAY@@</p>
+      <div class="from">@@HERO_COUNTS@@<span>@@HERO_POLN@@ <b>polities</b></span></div>
+    </div>
+    <div class="earth" id="earth">
+      <pre id="probe" aria-hidden="true"></pre>
+      <pre id="globe" aria-hidden="true">@@MAP@@</pre>
+      <div class="layer" id="rings" style="--cw:6px"></div>
+      <div class="cap">
+        <span><span style="color:var(--cyan)">●</span> named @@HERO_ACTOR@@</span>
+        <span><span style="color:var(--grey)">○</span> carried it, did not</span>
+        <span class="dim">pulse = signal received</span>
+        <span class="dim">@@PLOTTED@@ of @@HERO_POLN@@ plotted</span><span class="dim">hover a point</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="agg">
+    <div><span class="lab">Aggregate index</span><span class="v na">not computable yet</span></div>
+    <div><span class="lab">Stories with a band</span><span class="v num">@@BANDED@@ of @@STORIES@@</span></div>
+    <div><span class="lab">Articles in window</span><span class="v num">@@ARTICLES@@</span></div>
+    <div><span class="lab">Sources placed</span><span class="v num">@@POLITY_RATE@@</span></div>
+    <div><span class="lab">Window</span><span class="v num">@@SLOTS@@ &times; 15 min</span></div>
+  </div>
+
+  <div class="rows">
+    <h2>Stories</h2>
+    <div class="grid colhead">
+      <span>Story<button class="i" popovertarget="p-story" aria-label="How a story is defined">i</button></span>
+      <span>Sources<button class="i" popovertarget="p-src" aria-label="How sources are counted">i</button></span>
+      <span>Polities<button class="i" popovertarget="p-pol" aria-label="What a polity is">i</button></span>
+      <span>Named by<button class="i" popovertarget="p-named" aria-label="What named-by measures">i</button></span>
+    </div>
+
+@@ROWS@@
+  </div>
+
+  <div class="foot">
+    @@FOOT@@
+  </div>
+</div>
+
+<div popover id="p-story"><h3>A story, not an event</h3>
+  <p>Headlines cannot separate <em>“Starmer will resign”</em> from <em>“Starmer has resigned”</em> from <em>“the race to replace
+    him”</em> — measured at 0.86 precision for stories against 0.23 for events, and human annotators do no better.</p>
+  <p>Grouping runs in two passes: a broad one that finds themes, then a tighter one inside each theme that separates the stories.</p>
+  <button class="close" popovertarget="p-story" popovertargetaction="hide">Close</button></div>
+
+<div popover id="p-src"><h3>Sources counts voices, not articles</h3>
+  <p>One per distinct publisher, after collapsing reprints that share a headline word for word. Between a fifth and a third of
+    clustered articles are wire copy — six local papers running one agency line are <em>one</em> voice, and counting six would make
+    disagreement look smaller than it is.</p>
+  <button class="close" popovertarget="p-src" popovertargetaction="hide">Close</button></div>
+
+<div popover id="p-pol"><h3>Polities are the unit of comparison</h3>
+  <p>Outlets are grouped by the polity they publish from, because that is a fact rather than a judgement about editorial stance.
+    Filled marks covered the story; hollow ones stayed silent.</p>
+  <p>A story needs <em>two</em> polities to be measurable — one voice cannot disagree. Real outlets publish in bursts, so silence
+    often means “not this hour”, not “not working”.</p>
+  <p>The <em>fixed panel is not chosen yet</em>, so the number here counts the polities that actually carried the story, and the
+    globe plots them from the data. Hollow marks are candidate polities that stayed silent — illustrative until the panel exists.</p>
+  <button class="close" popovertarget="p-pol" popovertargetaction="hide">Close</button></div>
+
+<div popover id="p-named"><h3>Named by, and the omission</h3>
+  <p>How many sources put that actor in the headline. The signal is usually what is <em>missing</em>: an outlet reporting deaths
+    without naming who caused them has made an editorial choice, and it is legible without anyone judging tone.</p>
+  <p>Three states, not two: present, absent, and <em>not evaluable</em> — the last when no alias exists in that script. Open a story
+    to see every source and check the count yourself.</p>
+  <button class="close" popovertarget="p-named" popovertargetaction="hide">Close</button></div>
+
+
+<script>
+  const PANEL=@@PANEL@@, W=@@MAP_W@@, H=@@MAP_H@@;
+  const earth=document.getElementById('earth'), globe=document.getElementById('globe'),
+        probe=document.getElementById('probe'), rings=document.getElementById('rings');
+
+  // The map is drawn in braille (U+28xx). In most monospace stacks those glyphs come
+  // from a fallback face whose advance width is NOT the width of "0", so `ch` is the
+  // wrong unit for both sizing and placement. Probe with the real characters, then
+  // place every marker in pixels measured off the rendered block.
+  probe.textContent='⠿'.repeat(100);
+  function fit(){
+    probe.style.fontSize='100px';
+    const per=probe.getBoundingClientRect().width/100/100;   // braille advance per 1px of font-size
+    earth.style.fontSize=Math.max(4,Math.min(11, earth.clientWidth/(W*per)))+'px';
+  }
+
+  const blips=PANEL.map((p,i)=>{
+    const d=document.createElement('span');
+    d.className='blip'+(p.on?'':' off');
+    d.dataset.n=p.n; d.tabIndex=0;
+    d.setAttribute('aria-label',p.n+(p.on?' — reporting':' — silent'));
+    d.innerHTML='<span class="dot"></span><span class="r"></span><span class="r"></span>';
+    d.querySelectorAll('.r').forEach((r,k)=>{ r.style.animationDelay=(i*0.31+k*1.5)+'s'; });
+    rings.appendChild(d);
+    return d;
+  });
+
+  function place(){
+    const g=globe.getBoundingClientRect(), e=earth.getBoundingClientRect();
+    const cw=g.width/W, rh=g.height/H;            // measured, not assumed
+    const dx=g.left-e.left, dy=g.top-e.top;       // the block's offset inside its box
+    blips.forEach((d,i)=>{
+      const p=PANEL[i];
+      d.style.left=(dx+p.c*cw)+'px';
+      d.style.top=(dy+p.r*rh)+'px';
+      d.style.width=Math.max(4,cw*1.6)+'px';
+      d.style.height=Math.max(4,rh)+'px';
+    });
+    rings.style.setProperty('--cw', cw+'px');
+  }
+
+  function layout(){ fit(); place(); }
+  layout();
+  new ResizeObserver(layout).observe(earth);
+  addEventListener('load',layout);
+  document.fonts && document.fonts.ready.then(layout);
+
+  const bar=document.querySelector('.bar');
+  const setBar=()=>document.documentElement.style.setProperty('--barh',bar.offsetHeight+'px');
+  setBar(); new ResizeObserver(setBar).observe(bar);
+</script>

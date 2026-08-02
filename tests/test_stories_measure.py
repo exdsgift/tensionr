@@ -8,6 +8,7 @@ from tensionr.stories.measure import (
     UNRESOLVED,
     collapse_syndication,
     division,
+    evidence,
     measure_story,
     top_band,
 )
@@ -155,3 +156,40 @@ def test_a_band_of_zeros_is_no_band_at_all():
 def test_a_row_indistinguishable_from_undivided_does_not_lead():
     figures = [{"actor": "a", "division": 0.004, "measurable": True}]
     assert top_band(figures, tolerance=0.005) == []
+
+
+def test_evidence_carries_one_row_per_voice_with_a_mark_per_actor():
+    rows = [
+        row("a.example", "Iran and Hormuz", polity="Iran"),
+        row("b.example", "Iran and Hormuz", polity="Egypt"),  # verbatim reprint
+        row("c.example", "Hormuz only", polity="Egypt"),
+    ]
+    resolve = resolver(
+        {
+            "Iran and Hormuz|iran": PRESENT,
+            "Iran and Hormuz|hormuz": PRESENT,
+            "Hormuz only|hormuz": PRESENT,
+        }
+    )
+    ev = evidence(rows, ["hormuz", "iran"], resolve)
+
+    # the reprint is collapsed, exactly as the figures collapse it
+    assert [r["domain"] for r in ev] == ["c.example", "a.example"]
+    assert ev[1]["marks"] == {"hormuz": PRESENT, "iran": PRESENT}
+    assert ev[0]["marks"] == {"hormuz": PRESENT, "iran": ABSENT}
+
+
+def test_evidence_groups_by_polity_and_puts_the_unplaced_last():
+    rows = [
+        row("z.example", "one", polity=None),
+        row("m.example", "two", polity="Turkey"),
+        row("a.example", "three", polity="Egypt"),
+    ]
+    ev = evidence(rows, ["iran"], resolver({}))
+    assert [r["polity"] for r in ev] == ["Egypt", "Turkey", None]
+
+
+def test_evidence_never_reports_two_states_where_the_resolver_gave_three():
+    rows = [row("a.example", "\u0637\u0647\u0631\u0627\u0646", language="ar")]
+    resolve = resolver({"\u0637\u0647\u0631\u0627\u0646|iran": UNRESOLVED})
+    assert evidence(rows, ["iran"], resolve)[0]["marks"]["iran"] == UNRESOLVED

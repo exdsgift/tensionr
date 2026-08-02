@@ -121,17 +121,44 @@ else
   echo "branch '$DATA_BRANCH' not found - each tree serves the data/ it carries"
 fi
 
+# state.json is the engine's own cache — the previous window's URLs, 6.5 MB of them —
+# and the next run reads it off the branch, not off the site. It is on the data ref
+# because that is where regenerable state belongs, but publishing it would put the
+# site's largest file in front of readers who have no use for it.
+DATA_EXCLUDES=("--exclude=/state.json")
+
 overlay_data() {
   local dest="$1"
   [[ -n "$DATA_SRC" ]] || return 0
   mkdir -p "$dest/data"
-  rsync -a "$DATA_SRC/" "$dest/data/"
+  rsync -a "${DATA_EXCLUDES[@]}" "$DATA_SRC/" "$dest/data/"
   echo "  -> data/ from '$DATA_BRANCH' ($(du -sh "$dest/data" | cut -f1))"
+}
+
+# The Ledger is generated rather than fetched (#14): by the time it reaches a browser
+# it is HTML, readable with scripting off, and the only script on it places the map
+# markers. Rendered per tree with *that tree's own* generator, so a branch changing the
+# page previews its own version — the generator imports nothing outside the standard
+# library precisely so this needs no virtualenv.
+render_ledger() {
+  local src="$1" dest="$2"
+  [[ -f "$src/src/tensionr/ledger.py" ]] || return 0
+  mkdir -p "$dest/ledger"
+  if PYTHONPATH="$src/src" python3 -m tensionr.ledger \
+       --data "$dest/data" --out "$dest/ledger/index.html" 2>&1 | sed 's/^/     /'; then
+    echo "  -> ledger/ generated ($(du -h "$dest/ledger/index.html" | cut -f1))"
+  else
+    # A run where no story clears both floors is a real outcome, not a build failure.
+    # Leaving the page absent is honest; publishing an empty one is not.
+    rm -rf "$dest/ledger"
+    echo "  ! ledger not generated - no story cleared both floors, or data is missing" >&2
+  fi
 }
 
 echo "Assembling production from '$PRODUCTION_BRANCH':"
 copy_branch "$PRODUCTION_BRANCH" "production" ""
 overlay_data "$OUT_DIR"
+render_ledger "$WORK_DIR/production" "$OUT_DIR"
 
 published=""
 published_count=0
@@ -150,6 +177,7 @@ while IFS= read -r branch; do
   echo "Assembling preview for '$branch':"
   if copy_branch "$branch" "preview-$slot" "preview/$branch"; then
     overlay_data "$OUT_DIR/preview/$branch"
+    render_ledger "$WORK_DIR/preview-$slot" "$OUT_DIR/preview/$branch"
     published="${published}${branch}"$'\n'
     published_count=$((published_count + 1))
   fi
