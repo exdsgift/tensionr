@@ -185,3 +185,9 @@ THEME_MAX_SHARE = 0.05
 STORY_MAX_SHARE = 0.35
 MIN_THEME_SIZE = 8
 MIN_STORY_SIZE = 5
+
+# Identity across runs. Windows overlap in time, so a story seen twice shares
+# concrete articles: the join is exact rather than a similarity. Containment
+# rather than Jaccard, because a story that doubles still shares every earlier
+# article and must not read as a new one.
+IDENTITY_CONTAINMENT = 0.5
