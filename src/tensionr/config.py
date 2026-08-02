@@ -163,3 +163,25 @@ MIL_CALLSIGN_PREFIXES: list[str] = [
 CYBER_FEED_URL = "https://feeds.feedburner.com/TheHackersNews"
 CHATTER_FEED_URL = "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10"
 OPENSKY_URL = "https://opensky-network.org/api/states/all"
+
+# --- v2 story pipeline -------------------------------------------------------
+# GDELT publishes document embeddings on the quarter hour, roughly twenty
+# minutes late. See docs/research/event-clustering-multilingual-headlines.md.
+DOCEMBED_URL = (
+    "http://data.gdeltproject.org/gdeltv3/gsg_docembed/{stamp}.gsg.docembed.json.gz"
+)
+HEARTBEAT_MINUTES = 15
+PUBLISH_LAG_MINUTES = 25
+EMBEDDING_DIM = 512
+
+# Clustering. Thresholds are chosen per window rather than fixed: the percolation
+# point was measured at 0.70, 0.75 and 0.76 in three separate windows, so a
+# constant would over-merge a quarter of the corpus on some days. What is fixed
+# is the criterion — the largest component may not exceed this share.
+EDGE_FLOOR = 0.55
+THRESHOLD_HI = 0.95
+THRESHOLD_STEP = 0.01
+THEME_MAX_SHARE = 0.05
+STORY_MAX_SHARE = 0.35
+MIN_THEME_SIZE = 8
+MIN_STORY_SIZE = 5
