@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write   # to ask Pages for a rebuild
 
     steps:
       - name: Checkout repository
@@ -75,10 +76,15 @@ jobs:
       # The site reads stories.json; state.json is the next run's starting point. Both
       # are regenerable, so they belong on the ref that keeps no history.
       - name: Publish current state
+        id: publish
         run: |
           mkdir -p data
           cp out/stories.json out/state.json data/
-          .github/scripts/publish.sh state data data/stories.json data/state.json
+          .github/scripts/publish.sh state data data/stories.json data/state.json \
+            | tee publish.log
+          grep -q 'nothing to push' publish.log \
+            && echo "changed=false" >> "$GITHUB_OUTPUT" \
+            || echo "changed=true"  >> "$GITHUB_OUTPUT"
 
       # The prefix comes from the run's own stamp rather than the clock, so the path
       # names the window that was measured, not the moment the push happened.
@@ -88,3 +94,11 @@ jobs:
           prefix="history/${stamp:0:4}/${stamp:4:2}/${stamp:6:2}/${stamp:9:4}"
           echo "writing $prefix"
           .github/scripts/publish.sh history history "$prefix" out/record.json out/capture.json
+
+      # Pages watches refs this job does not write, so the rebuild has to be asked for
+      # or the site keeps serving the last merge's data.
+      - name: Rebuild the site
+        if: steps.publish.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref master
