@@ -1,0 +1,71 @@
+name: PR Checks
+
+# The gate that makes `master` protectable: every pull request runs the test
+# suite and ruff. Nothing here touches the network beyond the package index -
+# the data pipeline is deliberately not run on pull requests (see #6). It makes
+# live calls to 23 RSS feeds, GDELT and HuggingFace; the tests run against fixed
+# fixtures instead.
+#
+# No type checker: explicitly deferred on #6.
+# Nothing for the JS side: that is #14's decision.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+# One run per branch; a new push supersedes the previous run.
+concurrency:
+  group: pr-checks-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  test:
+    name: pytest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run tests
+        run: uv run pytest -v
+
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # ruff is pinned in the `dev` dependency group and resolved through
+      # uv.lock, so the rule set cannot drift under CI when a new ruff ships.
+      - name: Lint
+        run: uv run ruff check --output-format=github .
+
+      - name: Check formatting
+        run: uv run ruff format --check --diff .

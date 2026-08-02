@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.16,<0.17"]
 
 [project.scripts]
 tensionr = "tensionr.pipeline:main"
@@ -28,3 +28,52 @@ tensionr = "tensionr.pipeline:main"
 [build-system]
 requires = ["uv_build>=0.6"]
 build-backend = "uv_build"
+
+[tool.ruff]
+# Keep this in step with the ruff pin in the `dev` dependency group: the default
+# rule set changes between minor releases, and CI must not start failing because
+# a new ruff shipped.
+target-version = "py312"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Deliberately an explicit allow-list rather than ruff's rolling defaults.
+# Every rule below passes on the tree as of this commit, so the gate is green on
+# arrival and any future violation is genuinely new. Widening the set is a
+# separate, reviewable change - see the note under `future-rules` below.
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "C4",   # flake8-comprehensions
+    "PTH",  # flake8-use-pathlib
+    "ISC",  # implicit string concatenation
+    "PIE",  # flake8-pie
+    "RSE",  # flake8-raise
+    "T20",  # no print() - this pipeline logs
+    "TID",  # tidy imports
+]
+ignore = [
+    # The formatter owns line wrapping. The 11 remaining long lines are strings
+    # and comments it cannot split, so E501 would only ever fail on things the
+    # formatter has already declared correct.
+    "E501",
+]
+
+# Rules that are worth adopting but do not pass today, recorded here instead of
+# being silently dropped. Adopting them is a code change, not a CI change:
+#   DTZ005/006/007 (6 hits)  naive datetimes in pipeline.py and analytics.py.
+#                            Fixing these changes the timestamps written into
+#                            published data - a data-semantics decision, not a
+#                            lint cleanup. Belongs with #10/#11.
+#   BLE001 (1 hit)           blind `except Exception` in fetchers/markets.py.
+#   ARG (11 hits)            unused arguments, several in test doubles.
+#   B905 (2 hits)            zip() without explicit strict=.
+#   SIM105, N806, RUF046     one hit each.
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may shadow builtins in fixtures and assert on magic values.
+"tests/**" = ["T20"]
