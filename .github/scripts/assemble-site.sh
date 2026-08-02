@@ -17,6 +17,12 @@
 #
 # Environment:
 #   PRODUCTION_BRANCH  branch published at the site root (default: master)
+#   DATA_BRANCH        branch whose data/ overlays the site (default: data). The
+#                      pipeline writes there instead of to the production ref, so
+#                      production can be protected (#6, #10). Absent branch is not
+#                      an error: the site then serves whatever data/ production
+#                      carries, which is how this stays safe to deploy before the
+#                      branch exists.
 #   PREVIEW_BRANCHES   newline-separated branch names (default: none)
 #   REPO_REMOTE        git remote to clone (default: derived from
 #                      GITHUB_SERVER_URL/GITHUB_REPOSITORY, else `origin`)
@@ -26,6 +32,7 @@ set -euo pipefail
 
 OUT_DIR="${1:-_site}"
 PRODUCTION_BRANCH="${PRODUCTION_BRANCH:-master}"
+DATA_BRANCH="${DATA_BRANCH:-data}"
 PREVIEW_BRANCHES="${PREVIEW_BRANCHES:-}"
 SITE_BASE_URL="${SITE_BASE_URL:-}"
 
@@ -96,8 +103,35 @@ esac
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 
+# The pipeline's output lives on its own ref so the production branch can be
+# protected. Reference data - the alias table, the polity table, the coastline -
+# stays on production because it is an input a human edits, not output that
+# rewrites itself eleven times a day. Cloned once and overlaid onto every tree:
+# a preview whose data/ were missing would render an empty page and read as a
+# regression in the branch under review.
+DATA_SRC=""
+if git clone --quiet --depth 1 --single-branch --branch "$DATA_BRANCH" \
+      "$REPO_REMOTE" "$WORK_DIR/databranch" 2>/dev/null; then
+  if [[ -d "$WORK_DIR/databranch/data" ]]; then
+    DATA_SRC="$WORK_DIR/databranch/data"
+  else
+    echo "! branch '$DATA_BRANCH' has no data/ directory - each tree keeps its own" >&2
+  fi
+else
+  echo "branch '$DATA_BRANCH' not found - each tree serves the data/ it carries"
+fi
+
+overlay_data() {
+  local dest="$1"
+  [[ -n "$DATA_SRC" ]] || return 0
+  mkdir -p "$dest/data"
+  rsync -a "$DATA_SRC/" "$dest/data/"
+  echo "  -> data/ from '$DATA_BRANCH' ($(du -sh "$dest/data" | cut -f1))"
+}
+
 echo "Assembling production from '$PRODUCTION_BRANCH':"
 copy_branch "$PRODUCTION_BRANCH" "production" ""
+overlay_data "$OUT_DIR"
 
 published=""
 published_count=0
@@ -115,6 +149,7 @@ while IFS= read -r branch; do
   slot=$((slot + 1))
   echo "Assembling preview for '$branch':"
   if copy_branch "$branch" "preview-$slot" "preview/$branch"; then
+    overlay_data "$OUT_DIR/preview/$branch"
     published="${published}${branch}"$'\n'
     published_count=$((published_count + 1))
   fi

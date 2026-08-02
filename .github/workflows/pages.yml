@@ -17,7 +17,16 @@ name: Pages
 # anywhere.
 #
 # The data pipeline is not involved. It lives in update_data.yml on `schedule` +
-# `workflow_dispatch` and must never run on a pull request (#6).
+# `workflow_dispatch` and must never run on a pull request (#6). It does, however,
+# *ask* for a rebuild: the pipeline writes to the `data` branch rather than to
+# `master` (#10), so nothing about a data update changes a ref this workflow watches.
+# Both publishing jobs dispatch this workflow when they land new data, and without
+# that the site would freeze at whatever the last merge produced.
+#
+# A pull request can never deploy: its ref is `refs/pull/<n>/merge`, which no
+# environment branch policy can name. So a pull-request run assembles and uploads —
+# which is still worth doing, because it catches a broken assembly before it reaches
+# production — and then dispatches this same workflow on `master`, which can.
 
 on:
   push:
@@ -56,6 +65,7 @@ jobs:
       contents: read
       pull-requests: read
       pages: read
+      actions: write   # to hand the deploy over to a run on master
     outputs:
       pages_build_type: ${{ steps.pages_state.outputs.build_type }}
       site_base_url: ${{ steps.pages_state.outputs.html_url }}
@@ -154,6 +164,22 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # The assembly above proved the tree builds; publishing it needs a ref an
+      # environment policy can name, and `refs/pull/<n>/merge` is not one. Hand it to
+      # master's copy of this workflow, which assembles the same tree — previews are
+      # derived from the open pull requests, not from the ref being built, so the
+      # result is identical.
+      - name: Hand the deploy to a run on master
+        if: >-
+          github.event_name == 'pull_request' &&
+          steps.pages_state.outputs.build_type == 'workflow'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run pages.yml --ref master
+          echo "dispatched pages.yml on master to publish this assembly" \
+            >> "$GITHUB_STEP_SUMMARY"
+
   deploy:
     name: Deploy to Pages
     needs: build
@@ -163,9 +189,14 @@ jobs:
     #    succeed. Skipping keeps the check green and makes the workflow start
     #    publishing by itself once the setting is switched.
     #  - `skip_deploy`: a manual dry run that assembles and uploads only.
+    #  - pull requests deploy from `refs/pull/<n>/merge`, which no environment branch
+    #    policy can name, so the attempt could only ever fail — and a permanently red
+    #    check is worse than none once `master` has a branch rule. The build job
+    #    dispatches a run on `master` instead.
     if: >-
       needs.build.outputs.pages_build_type == 'workflow' &&
-      github.event.inputs.skip_deploy != 'true'
+      github.event.inputs.skip_deploy != 'true' &&
+      github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write

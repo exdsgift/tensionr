@@ -1,9 +1,21 @@
 name: Tensionr Data Synchronizer
 
+# The v1 pipeline. It no longer commits to `master`: current state goes to the `data`
+# branch, which the Pages job overlays onto the site. That is what makes `master`
+# protectable — it was taking roughly twelve automated commits a day, which left 93.6%
+# of the repository's history as rewritten data (#6, #10).
+
 on:
   schedule:
     - cron: '0 * * * *'
   workflow_dispatch:
+
+# The timeout below lets a run outlast its own schedule, so runs can overlap, and two
+# of them publishing to the same ref would race. One at a time — and a late run is not
+# cancelled, because it has already paid for the fetch.
+concurrency:
+  group: data-synchronizer
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -13,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write   # to ask Pages for a rebuild
 
     steps:
     - name: Checkout repository
@@ -28,10 +41,12 @@ jobs:
     - name: Install dependencies
       run: uv sync --frozen
 
+    # Raised from 600s on #10, which found the old ceiling was being hit and the kill
+    # landed mid-write. This bounds a hung fetch; it is not a budget for normal work.
     - name: Run data pipeline
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: timeout 600 uv run tensionr
+      run: timeout 2400 uv run tensionr
 
     - name: Validate output data
       run: |
@@ -39,8 +54,22 @@ jobs:
           jq empty "data/$f.json" && echo "data/$f.json is valid JSON"
         done
 
-    - name: Commit and push changes
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "Automated update of GDELT data"
-        file_pattern: 'data/*.json'
+    # Named one by one rather than globbed: a git pathspec of data/*.json crosses `/`,
+    # which is how the old file_pattern swept the archive along with current state.
+    - name: Publish current state
+      id: publish
+      run: |
+        .github/scripts/publish.sh state data \
+          data/news.json data/status.json data/markets.json \
+          data/telemetry.json data/intelligence.json | tee publish.log
+        grep -q 'nothing to push' publish.log \
+          && echo "changed=false" >> "$GITHUB_OUTPUT" \
+          || echo "changed=true"  >> "$GITHUB_OUTPUT"
+
+    # The site is assembled from git refs, and this job no longer touches one that
+    # Pages watches, so new data reaches the site only if the rebuild is asked for.
+    - name: Rebuild the site
+      if: steps.publish.outputs.changed == 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: gh workflow run pages.yml --ref master
