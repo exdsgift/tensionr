@@ -1,186 +1,417 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tensionr | Real-time Global Intelligence & Narrative Resonance Engine</title>
-    <meta name="description" content="Tensionr is a high-fidelity intelligence dashboard designed to monitor global instability, narrative shifts, and strategic asset movements in real-time.">
-    <meta name="keywords" content="OSINT, geopolitical dashboard, real-time intelligence, GDELT, aerial telemetry, sentiment analysis">
-    <meta name="author" content="exdsgift">
+<title>tensionr — Ledger</title>
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://exdsgift.github.io/tensionr/">
-    <meta property="og:title" content="tensionr | Real-time Global Intelligence">
-    <meta property="og:description" content="Monitor global instability, narrative shifts, and strategic air telemetry in real-time.">
-    <meta property="og:image" content="https://exdsgift.github.io/tensionr/images/dashboard1.png">
+<style>
+  :root{
+    --ink:#140c1c; --raise:#1c1226; --hair:#241730;
+    --slate:#4e4a4e; --grey:#757161; --steel:#8595a1;
+    --orange:#d27d2c; --cyan:#6dc2ca; --yellow:#dad45e; --paper:#deeed6;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem; --s8:4rem;
+    --barh:44px;
+    /* one definition, used by the header and every row, in root-relative units so
+       the tracks resolve identically whatever font-size each container carries */
+    --cols:minmax(0,1fr) 6rem 7.5rem minmax(0,19rem);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:var(--paper); font-family:var(--mono);
+       font-size:15px; line-height:1.55; -webkit-text-size-adjust:100%}
+  h2{margin:0}
+  .num{font-variant-numeric:tabular-nums}
+  .dim{color:var(--steel)}
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://exdsgift.github.io/tensionr/">
-    <meta property="twitter:title" content="tensionr | Real-time Global Intelligence">
-    <meta property="twitter:description" content="Monitor global instability, narrative shifts, and strategic air telemetry in real-time.">
-    <meta property="twitter:image" content="https://exdsgift.github.io/tensionr/images/dashboard1.png">
+  .bar{position:sticky; top:0; z-index:30; background:var(--ink); border-bottom:1px solid var(--grey)}
+  .bar .in{max-width:1200px; margin-inline:auto; padding:var(--s3) var(--s5);
+           display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); align-items:baseline}
+  .bar strong{font-size:.76rem; letter-spacing:.16em; text-transform:uppercase; font-weight:600}
+  .bar .sub,.bar .when{font-size:.72rem; color:var(--steel)}
+  .bar .when{margin-left:auto}
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text y='70' x='50' font-family='monospace' font-size='80' font-weight='bold' fill='white' text-anchor='middle'>t</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
-    <script>
-        // Apply the saved theme before first paint to avoid a flash of the wrong theme.
-        (function () {
-            var valid = { phosphor: 1, tactical: 1, ghost: 1 };
-            var theme = 'phosphor';
-            try {
-                var saved = localStorage.getItem('tensionr_theme');
-                if (valid[saved]) theme = saved;
-                else if (saved) localStorage.setItem('tensionr_theme', theme);
-            } catch (e) { /* storage unavailable: fall back to default */ }
-            document.documentElement.setAttribute('data-theme', theme);
-        })();
-    </script>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+  .wrap{max-width:1200px; margin-inline:auto; padding:var(--s6) var(--s5) var(--s8)}
 
-<!-- Full-viewport tactical map: the base layer everything else floats over -->
-<div id="map-main"></div>
-<div id="crt-overlay" aria-hidden="true"></div>
+  .hook{display:grid; gap:var(--s6) var(--s7); align-items:center;
+        grid-template-columns:minmax(26ch,34ch) minmax(0,1fr)}
+  .lede{font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; color:var(--steel); display:block}
+  .fig{margin:var(--s3) 0 0}
+  .fig b{display:block; font-weight:400; font-size:clamp(3rem,6vw,4.4rem); line-height:.9;
+         color:var(--yellow); letter-spacing:-.035em}
+  .fig b i{font-style:normal; font-size:.38em; color:var(--steel); letter-spacing:0}
+  .fig .unit{display:block; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase;
+             color:var(--paper); margin-top:var(--s2)}
+  .say{font-size:.98rem; max-width:38ch; margin:var(--s4) 0 0}
+  .say em{font-style:normal; color:var(--cyan)}
+  .from{margin:var(--s4) 0 0; padding-top:var(--s3); border-top:1px solid var(--slate);
+        display:flex; flex-wrap:wrap; gap:var(--s2) var(--s5); font-size:.75rem; color:var(--steel)}
+  .from b{font-weight:400; color:var(--paper)}
+  .caveat{margin:var(--s3) 0 0; font-size:.7rem; line-height:1.6; color:var(--steel); max-width:44ch}
+  .from .miss b{color:var(--orange)}
 
-<!-- Top HUD strip: brand / KPIs / clock, market ticker, SITREP -->
-<header id="hud-top" class="hud-panel">
-    <div class="hud-top-row hud-nav-row">
-        <div id="brand">
-            <span id="site-title"></span><span class="terminal-cursor"></span>
-        </div>
-        <div id="kpi-strip">
-            <span class="kpi" id="kpi-signals">signals: --</span>
-            <span class="kpi" id="kpi-integrity">integrity: --</span>
-            <span class="kpi kpi-gti">gti <b id="gti-score-mini">--</b>
-                <span class="gti-microbar"><i id="gti-bar"></i></span>
-            </span>
-        </div>
-        <div id="clock-cluster">
-            <input type="text" id="time-machine-date" class="minimal-select" placeholder="select_date">
-            <span class="text-dim" id="last-updated">sync: --</span>
-            <span id="live-indicator">● live_feed</span>
-            <span class="text-dim" id="clock">00:00:00</span>
-        </div>
+  .earth{position:relative; width:100%; max-width:44rem; margin-inline:auto}
+  .earth pre{margin:0; font-family:var(--mono); line-height:1.15em; letter-spacing:0;
+             white-space:pre; color:var(--slate); width:max-content}
+  .earth .layer{position:absolute; inset:0}
+  #probe{position:absolute; visibility:hidden; white-space:pre; font-family:var(--mono); letter-spacing:0}
+  .blip{position:absolute; transform:translate(-50%,-50%); display:grid; place-items:center}
+  .blip .dot{width:calc(var(--cw,6px) * .9); height:calc(var(--cw,6px) * .9); border-radius:50%; background:var(--cyan); position:relative; z-index:2}
+  .blip.off .dot{background:transparent; box-shadow:inset 0 0 0 1px var(--grey)}
+  .blip .r{position:absolute; width:calc(var(--cw,6px) * 1.6); height:calc(var(--cw,6px) * 1.6); border-radius:50%; border:1px solid var(--cyan);
+           opacity:0; animation:sonar 4.2s ease-out infinite}
+  .blip.off .r{border-color:var(--grey); animation-duration:6.6s}
+  @keyframes sonar{0%{transform:scale(.3); opacity:.9} 65%{opacity:.14} 100%{transform:scale(9); opacity:0}}
+  .blip::after{content:attr(data-n); position:absolute; left:calc(var(--cw,6px) * 2); top:50%; transform:translateY(-50%);
+               white-space:nowrap; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+               color:var(--paper); background:var(--ink); padding:.1em .4em; opacity:0; transition:opacity .12s; z-index:4}
+  .blip:hover::after,.blip:focus-visible::after{opacity:1}
+  .earth .cap{display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s2) var(--s5);
+              margin-top:var(--s4); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+              color:var(--steel); text-align:center}
+  @media (prefers-reduced-motion:reduce){.blip .r{animation:none; opacity:.28; transform:scale(2)}}
+
+  .agg{margin-top:var(--s7); border-block:1px solid var(--grey); display:flex; flex-wrap:wrap}
+  .agg > div{padding:var(--s4) var(--s5) var(--s4) 0; flex:1 1 15ch; min-width:14ch}
+  .agg .lab{font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--steel); display:block}
+  .agg .v{font-size:.98rem; display:block; margin-top:3px}
+  .agg .v.na{color:var(--orange)}
+  .rule{margin-top:var(--s2); height:3px; background:var(--hair); position:relative}
+  .rule i{position:absolute; inset:0 auto 0 0; background:var(--orange)}
+
+  .i{font:inherit; font-size:.58rem; line-height:1; background:transparent; color:var(--cyan);
+     border:1px solid var(--grey); border-radius:50%; width:1.35em; height:1.35em; padding:0;
+     cursor:pointer; margin-left:.5em; flex:none; display:grid; place-items:center}
+  .i:hover{background:var(--cyan); color:var(--ink); border-color:var(--cyan)}
+  .i:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+  [popover]{background:var(--raise); color:var(--paper); border:1px solid var(--cyan);
+            padding:var(--s5); max-width:min(48ch,92vw); font-family:var(--mono); font-size:.83rem; line-height:1.65}
+  [popover]::backdrop{background:#140c1cd4}
+  [popover] h3{font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--yellow); margin:0 0 var(--s3)}
+  [popover] p{margin:0 0 var(--s3)}
+  [popover] em{font-style:normal; color:var(--cyan)}
+  [popover] .close{font-size:.64rem; letter-spacing:.12em; text-transform:uppercase; background:transparent;
+                   border:1px solid var(--grey); color:var(--steel); padding:.3rem .6rem; cursor:pointer; font-family:inherit}
+
+  .rows{margin-top:var(--s6)}
+  .rows > h2{font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--yellow);
+             border-bottom:1px solid var(--grey); padding-bottom:var(--s2)}
+  .grid{display:grid; grid-template-columns:var(--cols); gap:var(--s2) var(--s4); align-items:baseline}
+  .colhead{position:sticky; top:var(--barh); z-index:10; background:var(--ink);
+           padding:var(--s4) 0 var(--s2); border-bottom:1px solid var(--slate)}
+  .colhead > span{display:flex; align-items:center; white-space:nowrap;
+                  font-size:.62rem; letter-spacing:.13em; text-transform:uppercase; color:var(--steel)}
+  .row{border-bottom:1px solid var(--slate)}
+  .row > summary{padding:var(--s4) 0; cursor:pointer; list-style:none}
+  .row > summary::-webkit-details-marker{display:none}
+  .row > summary:hover{background:var(--raise)}
+  .row > summary:focus-visible{outline:2px solid var(--cyan); outline-offset:-2px}
+  .title{font-size:.92rem; padding-left:1.4em; text-indent:-1.4em}
+  .title small{display:block; color:var(--steel); font-size:.72rem; margin-top:4px; text-indent:0}
+  .cell{font-size:.84rem}
+  .actors{font-size:.76rem; line-height:1.55}
+  .actors b{font-weight:400; color:var(--paper)}
+  .actors .miss{color:var(--orange)}
+  .glyph{display:inline-block; color:var(--grey); transition:transform .12s; width:1.4em}
+  .row[open] .glyph{transform:rotate(90deg)}
+  .read{margin:0 0 var(--s4); padding-left:var(--s4); border-left:2px solid var(--grey);
+        max-width:84ch; font-size:.86rem; line-height:1.7}
+  .read.sub{border-left-color:var(--slate)}
+  .read .q{color:var(--cyan)}
+  .row[data-quiet] .read{border-left-color:var(--slate); color:var(--steel)}
+  .pips{display:inline-flex; gap:2px}
+  .pip{width:7px; height:13px; background:var(--cyan)}
+  .pip.off{background:transparent; box-shadow:inset 0 0 0 1px var(--grey)}
+
+  .ev{margin:0 0 var(--s5); padding-left:var(--s4)}
+  .ev > summary{font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--cyan);
+                cursor:pointer; list-style:none; padding:var(--s2) 0}
+  .ev > summary::-webkit-details-marker{display:none}
+  .ev > summary:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+  .ev-scroll{overflow-x:auto; border-top:1px solid var(--slate); max-height:26rem; overflow-y:auto}
+  table.src{border-collapse:collapse; font-size:.74rem; width:100%; min-width:620px}
+  table.src thead th{position:sticky; top:0; background:var(--ink); text-align:left; font-weight:400;
+               font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--steel);
+               padding:var(--s2) var(--s3) var(--s2) 0; white-space:nowrap; border-bottom:1px solid var(--slate)}
+  table.src th.m,table.src td.m{text-align:center; padding-inline:var(--s2); width:3.4rem}
+  table.src td{padding:.32rem var(--s3) .32rem 0; border-bottom:1px solid var(--hair); vertical-align:top}
+  table.src td.who{white-space:nowrap; color:var(--paper)}
+  table.src td.pol{white-space:nowrap; color:var(--steel)}
+  table.src td.hl{color:var(--steel)}
+  table.src tr:hover td{background:var(--raise)}
+  .yes{color:var(--cyan)} .no{color:var(--grey)} .ne{color:var(--orange)}
+  .ev-note{font-size:.7rem; color:var(--steel); margin:var(--s3) 0 0; max-width:80ch; line-height:1.65}
+  .ev-note b{color:var(--orange); font-weight:400}
+
+  .foot{margin-top:var(--s7); border-top:1px solid var(--grey); padding-top:var(--s4);
+        font-size:.74rem; color:var(--steel); max-width:88ch; line-height:1.7}
+
+  @media (max-width:980px){ .hook{grid-template-columns:1fr} .say{max-width:none} }
+  @media (max-width:760px){
+    :root{--cols:1fr}
+    .wrap{padding:var(--s5) var(--s4) var(--s7)}
+    .bar .in{padding:var(--s3) var(--s4)} .bar .when{margin-left:0; flex:1 1 100%}
+    .colhead{display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4)}
+    .row .cell::before{content:attr(data-l) " "; color:var(--steel); font-size:.62rem;
+                       letter-spacing:.1em; text-transform:uppercase}
+    .row .cell{display:flex; align-items:center; gap:.4em}
+    .agg > div{flex:1 1 45%}
+  }
+</style>
+
+<div class="bar"><div class="in">
+  <strong>tensionr</strong>
+  <span class="sub">who is telling it differently</span>
+  <span class="when">2 Aug · 12:45–14:45 UTC · updated 47 min ago</span>
+</div></div>
+
+<div class="wrap">
+
+  <div class="hook">
+    <div>
+      <span class="lede">Among the most divided in this window</span>
+      <div class="fig"><b class="num">12<i>/100</i></b>
+        <span class="unit">sources named the Strait of Hormuz</span></div>
+      <p class="say">100 publishers in 15 languages reported that Trump called off strikes on Iran.
+        12 mentioned the strait — the difference between reporting <em>a deal</em> and reporting
+        <em>a retreat</em>.</p>
+      <div class="from"><span>95/100 <b>Iran</b></span><span>77/100 <b>Trump</b></span><span class="miss">12/100 <b>Hormuz</b></span><span>39 <b>polities</b></span></div>
+      <p class="caveat">One of a band of equally divided rows. Their order inside the band is not a claim —
+        measured, the top position is not stable under the language artefact this figure carries
+        (up to 8 points, median 1).</p>
     </div>
-    <div class="hud-top-row hud-ticker-row">
-        <div class="market-ticker-wrapper">
-            <div class="market-ticker-content" id="market-ticker">
-                <span class="text-dim">initializing market telemetry... sync in progress...</span>
-            </div>
-        </div>
+    <div class="earth" id="earth">
+      <pre id="probe" aria-hidden="true"></pre>
+      <pre id="globe" aria-hidden="true">⠀⠀⠀⣀⠤⠤⢄⣀⣀⣀⣀⣘⣋⡓⣖⠾⡌⠫⣅⡫⣉⠭⡢⡄⠀⠀⠫⡉⠉⠉⠉⣉⡝⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⢄⣀⠀⠀⠀⠊⠀⣀⢔⡲⡒⠉⠉⠉⠉⠉⠉⠉⠉⠒⠙⠤⠤⠔⠑⠢⠤⢄⣀⡀⣀⣀
+⠛⠖⠐⣚⠄⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠉⠈⠉⣀⠜⠭⠨⠸⣪⡓⠀⠘⢄⢀⠔⠉⠀⠀⠲⠶⠀⠀⠀⠀⢀⠔⢁⢔⠄⠀⢎⠕⠑⠉⠉⠉⠀⠁⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⡀⠈⢀⣜
+⠀⠀⠀⠑⢒⠎⠊⠉⠒⠤⡀⠀⠀⠀⠀⠀⠀⠘⢄⠀⠀⠸⡉⢆⢄⠀⠀⠈⠉⠀⠀⠀⠀⠀⠀⠀⢀⡄⠀⠣⢢⡕⢈⠭⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠒⠒⠊⡨⡞⠉⠁⠀
+⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠑⣄⠀⠀⠀⠀⠀⠀⠀⠉⠢⡸⠀⠀⡀⡱⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠆⣕⢄⠬⠊⠒⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡢⡀⠀⠀⠟⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡅⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣈⢎⠘⠲⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢲⠁⢀⡠⡀⠀⠀⡠⡔⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠅⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⡜⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡖⢪⠊⠡⠙⠌⢦⢺⠤⠤⠬⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢄⢄⠎⠁⢰⠃⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡱⠭⠒⠒⡌⠀⠈⠈⠊⢱⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠨⡂⠸⢂⠴⠎⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣢⠀⠀⡠⠒⠒⢺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠃⠀⠀⠀⠈⠑⠉⠑⢒⢎⠀⠠⡢⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠣⡀⡇⠀⠀⠨⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠈⢎⢆⠀⠑⠔⡍⠉⢢⡀⠀⠀⡠⢄⠀⠀⢀⡠⠔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⠵⢔⢇⡀⠈⠑⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡘⡄⢀⠜⠀⠀⠀⢸⢀⠜⠀⠈⢆⠀⢇⠃⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⡇⠀⡠⢄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠨⣊⡥⠀⠀⠀⠀⠈⡾⠀⠀⠀⠈⠑⡼⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢸⠀⠀⠀⠣⢤⠀⠀⠀⠀⠀⠀⠀⠀⠑⠤⠤⠒⠤⡀⠀⠀⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢌⢦⠀⠀⣰⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⢇⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⡠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢮⠀⣎⡸⡔⠂⠀⡀⡀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠈⠉⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⠀⠰⡁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠣⢀⡁⠋⠈⠀⠉⣎⡱⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠆⠀⠀⠀⠀⡇⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠁⢠⡤⠀⡀⠁⠀⠈⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡄⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⡔⠃⢰⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠁⠑⠢⢳⠀⠀⠀⠀⠁⠀⠐
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⢠⠒⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢀⠇⠀⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠁⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⡀⢀⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢣⠀⣀⡠⡀⠀⠀⠀⡇⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⣪⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠉⠀⠀⠈⢢⣀⡜⠀⠀⠀⠀⠠⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠄⠀⠀⠀⠀⡤⠃
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⡸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠣⢇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</pre>
+      <div class="layer" id="rings" style="--cw:6px"></div>
+      <div class="cap">
+        <span><span style="color:var(--cyan)">●</span> reporting</span>
+        <span><span style="color:var(--grey)">○</span> silent</span>
+        <span class="dim">pulse = signal received</span>
+        <span class="dim">20 of 39 plotted</span><span class="dim">hover a point</span>
+      </div>
     </div>
-    <div class="hud-top-row hud-sitrep-row">
-        <span class="sitrep-tag">[ sitrep ]</span>
-        <div class="sitrep-container">
-            <div id="sitrep-text" class="sitrep-marquee">
-                <span>intelligence synthesis active: multi-domain nodes reporting normal operational baseline...</span>
-            </div>
-        </div>
-        <span id="sitrep-status" class="text-dim">verified_stream</span>
-        <div id="filter-status">
-            <span class="filter-label"></span>
-            <button id="clear-filters-btn" class="minimal-select">clear_x</button>
-        </div>
-    </div>
-</header>
+  </div>
 
-<!-- Right HUD: live intercept feed -->
-<aside id="hud-feed" class="hud-panel" data-open="true">
-    <header class="panel-head">
-        <h5>live intercept feed</h5>
-        <button class="panel-toggle" id="feed-toggle" aria-label="collapse feed">▾</button>
-    </header>
-    <div class="insight-line">
-        <span class="insight-tag">[ analyst ]</span>
-        <span id="strategic-insight">analyzing multi-domain vectors...</span>
-    </div>
-    <div id="articles-list"></div>
-</aside>
+  <div class="agg">
+    <div><span class="lab">Aggregate index</span><span class="v na">not computable yet</span></div>
+    <div><span class="lab">Baseline</span><span class="v num">31 h of 30 d</span>
+      <div class="rule" title="4.3% accumulated"><i style="width:4.3%"></i></div></div>
+    <div><span class="lab">Stories measured</span><span class="v num">19 of 145</span></div>
+    <div><span class="lab">Languages covered</span><span class="v num">13 of 19</span></div>
+    <div><span class="lab">Updates delivered</span><span class="v num">10.9 / day</span></div>
+  </div>
 
-<!-- Bottom-left HUD: map layer toggles + flight mini-stats + credit -->
-<div id="hud-legend" class="hud-panel" data-open="true">
-    <header class="panel-head">
-        <h5>layers</h5>
-        <button class="panel-toggle" id="legend-toggle" aria-label="collapse layers">▾</button>
-    </header>
-    <div class="legend-body">
-        <label class="layer-toggle"><input type="checkbox" id="toggle-news" checked> intel_nodes</label>
-        <label class="layer-toggle"><input type="checkbox" id="toggle-flights" checked disabled> aerial_telemetry <span class="text-dim" id="flights-availability">[offline]</span></label>
-        <div id="flight-intel-mini" hidden></div>
-        <div class="legend-credit">tensionr © 2026 // <a href="https://github.com/exdsgift" target="_blank">github/exdsgift</a></div>
+  <div class="rows">
+    <h2>Stories</h2>
+    <div class="grid colhead">
+      <span>Story<button class="i" popovertarget="p-story" aria-label="How a story is defined">i</button></span>
+      <span>Sources<button class="i" popovertarget="p-src" aria-label="How sources are counted">i</button></span>
+      <span>Polities<button class="i" popovertarget="p-pol" aria-label="What a polity is">i</button></span>
+      <span>Named by<button class="i" popovertarget="p-named" aria-label="What named-by measures">i</button></span>
     </div>
+
+    <details class="row" open>
+      <summary><div class="grid">
+        <span class="title"><span class="glyph">▸</span>Trump suspends strikes on Iran
+          <small>133 articles · 15 languages · 39 polities</small></span>
+        <span class="cell num" data-l="sources">100</span>
+        <span class="cell num" data-l="polities">39</span>
+        <span class="actors"><span><b>Iran</b> 95/100</span> · <span><b>Trump</b> 77/100</span> · <span class="miss"><b>Hormuz</b> 12/100</span></span>
+      </div></summary>
+      <p class="read">Nearly everyone agrees on who the actors are. The disagreement is about <span class="q">what happened</span>.
+        American coverage leads with the announcement — <span class="q">“Trump says he will hold off on fresh Iran attack in hope
+        of quick deal.”</span> Lebanese and Indian coverage lead with the denial — <span class="q">“Iran responds to Trump: we did
+        not ask to negotiate,”</span> and <span class="q">“Tehran denies asking US to pause attacks, labels Trump’s claim a new
+        lie.”</span> Neither account is false, and the two do not fit together.</p>
+      <p class="read sub">Naming the strait turns this into a story about a transaction: a reopening traded for something.
+        Leaving it out makes it a story about a decision taken and reversed. The split does not run along the lines you would
+        guess — two Indian outlets sit on opposite sides of it, and the sharpest denial in the set comes from an English-language
+        Nigerian paper. Worth watching over the coming cycles is whether the strait spreads or disappears: if the mention rate
+        climbs while nothing new is announced, what changed is the framing, not the event.</p>
+      <details class="ev" open>
+        <summary>▾ All 100 sources, and who each one named</summary>
+        <div class="ev-scroll"><table class="src"><thead><tr><th>Source</th><th>Lang</th><th class="m">Iran</th><th class="m">Trump</th><th class="m">Hormuz</th><th>Headline</th></tr></thead><tbody><tr><td class="who">aksalser.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl" dir="auto">إعلام إيراني ينفي التوصل إلى اتفاق لفتح مضيق هرمز – عكس السير</td></tr><tr><td class="who">albiladpress.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">جريدة البلاد            | هدوء حذر يسود المنطقة.. ترامب يلغي الضربات وإيران تتوعد</td></tr><tr><td class="who">almasryalyoum.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">أكسيوس: محمد بن سلمان أبلغ ترامب مخاوفه من شن ضربات واسعة على إيران ودعاه إلى خفض التصعيد</td></tr><tr><td class="who">alwatanvoice.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">الولايات المتحدة وإسرائيل تعلّقان شنّ ضربات على إيران</td></tr><tr><td class="who">ar.webmanagercenter.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">عاجل/ ترامب يلغي الهجوم المخطط ضد ايران..</td></tr><tr><td class="who">arabic.cnn.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">وزير الدفاع الإيراني بالوكالة يرد على &quot;تهديدات العدو&quot;: حرب نفسية</td></tr><tr><td class="who">fj-p.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">ترامب يعلن تأجيل الهجوم على إيران .. وطهران تحذر : استهداف البنية التحتية &quot;عمل جنوني&quot;</td></tr><tr><td class="who">lebanon24.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">إيران ترد على ترامب: لم نطلب التفاوض</td></tr><tr><td class="who">mizonews.net</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">ترامب يقول إنه يلغي الضربات على إيران، الصفقة قيد الانتظار</td></tr><tr><td class="who">nile.eg</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">قناة النيل للأخبار | وكالة مهر الإيرانية تنفى تأكيدات ترامب: طهران لم تطلب تعليق الضربات</td></tr><tr><td class="who">shasha.ps</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">السخرية تلاحق ترامب بعد تراجعه عن ضرب إيران</td></tr><tr><td class="who">telegram.hr</td><td class="pol">bosnian</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Saudijski prijestolonasljednik pozvao Trumpa na smirivanje napetosti</td></tr><tr><td class="who">dagelijksestandaard.nl</td><td class="pol">dutch</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump: aanval op Iran voorlopig afgeblazen</td></tr><tr><td class="who">1190talkradio.iheart.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">NOW: President Trump Calls off U.S. Military Strikes Against Iran</td></tr><tr><td class="who">al-monitor.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump says US, Israel to hold off on Iran strikes</td></tr><tr><td class="who">aljazeera.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Why has Trump halted Iran attacks, and what is the deal he is hinting at?</td></tr><tr><td class="who">arabnews.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Iran media denies Trump claim that Tehran asked US not to strike</td></tr><tr><td class="who">bbc.co.uk</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump says he is cancelling strikes on Iran subject to deal being made &#x27;rapidly&#x27;</td></tr><tr><td class="who">breitbart.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Trump Cancels Iran Attack After Deal &#x27;Perimeters&#x27; Reached, Hormuz to Open</td></tr><tr><td class="who">cityam.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump suspends strikes amid new peace hopes</td></tr><tr><td class="who">dailymail.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Trump calls off planned weekend strikes on new Iran targets as he hints at shock deal to REOPEN Strait of Hormuz</td></tr><tr><td class="who">dailypost.ng</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Strait of Hormuz: &#x27;No new deal&#x27; - Iran rubbishes Trump&#x27;s claim</td></tr><tr><td class="who">dominicanrepublicpost.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Why has Trump halted Iran attacks, and what is the deal he is hinting at?  - Dominican Republic Post – Caribbean News, Business, T</td></tr><tr><td class="who">egyptindependent.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Iran&#x27;s allied militias prove their value in Tehran&#x27;s widening war</td></tr><tr><td class="who">europesun.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Roundup: Trump says U.S. to hold off attack on Iran amid conflicting claims</td></tr><tr><td class="who">fox4news.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump halts Iran strikes, citing potential deal to end war</td></tr><tr><td class="who">hindustantimes.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">After Trump&#x27;s pause on strikes, Iran says it won&#x27;t be &#x27;caught off guard&#x27; or &#x27;passive&#x27;, vows to strengthen military</td></tr><tr><td class="who">ibtimes.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump Orders Pause On Planned Strikes. US Allies Float A Narrow Peace Passage To Iran</td></tr><tr><td class="who">islamicinvitationturkey.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Coward Trump Suspends so-called &#x27;WWII-Level&#x27; Attack Plans on Iran as Diplomatic Efforts Intensify; Tehran Issues Threat of Unrestr</td></tr><tr><td class="who">israelherald.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump cancels planned attack on Iran</td></tr><tr><td class="who">jpost.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Saudi crown prince called on Donald Trump to &#x27;prioritize dialogue&#x27; with Iran</td></tr><tr><td class="who">kmbc.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump cancels Iran strikes, reports progress on potential deal</td></tr><tr><td class="who">legalinsurrection.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump Calls Off Strike, Says Framework Deal Reached – Iran Denies</td></tr><tr><td class="who">livemint.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">What did Saudi Crown Prince Mohammed bin Salman tell Trump that prompted a pause in US strikes on Iran?</td></tr><tr><td class="who">middleeastmonitor.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump cancels planned strikes on Iran to allow for talks on peace deal</td></tr><tr><td class="who">moneycontrol.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Tehran denies asking US to pause attacks, labels Trump&#x27;s claim &#x27;a new lie&#x27;</td></tr><tr><td class="who">newkerala.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">Iran: US Threats &#x27;Real, Noteworthy&#x27; | Hormuz Deal Denied</td></tr><tr><td class="who">news.webindia123.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Iran&#x27;s Defence Minister calls every threat to country as &quot;real and significant&quot;</td></tr><tr><td class="who">newstalkzb.co.nz</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">US and Israel pause strikes on Iran as Trump demands deal</td></tr><tr><td class="who">newstribune.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">US embassies warn Americans as Iran threatens more choke points | Jefferson City News Tribune</td></tr><tr><td class="who">newvision.co.ug</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">World: Trump says US, Israel to hold off on Iran strikes</td></tr><tr><td class="who">nypost.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Iran signaled it would allow Hormuz to reopen before Trump called off attacks: report</td></tr><tr><td class="who">orissapost.com</td><td class="pol">english</td><td class="m no">○</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">Tehran perceives every &#x27;enemy&#x27; threat as &#x27;real and noteworthy&#x27;, denies Hormuz reopening deal</td></tr><tr><td class="who">pakobserver.net</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump Halts Planned Iran Attack, Ties Decision to Swift Agreement</td></tr><tr><td class="who">presstv.co.uk</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">Claims of Iran agreeing to reopen Hormuz Strait are false: Report</td></tr><tr><td class="who">punchng.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">US, Israel to Pause Iran Strikes, Says Trump Amid Deal Hopes</td></tr><tr><td class="who">radio.wpsu.org</td><td class="pol">english</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">NPR Staff | WPSU</td></tr><tr><td class="who">siasat.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Iran rejects Hormuz reopening deal as Trump claims breakthrough</td></tr><tr><td class="who">southeastasiapost.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Rubio: Iran&#x27;s &#x27;Regime Has To Change&#x27; Its Ways</td></tr><tr><td class="who">sowetan.co.za</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump says he will hold off on fresh Iran attack in hope of quick deal</td></tr><tr><td class="who">sputnikglobe.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">No Agreement Exists Between Iran, US on Opening Strait of Hormuz</td></tr><tr><td class="who">tribuneonlineng.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">You lied, we didn&#x27;t ask US not to strike, Iran fires back at Trump</td></tr><tr><td class="who">upi.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump backs off planned strikes, Iran denies a deal is in place</td></tr><tr><td class="who">washingtonexaminer.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump says he called off Iran strikes to &#x27;make a deal&#x27; with Tehran</td></tr><tr><td class="who">wnd.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">&#x27;Locked and loaded&#x27;: Trump cancels massive &#x27;Military Terror&#x27; attack on Iran &#x27;for the future benefit of the WORLD&#x27; * WorldNetDaily </td></tr><tr><td class="who">yahoo.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Retired vice admiral: Calculus for Iranian government changing</td></tr><tr><td class="who">yalibnan.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump cancels planned attack on Iran, saying he reached an agreement over the &#x27;perimeters of a deal&#x27; – Ya Libnan</td></tr><tr><td class="who">24matins.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump suspend des frappes sur l&#x27;Iran et mise sur un accord rapide</td></tr><tr><td class="who">challenges.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Guerre en Iran : Donald Trump conditionne la suspension des frappes à un accord « rapide »</td></tr><tr><td class="who">fr.euronews.com</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Donald Trump annonce la suspension des frappes américaines contre l&#x27;Iran</td></tr><tr><td class="who">lanouvellerepublique.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Guerre au Moyen-Orient : Donald Trump suspend les frappes américaines contre l&#x27;Iran</td></tr><tr><td class="who">lapresse.ca</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Conflit au Moyen-Orient | Trump suspend les frappes contre l&#x27;Iran</td></tr><tr><td class="who">lexpress.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Donald Trump suspend une frappe contre l&#x27;Iran et mise sur la diplomatie... pour l&#x27;instant – L&#x27;Express</td></tr><tr><td class="who">libe.ma</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Guerre au Moyen-Orient: Trump suspend les frappes américaines contre l&#x27;Iran</td></tr><tr><td class="who">realites.com.tn</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Moyen-Orient : Trump suspend les frappes contre l&#x27;Iran dans l&#x27;attente d&#x27;un accord rapide</td></tr><tr><td class="who">inewsgr.com</td><td class="pol">greek</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl" dir="auto">Το Ιράν διαψεύδει ότι συμφώνησε με τις ΗΠΑ για το άνοιγμα των Στενών του Ορμούζ</td></tr><tr><td class="who">pelop.gr</td><td class="pol">greek</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">Τραμπ: Αναστέλλονται τα νέα πλήγματα κατά του Ιράν – Ζητά γρήγορη συμφωνία</td></tr><tr><td class="who">sigmalive.com</td><td class="pol">greek</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">Ο Τραμπ ανακοίνωσε νέα αναστολή των επιθέσεων στο Ιράν</td></tr><tr><td class="who">notizie.it</td><td class="pol">italian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Mohammad bin Salman e Donald Trump valutano la via diplomatica con l&#x27;Iran</td></tr><tr><td class="who">lrt.lt</td><td class="pol">lithuanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Irano žiniasklaida neigia Trumpo pareiškimą, kad Teheranas prašė JAV nesmūgiuoti</td></tr><tr><td class="who">radiofarda.com</td><td class="pol">persian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">ترامپ می‌گوید حمله به ایران را به درخواست تهران و برای دستیابی سریع به توافق متوقف کرده است</td></tr><tr><td class="who">bankier.pl</td><td class="pol">polish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump odwołał atak na Iran w ostatniej chwili. Stawia dwa kluczowe warunki</td></tr><tr><td class="who">radiopik.pl</td><td class="pol">polish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Donald Trump: Odwołałem uderzenie na Iran pod warunkiem szybkiego zawarcia porozumienia</td></tr><tr><td class="who">em.com.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump afirma que EUA e Israel adiarão ataques contra o Irã</td></tr><tr><td class="who">estadao.com.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Irã nega que tenha pedido para EUA cancelarem novos ataques</td></tr><tr><td class="who">infomoney.com.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump suspende ataque ao Irã a pedidos de Teerã e Oriente Médio para fechar acordo</td></tr><tr><td class="who">noticiabrasil.net.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Irã usará as ameaças dos EUA como base para aumentar sua prontidão militar, diz ministro</td></tr><tr><td class="who">otempo.com.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Irã nega que tenha pedido a Trump para não atacar e mantém alerta</td></tr><tr><td class="who">adevarul.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Iranul dezminte că ar fi cerut oprirea atacurilor americane: „Forțele noastre sunt în alertă maximă&quot;</td></tr><tr><td class="who">caleaeuropeana.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump suspendă loviturile asupra Iranului, la solicitarea Teheranului și a altor state din regiune, cu condiția ca un acord să fie</td></tr><tr><td class="who">monitorulcj.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Donald Trump suspendă atacurile SUA asupra Iranului cu condiția încheierii unui acord de pace</td></tr><tr><td class="who">stirileprotv.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">O agenţie de presă iraniană dezminte afirmaţia lui Trump potrivit căreia Teheranul ar fi cerut SUA să nu lanseze un atac</td></tr><tr><td class="who">stiripesurse.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">„Axa Rezistenței&quot;  - Milițiile aliate ale Iranului își dovedesc valoarea în războiul Teheranului</td></tr><tr><td class="who">ziare.com</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Presa din Iran îl acuză pe Trump că minte în legătură cu faptul că Teheranul ar fi cerut Washingtonului să renunțe la noi atacuri</td></tr><tr><td class="who">ziarulnational.md</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Trump oprește temporar atacurile asupra Iranului, dar condiționează pauza de un acord rapid privind Strâmtoarea Ormuz și programul</td></tr><tr><td class="who">informer.rs</td><td class="pol">serbian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Iran odgovorio Trampu - Informer.rs</td></tr><tr><td class="who">naslovi.net</td><td class="pol">serbian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Tramp odložio napade na Iran, Teheran negira dogovor, nove žrtve u Gaze</td></tr><tr><td class="who">topky.sk</td><td class="pol">slovak</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Irán poprel žiadosť o zastavenie útokov, podmienky Trumpa odmieta</td></tr><tr><td class="who">adndigital.com.py</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump asegura tener otro &quot;acuerdo con Irán&quot; y cesa ataques</td></tr><tr><td class="who">almomento.net</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump dice haber alcanzado las bases de un «acuerdo» con Irán</td></tr><tr><td class="who">eldia.com.do</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump asegura haber alcanzado «las bases de un acuerdo con Irán»</td></tr><tr><td class="who">eldiariocba.com.ar</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Estados Unidos amenazó a Irán con nuevos ataques si no avanzan en las negociaciones</td></tr><tr><td class="who">eldiariodechihuahua.mx</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Anuncia EU nuevo acuerdo con Irán</td></tr><tr><td class="who">ellitoral.com.ar</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump amenazó a Irán con continuar los ataques sino se retoman las negociaciones</td></tr><tr><td class="who">globovision.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">EE. UU. frena su ofensiva en Irán: Trump asegura tener las bases para un acuerdo</td></tr><tr><td class="who">mdzol.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump anunció que Estados Unidos aplaza ataques contra Irán</td></tr><tr><td class="who">notimerica.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump insta a Irán a cerrar el pacto &quot;rápidamente&quot; y amenaza con un &quot;terror militar no visto desde la II Guerra Mundial&quot;</td></tr><tr><td class="who">rosario3.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Donald Trump aseguró que pospuso un ataque y que alcanzó las bases de un nuevo acuerdo con Irán</td></tr><tr><td class="who">ultimasnoticias.com.ve</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump cancela presunto nuevo ataque contra Irán, pero pone condiciones</td></tr><tr><td class="who">zocalo.com.mx</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump asegura haber alcanzado &#x27;las bases de un acuerdo con Irán&#x27; – Periódico Zócalo | Noticias de Saltillo, Torreón,  Piedras Negr</td></tr></tbody></table></div>
+        <p class="ev-note">Every publisher in the story, one row each, after collapsing reprints that shared a headline word for
+          word. Nothing here is marked <b>–</b> — an alias exists in all 15 scripts present, including Greek, Arabic
+          and Persian. That third state, <em>not evaluable</em>, appears on the Ceuta story below, and it must never be read as an
+          omission: omission is the signal. What does go wrong here is subtler — <b>moneycontrol</b> and <b>krdo</b> both write
+          “Trump’s”, and the crude matcher splits the possessive from the name. Inflection, not absence, is the real hazard.</p>
+      </details>
+    </details>
+
+    <details class="row">
+      <summary><div class="grid">
+        <span class="title"><span class="glyph">▸</span>Ceuta migration crisis
+          <small>133 articles · 14 languages · 27 polities</small></span>
+        <span class="cell num" data-l="sources">93</span>
+        <span class="cell num" data-l="polities">27</span>
+        <span class="actors"><span><b>Ceuta</b> 71/93</span> · <span class="miss"><b>Spain</b> 31/93</span> · <span class="miss"><b>Morocco</b> 11/93</span></span>
+      </div></summary>
+      <p class="read">Morocco is named by a fraction of the publishers, and that omission is the finding — the crossings begin in
+        its territory and its border policing is the substance of the Spanish accusation. Spanish outlets count repatriations and
+        treat it as border security. Arabic outlets treat it as something older: <span class="q">“Ceuta and Melilla: the open
+        Andalusian wound,”</span> and <span class="q">“when the sea becomes less frightening than the future.”</span> Same city,
+        same week, two different subjects.</p>
+      <p class="read sub">The Egyptian and Palestinian outlets are the interesting third position: several name both Spain and
+        Morocco, which neither of the two parties consistently does — distance makes the actors easier to state plainly. Note also
+        what the grouping did: a second story split out of the same coverage and stands on its own, Spanish domestic politics,
+        where Ayuso called the crossings <span class="q">“proof”</span> of Morocco’s intent. One theme, two stories, measured
+        apart rather than averaged together.</p>
+      <details class="ev">
+        <summary>▸ All 93 sources, and who each one named</summary>
+        <div class="ev-scroll"><table class="src"><thead><tr><th>Source</th><th>Lang</th><th class="m">Ceuta</th><th class="m">Spain</th><th class="m">Morocco</th><th>Headline</th></tr></thead><tbody><tr><td class="who">almakos.com</td><td class="pol">albanian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">72 të vdekur gjatë krizës së migracionit në Ceuta</td></tr><tr><td class="who">ngrihu.media</td><td class="pol">albanian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Rreth 49 mijë emigrantë hyjnë në Ceuta për 24 orë; Spanja dërgon ushtrinë në kufi</td></tr><tr><td class="who">sot.com.al</td><td class="pol">albanian</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Analiza e BBC: Si u shndërrua vala e emigrantëve në Spanjë në një stuhi politike europiane nxitur nga rrjetet sociale - Sot News</td></tr><tr><td class="who">aksalser.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">إسبانيا تستكمل إنشاء حاجز عائم بطول 500 متر على حدود سبتة – عكس السير</td></tr><tr><td class="who">aljazeera.net</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">سبتة بين أوراق الضغط السياسي والتبعات الإنسانية</td></tr><tr><td class="who">almasryalyoum.com</td><td class="pol">arabic</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl" dir="auto">إسبانيا: عودة كل المهاجرين تقريبا إلى المغرب (تقرير)</td></tr><tr><td class="who">alquds.co.uk</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl" dir="auto">الفنيدق المغربية تستعيد هدوءها بعد موجة الهجرة إلى سبتة</td></tr><tr><td class="who">alyaoum24.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">اسبانيا تعزز أمن حدود سبتة المحتلة بحاجز عائم لمنع عمليات العبور الجماعي – اليوم 24</td></tr><tr><td class="who">arabic.cnn.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">تدفق حشود المهاجرين إلى سبتة يشعل أزمة بين إسبانيا وأوروبا</td></tr><tr><td class="who">arabic.euronews.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">إيطاليا تعيد فرض الرقابة الحدودية مع إسبانيا بعد أزمة سبتة: ما الذي يتغير؟</td></tr><tr><td class="who">2news.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Ceuta grapples with aftermath of border surge after most migrants leave the Spanish territory</td></tr><tr><td class="who">africaleader.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Spanish PM urges EU unity over Ceuta migrant crisis</td></tr><tr><td class="who">aljazeera.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Why has the EU called an emergency meeting on Spain migrant surge?</td></tr><tr><td class="who">allafrica.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Nigeria: Thousands Cross From Morocco Into Spain in New Migrant Crisis</td></tr><tr><td class="who">breakingnews.ie</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Government to chair EU meeting on Ceuta crisis as death toll reaches 86</td></tr><tr><td class="who">breitbart.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">E.U. Vows &#x27;Emergency Meeting&#x27; Six Days After Ceuta Illegal Migrant Invasion Began</td></tr><tr><td class="who">bssnews.net</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">At least 72 died in Spain&#x27;s Ceuta migrant rush</td></tr><tr><td class="who">cbsnews.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta grapples with aftermath of massive border surge after most migrants leave territory</td></tr><tr><td class="who">dominicanrepublicpost.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Why has the EU called an emergency meeting on Spain migrant surge?  - Dominican Republic Post – Caribbean News, Business, Travel &amp;</td></tr><tr><td class="who">gulfnews.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Spain&#x27;s Ceuta Migrant Crisis: At Least 72 Dead as Tens of Thousands Cross from Morocco</td></tr><tr><td class="who">ibtimes.co.in</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Spanish PM urges EU unity after Ceuta migrant crisis; Spain installs floating barrie</td></tr><tr><td class="who">londonlovesbusiness.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta today, Dover tomorrow? Britain warned after migrants reveal UK ambitions - London Business News</td></tr><tr><td class="who">moneycontrol.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">22 EU leaders urge tougher migration response after Ceuta crisis; Sánchez calls criticism &#x27;selfish&#x27;</td></tr><tr><td class="who">newkerala.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">EU Ministers Meet Tuesday on Ceuta Migrant Crisis</td></tr><tr><td class="who">punchng.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">72 Migrants Die in Spain&#x27;s Ceuta Enclave Rush</td></tr><tr><td class="who">semissourian.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta grapples with aftermath of border surge after most mig...</td></tr><tr><td class="who">thelocal.es</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">At least 72 dead in Spain&#x27;s Ceuta migrant rush</td></tr><tr><td class="who">timesofindia.indiatimes.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Ceuta migrant crisis explained: Why 60,000 people risked everything to reach Spain from Morocco</td></tr><tr><td class="who">winnipegfreepress.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Ceuta grapples with aftermath of border surge after most migrants leave the Spanish territory – Winnipeg Free Press</td></tr><tr><td class="who">yahoo.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Spanish leader slams &#x27;selfish&#x27; EU response as death toll from Ceuta crossings climbs</td></tr><tr><td class="who">20minutes.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Au moins 72 personnes mortes en voulant gagner l&#x27;enclave de Ceuta</td></tr><tr><td class="who">bfmtv.com</td><td class="pol">french</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Crise migratoire à Ceuta: au moins 72 migrants sont morts en essayant de gagner l&#x27;enclave espagnole</td></tr><tr><td class="who">dhnet.be</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Tensions migratoires à Ceuta - Le président du MR demande une suspension partielle de l&#x27;Espagne de Schengen</td></tr><tr><td class="who">guadeloupe.franceantilles.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Au moins 72 migrants morts en voulant gagner l&#x27;enclave de Ceuta</td></tr><tr><td class="who">lapresse.ca</td><td class="pol">french</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Espagne | Au moins 72 migrants sont morts en essayant de gagner l&#x27;enclave de Ceuta</td></tr><tr><td class="who">latele.ch</td><td class="pol">french</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta : 72 morts après l&#x27;afflux massif de migrants à l&#x27;enclave espagnole</td></tr><tr><td class="who">lavenir.net</td><td class="pol">french</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">&quot;Sánchez met ainsi toute l&#x27;Europe en danger&quot;: Georges-Louis Bouchez demande une suspension partielle de l&#x27;Espagne de Schengen</td></tr><tr><td class="who">rfj.ch</td><td class="pol">french</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta: 72 morts après l&#x27;afflux massif de migrants vers l&#x27;enclave</td></tr><tr><td class="who">sudouest.fr</td><td class="pol">french</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Vague migratoire à Ceuta : le bilan s&#x27;alourdit à 72 décès</td></tr><tr><td class="who">az-online.de</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta kehrt zur Normalität zurück - Mindestens 72 Tote</td></tr><tr><td class="who">badische-zeitung.de</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta kehrt zur Normalität zurück - Mindestens 72 Tote - Politik Ausland</td></tr><tr><td class="who">berliner-zeitung.de:443</td><td class="pol">german</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Ceuta-Grenzkrise: Marokko unter Verdacht, Spanien unter Druck</td></tr><tr><td class="who">bernerzeitung.ch</td><td class="pol">german</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Ceuta: Spaniens Exklave kehrt zur Normalität zurück</td></tr><tr><td class="who">mallorcazeitung.es</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Wie kam es zur Ceuta-Krise?</td></tr><tr><td class="who">n-tv.de</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">Marokko, Westsahara, USA, Israel: Viele Theorien versuchen, den Ceuta-Ansturm zu erklären</td></tr><tr><td class="who">sueddeutsche.de</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Wurden die Migranten nach Ceuta geschickt?</td></tr><tr><td class="who">tagesschau.de</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Maßnahmen gegen Migration: Was folgt auf die Ereignisse in Ceuta?</td></tr><tr><td class="who">tagesspiegel.de</td><td class="pol">german</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">„Die spanische Grenze ist offen&quot;: Was 60.000 Menschen dazu brachte, von Marokko nach Ceuta zu schwimmen</td></tr><tr><td class="who">newsbomb.gr</td><td class="pol">greek</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">ΕΕ: Έκτακτη σύσκεψη για το μεταναστευτικό την Τρίτη - Στους 67 ανέρχονται οι νεκροί στη Θεούτα</td></tr><tr><td class="who">15min.lt</td><td class="pol">lithuanian</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Seuta skaičiuoja žuvusius: svarstoma, ar Marokas taip pasielgė specialiai</td></tr><tr><td class="who">lrt.lt</td><td class="pol">lithuanian</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Seutos anklave per masinį migrantų antplūdį žuvusių žmonių skaičius padidėjo iki 72</td></tr><tr><td class="who">lrytas.lt</td><td class="pol">lithuanian</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ispanijos Seutos eksklave per migrantų antplūdį žuvo mažiausiai 72 žmonės</td></tr><tr><td class="who">wiadomosci.gazeta.pl</td><td class="pol">polish</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Tragiczna sytuacja w Ceucie. Bilans kryzysu migracyjnego wzrósł do 72 ofiar</td></tr><tr><td class="who">estadao.com.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Sobe número de imigrantes que morreram ao tentar entrar em Ceuta</td></tr><tr><td class="who">www1.folha.uol.com.br</td><td class="pol">portuguese</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Ceuta registra 72 mortes em crise migratória - 02/08/2026 - Mundo</td></tr><tr><td class="who">digi24.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Nou bilanț: Cel puţin 72 de migranţi au murit în timp ce încercau să ajungă în enclava Ceuta</td></tr><tr><td class="who">stiripesurse.ro</td><td class="pol">romanian</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Criza din Ceuta - Bilanţul a ajuns la 72 de morţi</td></tr><tr><td class="who">dw.com</td><td class="pol">russian</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">Число погибших мигрантов в Сеуте выросло до 72 человек</td></tr><tr><td class="who">ura.news</td><td class="pol">russian</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">Миграционный кризис в Сеуте: что происходит, кратко, чем это грозит, почему началось, где Сеут</td></tr><tr><td class="who">vesti.az</td><td class="pol">russian</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">Число мигрантов, погибших при попытке попасть из Марокко в Испанию, достигло 90-ОБНОВЛЕНО</td></tr><tr><td class="who">vz.ru</td><td class="pol">russian</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">Европу шантажируют нашествием африканцев ::  В мире  / ВЗГЛЯД</td></tr><tr><td class="who">danas.rs</td><td class="pol">serbian</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Zašto je kriza u Seuti izazvala političku oluju i šta društvene mreže imaju s tim</td></tr><tr><td class="who">aciprensa.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa pide soluciones de paz, estabilidad y justicia ante la &quot;alarmante&quot; crisis en Ceuta</td></tr><tr><td class="who">adndigital.com.py</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">España anuncia vuelta a la normalidad&quot; en Ceuta tras ola de inmigrantes marroquíes</td></tr><tr><td class="who">aica.org</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa: &#x27;Paz, estabilidad y justicia&#x27; ante la crisis migratoria en Ceuta</td></tr><tr><td class="who">cadena3.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa León XIV se pronunció sobre la crisis migratoria en Ceuta y llamó a la paz</td></tr><tr><td class="who">clarin.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">León XIV expresó su preocupación por la crisis en Ceuta y pidió &quot;soluciones de paz, estabilidad y justicia&quot;</td></tr><tr><td class="who">cope.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Gustavo de Aristegui, diplomático: &quot;Va a ser muy difícil evitar nuevos asaltos como el de Ceuta, la política exterior de España pr</td></tr><tr><td class="who">diario.mx</td><td class="pol">spanish</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">La extrema derecha europea, antes marginal, ahora marca la pauta en la crisis migratoria española</td></tr><tr><td class="who">diariodeburgos.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa, preocupado por la &quot;alarmante situación&quot; en Ceuta | Noticias Diario de Burgos</td></tr><tr><td class="who">diariodeibiza.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">CRISIS MIGRATORIA | El Papa pide soluciones de paz y justicia ante la &quot;alarmante situación&quot; en Ceuta</td></tr><tr><td class="who">diariopalentino.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa, preocupado por la &quot;alarmante situación&quot; en Ceuta | Todas las noticias de Palencia</td></tr><tr><td class="who">diariopanorama.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa alertó por la crisis migratoria en Ceuta y reclamó paz y estabilidad</td></tr><tr><td class="who">elancasti.com.ar</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El papa León XIV expresó su preocupación por la crisis migratoria en Ceuta</td></tr><tr><td class="who">eldestapeweb.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">España instala barrera flotante en Ceuta tras una noche tranquila después de avalancha en la frontera</td></tr><tr><td class="who">eldiadevalladolid.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa, preocupado por la &quot;alarmante situación&quot; en Ceuta | Noticias El Día de Valladolid</td></tr><tr><td class="who">ellitoral.com.ar</td><td class="pol">spanish</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">El papa León XIV habló sobre la crisis migratoria en España</td></tr><tr><td class="who">elnacional.com.do</td><td class="pol">spanish</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Bajan los retornos de migrantes a Marruecos desde España y crecen las cifras de fallecidos</td></tr><tr><td class="who">europapress.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa traslada su preocupación por la &quot;alarmante situación&quot; en Ceuta y pide soluciones de paz, estabilidad y justicia</td></tr><tr><td class="who">europasur.es</td><td class="pol">spanish</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Algunas cuestiones incómodas</td></tr><tr><td class="who">lanacion.com.py</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m yes">●</td><td class="hl">La Nación / Al menos 72 migrantes murieron intentando entrar a enclave español de Ceuta desde Marruecos</td></tr><tr><td class="who">laprensa.com.ar</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">León XIV expresó su preocupación por la crisis migratoria en Ceuta</td></tr><tr><td class="who">laregion.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa pide soluciones de paz y justicia ante la &quot;alarmante situación&quot; en Ceuta</td></tr><tr><td class="who">lasprovincias.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa pide soluciones de paz, estabilidad y justicia tras la «alarmante situación» en Ceuta</td></tr><tr><td class="who">latribunadetoledo.es</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El Papa, preocupado por la &quot;alarmante situación&quot; en Ceuta | Noticias La Tribuna de Toledo</td></tr><tr><td class="who">laverdad.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Papa León XIV pide soluciones de paz para Ceuta y llama a combatir la avaricia</td></tr><tr><td class="who">mdzol.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">La tormenta política en Europa que desató la llegada de miles de migrantes africanos a Ceuta</td></tr><tr><td class="who">proceso.hn</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">León XIV pide soluciones de paz, estabilidad y justicia ante la crisis de Ceuta</td></tr><tr><td class="who">rosario3.com</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">El papa León XIV reclamó soluciones de paz, estabilidad y justicia ante la crisis de Ceuta</td></tr><tr><td class="who">tn.com.ar</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Crisis migratoria en España: el papa advirtió por la &quot;alarmante situación&quot; en Ceuta y pidió paz y estabilidad</td></tr><tr><td class="who">tribuna.com.mx</td><td class="pol">spanish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Papa León XIV expresa preocupación por Ceuta y llama a encontrar soluciones para los migrantes</td></tr><tr><td class="who">eurointegration.com.ua</td><td class="pol">ukrainian</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">Лідер іспанських ультраправих закликав мілітаризувати кордон у Сеуті</td></tr><tr><td class="who">ukrinform.ua</td><td class="pol">ukrainian</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">Понад 73 тисячі мігрантів виїхали з Сеути до Марокко</td></tr></tbody></table></div>
+        <p class="ev-note">7 rows are <em>not evaluable</em> for lack of an alias in their script. The Moroccan outlets
+          are worth reading: several name none of the three tracked actors at all, writing about the crossing itself rather than
+          about states. That is a different kind of omission from the Spanish one, and the reason this view exists rather than a
+          single score.</p>
+      </details>
+    </details>
+
+    <details class="row">
+      <summary><div class="grid">
+        <span class="title"><span class="glyph">▸</span>Israeli strikes on Gaza
+          <small>98 articles · 5 languages · 39 polities</small></span>
+        <span class="cell num" data-l="sources">42</span>
+        <span class="cell num" data-l="polities">12</span>
+        <span class="actors"><span><b>Gaza</b> 33/42</span> · <span><b>Israel</b> 27/42</span> · <span class="miss"><b>Hamas</b> 8/42</span></span>
+      </div></summary>
+      <p class="read">27 of 42 publishers name Israel, in headlines about Israeli airstrikes. The rest report the
+        deaths without naming who caused them, usually through the passive — <span class="q">“at least nine killed”</span> — or by
+        naming only the place. This is the most common shape divergence takes in the corpus, and the cheapest to detect.</p>
+      <p class="read sub">The passive is doing work here, and it is worth being precise about what this row does and does not
+        claim. It does not say those publishers are hiding something: naming the place rather than the actor is ordinary wire
+        convention, and an outlet writing from Deir al-Balah has different reasons than one writing from Jakarta. What the row
+        does say is that the same event reached readers with and without an agent attached, and that is a measurable difference in
+        what those readers were told. The judgement of why stays with you.</p>
+      <details class="ev">
+        <summary>▸ All 42 sources, and who each one named</summary>
+        <div class="ev-scroll"><table class="src"><thead><tr><th>Source</th><th>Lang</th><th class="m">Gaza</th><th class="m">Israel</th><th class="m">Hamas</th><th>Headline</th></tr></thead><tbody><tr><td class="who">gazetaexpress.com</td><td class="pol">albanian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Palestinezët thonë se Shtëpia e Bardhë po i bën presion Izraelit t&#x27;i ndalojë sulmet në Gaza</td></tr><tr><td class="who">ngrihu.media</td><td class="pol">albanian</td><td class="m no">○</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Ministri izraelit kundërshton marrëveshjen, kërkon veprime të mëtejshme ndaj palestinezëve</td></tr><tr><td class="who">albiladpress.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">جريدة البلاد            | ارتفاع حصيلة القتلى في قطاع غزة منذ فجر اليوم إلى 10</td></tr><tr><td class="who">almasryalyoum.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">هآرتس: إسرائيل تُبلغ مجلس السلام بـ3 اعتراضات على اتفاق غزة</td></tr><tr><td class="who">alquds.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">اعتراض إسرائيلي على بنود اتفاق غزة ومقترح مجلس السلام</td></tr><tr><td class="who">alwatanvoice.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">10 شهداء منهم 3 أطفال بغارات الاحتلال على غزة</td></tr><tr><td class="who">arabic.cnn.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">ترامب يعلن تحقيق اختراق بشأن غزة رغم المخاوف والعقبات.. إليكم ما نعرفه</td></tr><tr><td class="who">assabeel.net</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl" dir="auto">3 اعتراضات للاحتلال على بنود اتفاق وقف النار الأخير بغزة.. تعرف عليها</td></tr><tr><td class="who">bokra.net</td><td class="pol">arabic</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl" dir="auto">موقع بكرا - د.علي الأعور لبكرا: موافقة حماس على نزع السلاح خطوة تاريخية، والتحدي هو التزام اسرائيل</td></tr><tr><td class="who">dostor.org</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">9 شهداء بغزة.. ووزير إسرائيلي يؤكد عدم وجود اتفاق لوقف الهجمات</td></tr><tr><td class="who">eremnews.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">مقتل 12 فلسطينيا إثر غارات إسرائيلية مكثفة على غزة</td></tr><tr><td class="who">nile.eg</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">قناة النيل للأخبار | استشهاد فلسطينيين اثنين فى قصف إسرائيلى وسط قطاع غزة</td></tr><tr><td class="who">pnn.ps</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">(محدث) استشهاد 14 فلسطينيًا في غارات إسرائيلية استهدفت مناطق متفرقة بقطاع غزة</td></tr><tr><td class="who">raya.ps</td><td class="pol">arabic</td><td class="m ne">–</td><td class="m ne">–</td><td class="m ne">–</td><td class="hl" dir="auto">شهيدان بقصف مركبة في دير البلح وإصابات بينهم أطفال بخان يونس</td></tr><tr><td class="who">shorouknews.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">وزير الطاقة الإسرائيلي: لا يوجد أي اتفاق بشأن وقف ضرباتنا على غزة</td></tr><tr><td class="who">vetogate.com</td><td class="pol">arabic</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl" dir="auto">مصابون في غارة من مسيرة إسرائيلية على حي الرمال غربي مدينة غزة</td></tr><tr><td class="who">afghanistannews.net</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Trump says Gaza talks reach disarmament deal, but Israel has doubts</td></tr><tr><td class="who">al-monitor.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israeli strikes kill nine in Gaza, Israeli minister says no deal to halt attacks</td></tr><tr><td class="who">aljazeera.com</td><td class="pol">english</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">The Board of Peace is a failed body and should be abandoned</td></tr><tr><td class="who">bbc.co.uk</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Israeli official says troops won&#x27;t pull back in Gaza without &#x27;genuine&#x27; Hamas disarmament</td></tr><tr><td class="who">bignewsnetwork.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">At least 9 killed in fresh Israeli airstrikes on Gaza; Israel says killed 2 Hamas commanders over weekend</td></tr><tr><td class="who">clevelandjewishnews.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Former senior Fatah official: Trump plan hinges on IDF ending Gaza strikes</td></tr><tr><td class="who">dailysabah.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israel kills 9 Gazans despite Trump&#x27;s truce breakthrough claim</td></tr><tr><td class="who">digbycourier.ca</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israel cancels Washington meeting after Gaza ceasefire vote</td></tr><tr><td class="who">english.hani.co.kr</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Three expert views of the war in Gaza: From a Hamas official to Israel&#x27;s ambassador in Seoul</td></tr><tr><td class="who">greekherald.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Explainer: What to know about Gaza disarmament pact</td></tr><tr><td class="who">islamicinvitationturkey.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Zionist Trump&#x27;s New Gaza Proposal Sparks Controversy and Questions</td></tr><tr><td class="who">jpost.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Palestinian Islamic Jihad agrees to disarm as part of Gaza disarmament deal, Saudi media reports</td></tr><tr><td class="who">middleeasteye.net</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israeli finance minister calls for settlements near Gaza</td></tr><tr><td class="who">news4jax.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Israel says it has serious concerns with Hamas disarmament deal</td></tr><tr><td class="who">northernpen.ca</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">New strikes in Gaza as Israel-Hamas fighting resumes: Live updates</td></tr><tr><td class="who">orissapost.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Israel raises security concerns with White House over proposed Hamas disarmament deal</td></tr><tr><td class="who">presstv.co.uk</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israeli strikes kill 8 more Palestinians, including 2 children, in Gaza despite ceasefire</td></tr><tr><td class="who">thehindu.com</td><td class="pol">english</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israeli strikes in Gaza kill two; medical supply warehouses hit</td></tr><tr><td class="who">winnipegfreepress.com</td><td class="pol">english</td><td class="m no">○</td><td class="m yes">●</td><td class="m yes">●</td><td class="hl">Israel says it has serious concerns with Hamas disarmament deal – Winnipeg Free Press</td></tr><tr><td class="who">cnnindonesia.com</td><td class="pol">indonesian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israel Kembali Serang Gaza, 9 Tewas meski Ada Klaim Damai</td></tr><tr><td class="who">liputan6.com</td><td class="pol">indonesian</td><td class="m yes">●</td><td class="m yes">●</td><td class="m no">○</td><td class="hl">Israel Gempur Gaza Lagi, Dua Anak Tewas</td></tr><tr><td class="who">haber7.com</td><td class="pol">turkish</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">İsrail 3 maddeye itiraz etti! Skandal Türkiye talebi! Tony Blair&#x27;e iletti!</td></tr><tr><td class="who">haberler.com</td><td class="pol">turkish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Haaretz: İsrail, Barış Kurulu&#x27;nun Gazze&#x27;de ateşkese ilişkin açıkladığı yol haritasında 3 maddeye itiraz etti</td></tr><tr><td class="who">haberturk.com</td><td class="pol">turkish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Haaretz: İsrail, Barış Kurulu&#x27;nun Gazze&#x27;de ateşkese ilişkin açıkladığı yol haritasında 3 maddeye itiraz etti - Son Dakika Dünya Ha</td></tr><tr><td class="who">haksozhaber.net</td><td class="pol">turkish</td><td class="m yes">●</td><td class="m no">○</td><td class="m no">○</td><td class="hl">İsrail İşgal rejimi Gazze anlaşmasının uygulanmasını engelliyor</td></tr><tr><td class="who">yeniakit.com.tr</td><td class="pol">turkish</td><td class="m no">○</td><td class="m no">○</td><td class="m no">○</td><td class="hl">Siyonistlerden önce imza sonra itiraz Terör devleti dansöz gibi kıvırdı</td></tr></tbody></table></div>
+        <p class="ev-note">1 rows are <em>not evaluable</em>. The Palestinian outlets often name neither party and never
+          use the word Gaza — they name the towns, Deir al-Balah and Khan Younis, and call the dead martyrs. Whether that is
+          evasion, convention or proximity is not something this tool decides; it reports who was named.</p>
+      </details>
+    </details>
+
+    <details class="row" data-quiet>
+      <summary><div class="grid">
+        <span class="title"><span class="glyph">▸</span>Washington state wildfires
+          <small>4 languages · 1 polity · nothing to report</small></span>
+        <span class="cell num" data-l="sources">44</span>
+        <span class="cell num dim" data-l="polities">1</span>
+        <span class="actors dim">heat 31/44 · west 30/44</span>
+      </div></summary>
+      <p class="read">Forty-four publishers in four languages and no disagreement worth reporting: Croatian, Lithuanian and Turkish
+        coverage say what the American coverage says. One polity is reporting and the rest are relaying, so it sits below quorum.
+        Kept deliberately — it is the most common kind of row, and a tool that cannot show it is a tool that invents alarm.</p>
+      <p class="read sub">Forty-four sources looks like heavy coverage and is not: relaying is not reporting, and forty-three of
+        these carry one polity’s account. This is exactly the row a source count alone would misread, which is why the polity marks
+        sit beside it rather than the article total. On a day when several rows look like this one, the honest summary is that
+        little was contested — and the page should say so instead of finding something.</p>
+    </details>
+  </div>
+
+  <div class="foot">
+    21,736 articles from 3,394 domains across 58 languages, grouped into 145 stories, 19 of which cleared two polities.
+    Thirteen of the nineteen languages with real volume have a panel resilient enough to compare; six cannot be covered at all,
+    and that is published rather than hidden. Stories keep their identity between updates by sharing article URLs, so a story
+    that grows stays the same story. Coastlines are drawn from Natural Earth at 110m, rendered in braille at two dots per column
+    and four per row.
+  </div>
 </div>
 
-<!-- Bottom-right HUD: live map coordinates -->
-<div id="tactical-coord-overlay" class="hud-coords" aria-hidden="true"></div>
+<div popover id="p-story"><h3>A story, not an event</h3>
+  <p>Headlines cannot separate <em>“Starmer will resign”</em> from <em>“Starmer has resigned”</em> from <em>“the race to replace
+    him”</em> — measured at 0.86 precision for stories against 0.23 for events, and human annotators do no better.</p>
+  <p>Grouping runs in two passes: a broad one that finds themes, then a tighter one inside each theme that separates the stories.</p>
+  <button class="close" popovertarget="p-story" popovertargetaction="hide">Close</button></div>
 
-<!-- Bottom drawer: intel panels -->
-<section id="hud-drawer" class="hud-panel" data-open="true">
-    <header class="drawer-head">
-        <button id="drawer-handle" class="panel-toggle" aria-label="collapse intel panels">▾ intel_panels</button>
-        <nav id="drawer-tabs">
-            <button data-tab="radar" class="active">resonance</button>
-            <button data-tab="gti">gti</button>
-            <button data-tab="words">entities</button>
-            <button data-tab="cyber">cyber</button>
-            <button data-tab="chatter">chatter</button>
-            <button data-tab="feed" class="mobile-only">feed</button>
-        </nav>
-    </header>
-    <div class="drawer-body">
-        <div class="drawer-pane active" id="pane-radar">
-            <div class="chart-container"><canvas id="emotionChart"></canvas></div>
-        </div>
-        <div class="drawer-pane" id="pane-gti">
-            <div class="gti-split">
-                <div class="gti-score-block">
-                    <div class="gti-value" id="gti-score">--</div>
-                    <div class="gti-label">current index</div>
-                </div>
-                <div class="chart-container"><canvas id="gtiHistoryChart"></canvas></div>
-            </div>
-        </div>
-        <div class="drawer-pane" id="pane-words">
-            <div id="word-cloud" class="word-cloud"></div>
-        </div>
-        <div class="drawer-pane" id="pane-cyber">
-            <div id="cyber-threat-list" class="intel-list">
-                <div class="text-dim intel-list-empty">initializing cti feed...</div>
-            </div>
-        </div>
-        <div class="drawer-pane" id="pane-chatter">
-            <div id="raw-chatter-list" class="intel-list">
-                <div class="text-dim intel-list-empty">scanning raw frequencies...</div>
-            </div>
-        </div>
-        <div class="drawer-pane" id="pane-feed"><!-- #articles-list moves here on mobile --></div>
-    </div>
-</section>
+<div popover id="p-src"><h3>Sources counts voices, not articles</h3>
+  <p>One per distinct publisher, after collapsing reprints that share a headline word for word. Between a fifth and a third of
+    clustered articles are wire copy — six local papers running one agency line are <em>one</em> voice, and counting six would make
+    disagreement look smaller than it is.</p>
+  <button class="close" popovertarget="p-src" popovertargetaction="hide">Close</button></div>
 
-<div class="theme-selector">
-    <label class="visually-hidden" for="theme-select">theme</label>
-    <select id="theme-select" class="minimal-select">
-        <option value="phosphor">phosphor</option>
-        <option value="tactical">tactical</option>
-        <option value="ghost">ghost</option>
-    </select>
-</div>
+<div popover id="p-pol"><h3>Polities are the unit of comparison</h3>
+  <p>Outlets are grouped by the polity they publish from, because that is a fact rather than a judgement about editorial stance.
+    Filled marks covered the story; hollow ones stayed silent.</p>
+  <p>A story needs <em>two</em> polities to be measurable — one voice cannot disagree. Real outlets publish in bursts, so silence
+    often means “not this hour”, not “not working”.</p>
+  <p>The <em>fixed panel is not chosen yet</em>, so the number here counts the polities that actually carried the story, and the
+    globe plots them from the data. Hollow marks are candidate polities that stayed silent — illustrative until the panel exists.</p>
+  <button class="close" popovertarget="p-pol" popovertargetaction="hide">Close</button></div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="state.js"></script>
-<script src="utils.js"></script>
-<script src="ui.js"></script>
-<script src="charts.js"></script>
-<script src="map.js"></script>
-<script src="tactical_map.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
-<script src="api.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+<div popover id="p-named"><h3>Named by, and the omission</h3>
+  <p>How many sources put that actor in the headline. The signal is usually what is <em>missing</em>: an outlet reporting deaths
+    without naming who caused them has made an editorial choice, and it is legible without anyone judging tone.</p>
+  <p>Three states, not two: present, absent, and <em>not evaluable</em> — the last when no alias exists in that script. Open a story
+    to see every source and check the count yourself.</p>
+  <button class="close" popovertarget="p-named" popovertargetaction="hide">Close</button></div>
+
+<script>
+  const PANEL=[{"n": "United States · 16", "c": 21.74, "r": 5.94, "on": true}, {"n": "India · 7", "c": 54.3, "r": 7.68, "on": true}, {"n": "Egypt · 5", "c": 44.59, "r": 7.45, "on": true}, {"n": "France · 5", "c": 38.51, "r": 4.25, "on": true}, {"n": "Brazil · 5", "c": 27.89, "r": 15.2, "on": true}, {"n": "Romania · 5", "c": 43.51, "r": 5.01, "on": true}, {"n": "United Kingdom · 4", "c": 37.98, "r": 3.81, "on": true}, {"n": "Argentina · 4", "c": 25.67, "r": 18.38, "on": true}, {"n": "Lebanon · 2", "c": 45.49, "r": 6.79, "on": true}, {"n": "Israel · 2", "c": 45.43, "r": 7.14, "on": true}, {"n": "Poland · 2", "c": 42.43, "r": 3.69, "on": true}, {"n": "Dominican Republic · 2", "c": 23.24, "r": 9.39, "on": true}, {"n": "Mexico · 2", "c": 17.08, "r": 9.24, "on": true}, {"n": "Venezuela · 2", "c": 23.88, "r": 10.75, "on": true}, {"n": "Syria · 1", "c": 45.66, "r": 6.85, "on": true}, {"n": "Palestine · 1", "c": 45.43, "r": 7.12, "on": true}, {"n": "Croatia · 1", "c": 41.38, "r": 4.77, "on": true}, {"n": "Netherlands · 1", "c": 39.03, "r": 3.66, "on": true}, {"n": "Qatar · 1", "c": 48.87, "r": 8.24, "on": true}, {"n": "Saudi Arabia · 1", "c": 47.86, "r": 8.34, "on": true}, {"n": "China · silent", "c": 62.57, "r": 5.77, "on": false}, {"n": "Japan · silent", "c": 67.49, "r": 6.48, "on": false}, {"n": "Indonesia · silent", "c": 60.55, "r": 13.57, "on": false}, {"n": "Ukraine · silent", "c": 44.44, "r": 3.98, "on": false}], W=76, H=22;
+  const earth=document.getElementById('earth'), globe=document.getElementById('globe'),
+        probe=document.getElementById('probe'), rings=document.getElementById('rings');
+
+  // The map is drawn in braille (U+28xx). In most monospace stacks those glyphs come
+  // from a fallback face whose advance width is NOT the width of "0", so `ch` is the
+  // wrong unit for both sizing and placement. Probe with the real characters, then
+  // place every marker in pixels measured off the rendered block.
+  probe.textContent='⠿'.repeat(100);
+  function fit(){
+    probe.style.fontSize='100px';
+    const per=probe.getBoundingClientRect().width/100/100;   // braille advance per 1px of font-size
+    earth.style.fontSize=Math.max(4,Math.min(11, earth.clientWidth/(W*per)))+'px';
+  }
+
+  const blips=PANEL.map((p,i)=>{
+    const d=document.createElement('span');
+    d.className='blip'+(p.on?'':' off');
+    d.dataset.n=p.n; d.tabIndex=0;
+    d.setAttribute('aria-label',p.n+(p.on?' — reporting':' — silent'));
+    d.innerHTML='<span class="dot"></span><span class="r"></span><span class="r"></span>';
+    d.querySelectorAll('.r').forEach((r,k)=>{ r.style.animationDelay=(i*0.31+k*1.5)+'s'; });
+    rings.appendChild(d);
+    return d;
+  });
+
+  function place(){
+    const g=globe.getBoundingClientRect(), e=earth.getBoundingClientRect();
+    const cw=g.width/W, rh=g.height/H;            // measured, not assumed
+    const dx=g.left-e.left, dy=g.top-e.top;       // the block's offset inside its box
+    blips.forEach((d,i)=>{
+      const p=PANEL[i];
+      d.style.left=(dx+p.c*cw)+'px';
+      d.style.top=(dy+p.r*rh)+'px';
+      d.style.width=Math.max(4,cw*1.6)+'px';
+      d.style.height=Math.max(4,rh)+'px';
+    });
+    rings.style.setProperty('--cw', cw+'px');
+  }
+
+  function layout(){ fit(); place(); }
+  layout();
+  new ResizeObserver(layout).observe(earth);
+  addEventListener('load',layout);
+  document.fonts && document.fonts.ready.then(layout);
+
+  const bar=document.querySelector('.bar');
+  const setBar=()=>document.documentElement.style.setProperty('--barh',bar.offsetHeight+'px');
+  setBar(); new ResizeObserver(setBar).observe(bar);
+</script>
