@@ -88,14 +88,18 @@ def run(
             if u in by_url
         ]
         measured = measure.measure_story(rows, actors, table.resolve)
-        stories.append(
-            {
-                "id": assignment["id"],
-                "headline": max((r["title"] for r in rows), key=len, default=""),
-                "band": [f["actor"] for f in measure.top_band(measured["figures"])],
-                **measured,
-            }
-        )
+        band = [f["actor"] for f in measure.top_band(measured["figures"])]
+        story = {
+            "id": assignment["id"],
+            "headline": max((r["title"] for r in rows), key=len, default=""),
+            "band": band,
+            **measured,
+        }
+        # Only a story that publishes a band carries its sources: the page shows the
+        # evidence behind the figures it prints, and nothing else needs it.
+        if band:
+            story["evidence"] = measure.evidence(rows, band, table.resolve)
+        stories.append(story)
 
     measurable = [s for s in stories if s["band"]]
     report = {

@@ -7,13 +7,13 @@ from collections.abc import Callable
 from typing import Any
 
 from tensionr.config import BAND_TOLERANCE, MIN_EVALUABLE, MIN_POLITIES
+from tensionr.stories.marks import ABSENT, PRESENT, UNRESOLVED
 
 logger = logging.getLogger(__name__)
 
-# present, absent, and not evaluable — the third is not a missing value. An actor
-# the resolver cannot decide on must never read as an omission, because omission is
-# the signal (#22).
-PRESENT, ABSENT, UNRESOLVED = "present", "absent", "unresolved"
+# Re-exported: the three states live in `marks` so that rendering a page needs no
+# dependency, and every module that already reads them from here keeps working.
+__all__ = ["ABSENT", "PRESENT", "UNRESOLVED"]
 
 Resolver = Callable[[str, str], str]
 
@@ -137,6 +137,44 @@ def measure_story(
         "below_quorum": below_quorum,
         "figures": figures,
     }
+
+
+def evidence(
+    rows: list[dict[str, Any]], actors: list[str], resolve: Resolver
+) -> list[dict[str, Any]]:
+    """One row per surviving publisher, with its mark for each actor asked about.
+
+    The figures say a story is divided; this says who said what, which is the only
+    form in which a reader can check the claim rather than take it. Emitted only for
+    the stories that publish a band, because the whole point is evidence for a figure
+    that is on the page — and 286 stories' worth of rows would be a corpus dump.
+
+    Ordered by polity, then language, then publisher, with the polities the table
+    could not place last: the axis the project measures on is polity of publication,
+    so grouping by it makes agreement and disagreement legible in the order rows
+    appear. Unplaced sources are not hidden — they are counted, and #21 established
+    that most of what is unplaceable is not journalism.
+    """
+    kept, _ = collapse_syndication(rows)
+    marked = [
+        {
+            "domain": r["domain"],
+            "polity": r.get("polity"),
+            "language": r.get("language", "unknown"),
+            "title": r.get("title", ""),
+            "marks": {a: resolve(r.get("title", ""), a) for a in actors},
+        }
+        for r in kept
+    ]
+    return sorted(
+        marked,
+        key=lambda r: (
+            r["polity"] is None,
+            r["polity"] or "",
+            r["language"],
+            r["domain"],
+        ),
+    )
 
 
 def top_band(
