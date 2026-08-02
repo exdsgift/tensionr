@@ -12,6 +12,7 @@ Findings that the v2 decisions were made against. Each document was produced to 
 | [`panel-candidates.md`](panel-candidates.md) | [#17](https://github.com/exdsgift/tensionr/issues/17) | GDELT does not carry Reuters, AP, WSJ, Le Monde, Meduza, TASS or NHK — all 0 records/day. |
 | [`polity-availability.md`](polity-availability.md) | [#21](https://github.com/exdsgift/tensionr/issues/21) | 13 languages meet a resilient two-polity quorum, 6 cannot. 68% of top-host volume is not journalism. Perfect liveness is an anti-signal. |
 | [`cross-lingual-actors.md`](cross-lingual-actors.md) | [#22](https://github.com/exdsgift/tensionr/issues/22) | GKG joins to our clusters at 95.3% and its name fields are 100% Latin script, but translation is not resolution: raw names carry a 0.501 language artefact against 0.189 for the recommended design. |
+| [`language-residual.md`](language-residual.md) | [#23](https://github.com/exdsgift/tensionr/issues/23) | About 70% of the 0.189 residual is editorial difference between polities, not a language artefact. A published figure moves 0.7pp at `M ≥ 50` and 4.9pp below `M = 20`; what does not survive is the ranking, where top-10 overlap is 3/10 at a floor of 10 and the #1 row is never stable. |
 
 ## Corrections between documents
 
@@ -22,7 +23,8 @@ Later measurement refuted three earlier claims. All three are recorded because t
 | Percolation threshold 0.68–0.70 leaves the largest cluster at 1.7–4.0% of the corpus | `event-clustering` | Measured at 25.3% on a fresh window ([#7](https://github.com/exdsgift/tensionr/issues/7)). Threshold is not a constant: 0.75, then 0.76 in a third window. |
 | The `gsg_docembed` archive reaches back to 2020-01-01 | `event-clustering` | `20250801000000` returns 404 ([#12](https://github.com/exdsgift/tensionr/issues/12)). Retention is under a year. |
 | Per-outlet GDELT presence is intermittent day to day (Al-Ahram 348 → 0) | `panel-candidates` | Bursty, not dead: 267/day across 17 of 96 census slots ([#21](https://github.com/exdsgift/tensionr/issues/21)). A worse problem than intermittency. |
+| Per-language bias can be calibrated away with a per-language offset | assumed while scoping [#23](https://github.com/exdsgift/tensionr/issues/23) | A per-language main effect explains 1.2% of variance, rms deviation falls 11.1pp → 11.0pp, and the fitted offsets do not replicate between windows (r = +0.11). `language-residual` |
 
 ## Open
 
-[#23](https://github.com/exdsgift/tensionr/issues/23) decomposes the 0.189 residual and establishes whether a published per-(story, actor) figure survives it. Until it lands, every figure the product publishes carries an artefact of unstated size.
+Nothing. [#23](https://github.com/exdsgift/tensionr/issues/23) was the last open question and `language-residual.md` answers it: the residual is mostly editorial rather than an artefact, a figure with a large enough denominator survives it, and the ranking does not — which is why the product publishes a band rather than a #1.
