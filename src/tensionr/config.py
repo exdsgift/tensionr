@@ -203,3 +203,14 @@ MIN_POLITIES = 2
 # figure by as much again, so the lead is a band and its internal order is not a
 # claim (#23).
 BAND_TOLERANCE = 0.005
+
+# GDELT's knowledge graph, the second channel for actor resolution. Its name fields
+# arrive in Latin script for every language because GDELT machine-translates and then
+# runs the English extractor, and V2DOCUMENTIDENTIFIER is the article URL in exactly
+# the form the embeddings feed uses. A single timestamp joins only ~23% of a window;
+# accumulating slots reaches ~95% (#22).
+GKG_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.gkg.csv.zip"
+GKG_TRANSLATION_URL = "http://data.gdeltproject.org/gdeltv2/{stamp}.translation.gkg.csv.zip"
+GKG_LAG_MINUTES = 30
+GKG_COLUMNS = 27
+FIELD_SIZE_LIMIT = 4 * 1024 * 1024
