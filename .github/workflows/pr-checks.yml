@@ -45,6 +45,19 @@ jobs:
       - name: Run tests
         run: uv run pytest -v
 
+  publish:
+    name: publish.sh
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # publish.sh decides where irrecoverable data lands, and it is shell rather than
+      # Python, so pytest never sees it. It gets its own suite, run against a
+      # throwaway bare repo — nothing here touches the real remote.
+      - name: Test the publish script
+        run: bash .github/scripts/test-publish.sh
+
   lint:
     name: ruff
     runs-on: ubuntu-latest

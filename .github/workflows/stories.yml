@@ -1,0 +1,90 @@
+name: Story Engine
+
+# The v2 engine: one window of GDELT document embeddings, clustered into themes and
+# then stories, reconciled against the previous run by URL overlap, and measured.
+#
+# It writes to two refs with opposite rules (#10). Current state — what the site reads,
+# plus the cache the next run reconciles against — goes to `data`, which is force-pushed
+# and keeps no history. The record and the capture go to `history`, append-only, one
+# directory per run, because they are the only outputs time cannot rebuild: GDELT drops
+# what it does not keep, so an hour not captured is gone.
+#
+# Offset half an hour from the v1 synchroniser so the two rarely publish at once.
+# `master` is never written to by either.
+
+on:
+  schedule:
+    - cron: '30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: story-engine
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # Story identity is a join against the previous run, so a missing state file
+      # does not fail the run — it just makes every story look new for one cycle.
+      - name: Fetch the previous run's state
+        run: |
+          mkdir -p out
+          if git fetch --quiet --no-tags --depth=1 origin data \
+             && git show FETCH_HEAD:data/state.json > out/state.json 2>/dev/null; then
+            echo "carried over $(wc -c < out/state.json) bytes of state"
+          else
+            rm -f out/state.json
+            echo "no previous state — this run reconciles against nothing"
+          fi
+
+      # Measured at 47s for 21.7k articles (#10); the ceiling is here for a hung fetch.
+      - name: Run the engine
+        run: |
+          timeout 2400 uv run python -m tensionr.stories \
+            --out out \
+            --state out/state.json \
+            --aliases data/actors/aliases.json \
+            --polities data/polities/domains.json
+
+      - name: Validate output
+        run: |
+          for f in stories state record capture; do
+            jq empty "out/$f.json" && echo "out/$f.json is valid JSON"
+          done
+
+      # The site reads stories.json; state.json is the next run's starting point. Both
+      # are regenerable, so they belong on the ref that keeps no history.
+      - name: Publish current state
+        run: |
+          mkdir -p data
+          cp out/stories.json out/state.json data/
+          .github/scripts/publish.sh state data data/stories.json data/state.json
+
+      # The prefix comes from the run's own stamp rather than the clock, so the path
+      # names the window that was measured, not the moment the push happened.
+      - name: Publish the record
+        run: |
+          stamp="$(jq -r .run out/record.json)"     # 20260803T143000Z
+          prefix="history/${stamp:0:4}/${stamp:4:2}/${stamp:6:2}/${stamp:9:4}"
+          echo "writing $prefix"
+          .github/scripts/publish.sh history history "$prefix" out/record.json out/capture.json

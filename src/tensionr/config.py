@@ -174,6 +174,13 @@ HEARTBEAT_MINUTES = 15
 PUBLISH_LAG_MINUTES = 25
 EMBEDDING_DIM = 512
 
+# Six hours. Not a tuning parameter: story identity is a URL join between
+# consecutive runs (#10), so consecutive windows have to overlap or a story is
+# seen as new every time. The job asks for one run an hour and gets 45% of them,
+# with a worst observed gap of 28.8 hours (#16), so the window is sized for the
+# gaps that actually happen rather than the ones the cron line asks for.
+WINDOW_SLOTS = 24
+
 # Clustering. Thresholds are chosen per window rather than fixed: the percolation
 # point was measured at 0.70, 0.75 and 0.76 in three separate windows, so a
 # constant would over-merge a quarter of the corpus on some days. What is fixed

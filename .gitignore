@@ -14,3 +14,9 @@ env/
 .idea/
 .DS_Store
 graphify-out/
+# Pipeline output. It is published to the `data` branch and the accumulated
+# record to `history`; on master it would only put automated commits back on
+# a ref that has to stay protectable (#6, #10).
+/data/*.json
+/data/archive/
+/out/
