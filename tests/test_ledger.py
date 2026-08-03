@@ -2,7 +2,16 @@
 
 import json
 
-from tensionr.ledger import cell, evidence_table, labels, panel, render, row_counts
+from tensionr.ledger import (
+    LEDGER_BUDGET_BYTES,
+    cell,
+    evidence_table,
+    labels,
+    panel,
+    render,
+    row_counts,
+    transfer_bytes,
+)
 from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
 
 # The real file's shape, small enough to reason about: 4 cells wide, 2 tall.
@@ -151,6 +160,14 @@ def test_a_run_with_nothing_measurable_still_renders_and_says_so():
     assert "no row to show" in page
     # the floors named are the ones the run applied, not a copy kept by the page
     assert "30 evaluable sources across 2 polities" in page
+
+
+def test_a_run_that_never_published_its_floors_does_not_invent_them():
+    r = run([story(band=[], evidence=[])])
+    del r["report"]["floors"]
+    page = render(r, PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "this project's floors" in page
+    assert "None" not in page
     # and no figure is printed, because there is none to print
     assert "sources named" not in page
 
@@ -316,3 +333,75 @@ def test_the_rendered_page_declares_its_encoding_before_any_braille():
     """Without a charset the map and non-Latin headlines are at the browser's mercy."""
     page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert "@@" not in page
+
+
+# Small enough to bite on the synthetic fixture, whose near-identical headlines
+# compress far better than real ones: 40 stories come to 18.5 KB gzipped here against
+# 123 KB for 16 real ones.
+BITES = 10 * 1024
+
+
+def many(n):
+    """n banded stories, each with enough sources to make the page heavy."""
+    out = []
+    for i in range(n):
+        ev = [
+            source(
+                f"d{j}.example",
+                "Iran" if j % 2 else "Spain",
+                {"hormuz": PRESENT},
+                title=f"A headline number {j} about the strait and its traffic {i}",
+            )
+            for j in range(120)
+        ]
+        out.append(
+            story(
+                id=f"s-{i}",
+                headline=f"Story {i}",
+                evidence=ev,
+                figures=[
+                    {
+                        "actor": "hormuz",
+                        "named": 60,
+                        "evaluable": 120,
+                        "unresolved": 0,
+                        "division": 1.0 - i / 1000,
+                        "balanced_rate": 0.5,
+                        "measurable": True,
+                    }
+                ],
+            )
+        )
+    return out
+
+
+def test_the_page_stays_inside_its_budget_by_dropping_the_narrowest_evidence():
+    page = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
+    assert transfer_bytes(page) <= BITES
+    # every story still has a row: the figures are the run's claim, not the evidence
+    assert page.count('<details class="row"') == 40
+    assert "are not on this page" in page
+
+
+def test_the_widest_split_keeps_its_evidence_when_the_budget_bites():
+    page = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
+    first = page.index("Story 0")
+    last = page.index("Story 39")
+    assert 'class="ev-scroll"' in page[first:last]  # the hero kept its table
+    assert 'class="ev-scroll"' not in page[last:]  # the narrowest did not
+
+
+def test_nothing_is_dropped_when_the_page_already_fits():
+    page = render(run(many(2)), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "are not on this page" not in page
+    assert page.count('class="ev-scroll"') == 2
+
+
+def test_a_cap_is_never_silent():
+    """A bounded page that does not say so reads as "this is everything"."""
+    tight = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
+    assert "data/stories.json" in tight
+
+
+def test_the_budget_has_one_home():
+    assert LEDGER_BUDGET_BYTES == 250 * 1024

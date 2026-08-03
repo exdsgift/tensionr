@@ -12,6 +12,7 @@ inventing it.
 """
 
 import datetime as dt
+import gzip
 import html
 import json
 import logging
@@ -20,6 +21,17 @@ from pathlib import Path
 from typing import Any
 
 from tensionr.stories.marks import PRESENT, UNRESOLVED
+
+# What the page may weigh, compressed, because that is what a reader downloads and what
+# #14 was actually arguing about: the v1 page pulled six CDN libraries and showed a
+# loading state. The Ledger puts every source of every story inline (#9), so its weight
+# grows with how busy the news is rather than with the code — measured at 123 KB gzipped
+# for 16 stories and 2,300 source rows, so this leaves room for roughly double before
+# any evidence is dropped, and the page says so when it is.
+#
+# It lives here rather than in `tensionr.config` because config reads a .env file and so
+# needs python-dotenv, which the site assembly deliberately does not have. One home.
+LEDGER_BUDGET_BYTES = 250 * 1024
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +202,13 @@ def row_counts(story: dict[str, Any], names: dict[str, str]) -> str:
     return " · ".join(out)
 
 
-def story_row(story: dict[str, Any], names: dict[str, str], *, first: bool) -> str:
+def story_row(
+    story: dict[str, Any],
+    names: dict[str, str],
+    *,
+    first: bool,
+    with_evidence: bool = True,
+) -> str:
     figure = _lead(story)
     unresolved = figure["unresolved"]
     note = (
@@ -218,6 +236,21 @@ def story_row(story: dict[str, Any], names: dict[str, str], *, first: bool) -> s
     if split := _split(story, names):
         sentence += " " + split
     reading = f'<p class="read">{sentence}</p>'
+    if with_evidence:
+        evidence = f"""<details class="ev"{" open" if first else ""}>
+        <summary>{"▾" if first else "▸"} All {story["sources"]} sources, and who each one named</summary>
+        {evidence_table(story, names)}
+        <p class="ev-note">{note}</p>
+      </details>"""
+    else:
+        # Bounded, and said out loud. The figures above are the run's claim; the rows
+        # behind them are in data/stories.json, which is served beside this page.
+        evidence = (
+            '<p class="ev-note">The sources behind this row are not on this page: it '
+            "would have gone past its weight budget. They are in "
+            '<a href="data/stories.json">data/stories.json</a>, one row per publisher, '
+            "the same rows the figures were computed from.</p>"
+        )
     band_note = (
         ""
         if len(story["band"]) == 1
@@ -235,11 +268,7 @@ def story_row(story: dict[str, Any], names: dict[str, str], *, first: bool) -> s
       </div></summary>
       {reading}
       {band_note}
-      <details class="ev"{" open" if first else ""}>
-        <summary>{"▾" if first else "▸"} All {story["sources"]} sources, and who each one named</summary>
-        {evidence_table(story, names)}
-        <p class="ev-note">{note}</p>
-      </details>
+      {evidence}
     </details>
 """
 
@@ -253,15 +282,22 @@ def hook(hero: dict[str, Any] | None, report: dict[str, Any], names: dict) -> st
     this is that rule applied to the page's own headline.
     """
     if hero is None:
-        # Stated from the report, so the page names the floors the run actually applied.
-        floors = report.get("floors", {"evaluable": "the required", "polities": "two"})
+        # Named from the report, so the page states the floors the run actually applied
+        # rather than a copy of its own. A run written before the report carried them
+        # says so instead of inventing numbers.
+        floors = report.get("floors")
+        threshold = (
+            f"{floors['evaluable']} evaluable sources across {floors['polities']} "
+            "polities"
+            if floors
+            else "this project's floors on evaluable sources and polities"
+        )
         return f"""      <span class="lede">Nothing cleared the floors in this window</span>
       <div class="fig"><b class="num na">—</b>
         <span class="unit">no figure this run can support</span></div>
       <p class="say">{report["grouping"]["stories"]} stories were grouped from
-        {report["window"]["articles"]:,} articles, and none of them reached
-        {floors["evaluable"]} evaluable sources across {floors["polities"]} polities
-        with a measurable division. That is published rather than hidden: a figure below the
+        {report["window"]["articles"]:,} articles, and none reached {threshold} with a
+        measurable division. That is published rather than hidden: a figure below the
         floor would be a number about the sample, not about the world.</p>
       <div class="from"><span>{report["published"]["stories"]} <b>stories</b></span></div>"""
 
@@ -295,12 +331,49 @@ def legend(hero: dict[str, Any] | None, plotted: int, names: dict) -> str:
     )
 
 
+def transfer_bytes(page: str) -> int:
+    """What a reader actually downloads. Pages serves gzip, so that is the number."""
+    return len(gzip.compress(page.encode(), 9))
+
+
+def _fit(
+    banded: list[dict[str, Any]], names: dict[str, str], build_page, budget: int
+) -> tuple[str, int]:
+    """Rows for every story, with evidence for as many as the budget allows.
+
+    Every story that cleared the floors keeps its row and its figures — those are the
+    run's claim and they cost about a kilobyte each. What is bounded is the evidence
+    table, which is 92% of the page's weight and grows with how busy the news is rather
+    than with the code. Dropped from the *narrowest* divisions first, so what goes is
+    what the page was least interested in, and the count is stated on the page: a cap
+    nobody is told about reads as "this is everything".
+    """
+    for dropped in range(len(banded)):
+        keep = len(banded) - dropped
+        rows = COLUMN_HEADS + "".join(
+            story_row(s, names, first=i == 0, with_evidence=i < keep)
+            for i, s in enumerate(banded)
+        )
+        weighed = transfer_bytes(build_page(rows, dropped))
+        if weighed <= budget or dropped == len(banded) - 1:
+            if dropped:
+                logger.info(
+                    "evidence dropped from %d of %d rows to stay inside %d KB gzipped",
+                    dropped,
+                    len(banded),
+                    budget // 1024,
+                )
+            return rows, dropped
+    return "", 0
+
+
 def render(
     stories: dict[str, Any],
     coastline: dict[str, Any],
     coordinates: dict[str, list[float]],
     template: str,
     names: dict[str, str] | None = None,
+    budget: int = LEDGER_BUDGET_BYTES,
 ) -> str:
     """One page from one run, whether or not the run produced a figure."""
     names = names or {}
@@ -313,15 +386,6 @@ def render(
         tzinfo=dt.UTC
     )
     hours = report["window"]["slots"] * 15 / 60
-
-    rows = (
-        "".join(story_row(s, names, first=i == 0) for i, s in enumerate(banded))
-        if banded
-        else '    <p class="read">No story in this window cleared both floors, so there '
-        "is no row to show. The window itself is described below.</p>\n"
-    )
-    if banded:
-        rows = COLUMN_HEADS + rows
     foot = (
         f"{report['window']['articles']:,} articles from "
         f"{report['polities']['domains']:,} domains over the last {hours:.0f} hours, "
@@ -335,25 +399,43 @@ def render(
         "and four per row."
     )
 
-    return (
-        template.replace("@@MAP@@", "\n".join(coastline["rows"]))
-        .replace("@@MAP_W@@", str(coastline["width"]))
-        .replace("@@MAP_H@@", str(coastline["height"]))
-        .replace("@@PANEL@@", json.dumps(marks, ensure_ascii=False))
-        .replace("@@HOOK@@", hook(hero, report, names))
-        .replace("@@LEGEND@@", legend(hero, plotted, names))
-        .replace("@@BANDED@@", str(report["published"]["with_a_band"]))
-        .replace("@@STORIES@@", str(report["published"]["stories"]))
-        .replace("@@ARTICLES@@", f"{report['window']['articles']:,}")
-        .replace("@@POLITY_RATE@@", f"{report['polities']['rate']:.0%}")
-        .replace("@@SLOTS@@", str(report["window"]["slots"]))
-        .replace("@@WHEN@@", stamp.strftime("%-d %b · %H:%M UTC"))
-        .replace("@@ROWS@@", rows)
-        .replace("@@FOOT@@", foot)
-    )
+    def build_page(rows: str, dropped: int) -> str:
+        note = (
+            ""
+            if not dropped
+            else f" The sources behind the {dropped} narrowest of these rows are not on "
+            "this page, which would otherwise go past its weight budget; they are in "
+            '<a href="data/stories.json">data/stories.json</a>.'
+        )
+        return (
+            template.replace("@@MAP@@", "\n".join(coastline["rows"]))
+            .replace("@@MAP_W@@", str(coastline["width"]))
+            .replace("@@MAP_H@@", str(coastline["height"]))
+            .replace("@@PANEL@@", json.dumps(marks, ensure_ascii=False))
+            .replace("@@HOOK@@", hook(hero, report, names))
+            .replace("@@LEGEND@@", legend(hero, plotted, names))
+            .replace("@@BANDED@@", str(report["published"]["with_a_band"]))
+            .replace("@@STORIES@@", str(report["published"]["stories"]))
+            .replace("@@ARTICLES@@", f"{report['window']['articles']:,}")
+            .replace("@@POLITY_RATE@@", f"{report['polities']['rate']:.0%}")
+            .replace("@@SLOTS@@", str(report["window"]["slots"]))
+            .replace("@@WHEN@@", stamp.strftime("%-d %b · %H:%M UTC"))
+            .replace("@@ROWS@@", rows)
+            .replace("@@FOOT@@", foot + note)
+        )
+
+    if not banded:
+        empty = (
+            '    <p class="read">No story in this window cleared both floors, so there '
+            "is no row to show. The window itself is described below.</p>\n"
+        )
+        return build_page(empty, 0)
+
+    rows, dropped = _fit(banded, names, build_page, budget)
+    return build_page(rows, dropped)
 
 
-def build(data: Path, out: Path) -> Path:
+def build(data: Path, out: Path, budget: int = LEDGER_BUDGET_BYTES) -> Path:
     """Render from a data directory laid out as the site serves it."""
     template = (
         resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
@@ -366,9 +448,16 @@ def build(data: Path, out: Path) -> Path:
         ],
         template,
         labels(data),
+        budget,
     )
     out.write_text(page, "utf-8")
-    logger.info("wrote %s (%d bytes)", out, len(page.encode()))
+    logger.info(
+        "wrote %s: %d KB, %d KB gzipped against a %d KB budget",
+        out,
+        len(page.encode()) // 1024,
+        transfer_bytes(page) // 1024,
+        budget // 1024,
+    )
     return out
 
 
