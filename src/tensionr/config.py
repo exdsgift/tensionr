@@ -174,12 +174,16 @@ HEARTBEAT_MINUTES = 15
 PUBLISH_LAG_MINUTES = 25
 EMBEDDING_DIM = 512
 
-# Six hours. Not a tuning parameter: story identity is a URL join between
-# consecutive runs (#10), so consecutive windows have to overlap or a story is
-# seen as new every time. The job asks for one run an hour and gets 45% of them,
-# with a worst observed gap of 28.8 hours (#16), so the window is sized for the
-# gaps that actually happen rather than the ones the cron line asks for.
-WINDOW_SLOTS = 24
+# Twelve hours. Not a tuning parameter, and not a freshness setting: it is sized so
+# consecutive windows still overlap when GitHub skips a run. Story identity is a URL
+# join between runs (#10), and the capture is the one store time cannot rebuild (#12),
+# so a gap wider than the window loses articles permanently.
+#
+# Measured on this repository: the schedule is asked for every 4 hours and GitHub
+# delivers 37-44% of what is asked, with observed gaps to 3h55 at hourly. At a
+# 4-hourly cadence a single missed run is an 8-hour gap, which a 6-hour window would
+# not cover. Twelve hours covers two consecutive misses.
+WINDOW_SLOTS = 48
 
 # Clustering. Thresholds are chosen per window rather than fixed: the percolation
 # point was measured at 0.70, 0.75 and 0.76 in three separate windows, so a

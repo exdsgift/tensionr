@@ -9,12 +9,13 @@ name: Story Engine
 # directory per run, because they are the only outputs time cannot rebuild: GDELT drops
 # what it does not keep, so an hour not captured is gone.
 #
-# Offset half an hour from the v1 synchroniser so the two rarely publish at once.
+# Every four hours, offset half an hour from the v1 synchroniser so the two rarely
+# publish at once. The window is sized against the delivered gaps, not the asked ones.
 # `master` is never written to by either.
 
 on:
   schedule:
-    - cron: '30 * * * *'
+    - cron: '30 */4 * * *'
   workflow_dispatch:
 
 concurrency:
