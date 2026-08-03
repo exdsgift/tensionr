@@ -10,6 +10,7 @@ from tensionr.ledger import (
     panel,
     render,
     row_counts,
+    since_previous,
     transfer_bytes,
 )
 from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
@@ -77,6 +78,7 @@ def run(stories):
             "grouping": {"themes": 427, "stories": 286},
             "polities": {"domains": 6706, "placed": 2799, "rate": 0.4174},
             "floors": {"evaluable": 30, "polities": 2},
+            "previous_run": "20260802T213324Z",
             "published": {"stories": 286, "with_a_band": 1},
         },
     }
@@ -256,7 +258,7 @@ TEMPLATE = """<!doctype html><title>t</title>
 </div></div>
 <pre id="globe">@@MAP@@</pre>
 <div class="cap">@@LEGEND@@</div>
-<div class="agg">@@BANDED@@ of @@STORIES@@ · @@ARTICLES@@ · @@POLITY_RATE@@ · @@SLOTS@@</div>
+<div class="agg">@@BANDED@@ of @@STORIES@@ · @@ARTICLES@@ · @@POLITY_RATE@@ · @@SLOTS@@ · @@SINCE@@</div>
 @@ROWS@@
 <div class="foot">@@FOOT@@</div>
 <script>const PANEL=@@PANEL@@, W=@@MAP_W@@, H=@@MAP_H@@;</script>
@@ -405,3 +407,27 @@ def test_a_cap_is_never_silent():
 
 def test_the_budget_has_one_home():
     assert LEDGER_BUDGET_BYTES == 250 * 1024
+
+
+def test_the_page_states_the_delivered_gap_not_the_schedule():
+    """#10: the reader is told the delivered rate, never the cron line."""
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "1 h" in page  # 21:33 -> 22:33 in the fixture
+    assert "hourly" not in page
+
+
+def test_the_gap_is_read_from_the_two_stamps():
+    r = run([story()])
+    assert since_previous(r) == "1 h"
+    r["report"]["previous_run"] = "20260802T221333Z"
+    assert since_previous(r) == "20 min"
+    r["report"]["previous_run"] = "20260802T043324Z"
+    assert since_previous(r) == "18 h"
+    r["report"]["previous_run"] = "20260802T040324Z"
+    assert since_previous(r) == "18 h 30 min"
+
+
+def test_a_first_run_says_so_rather_than_showing_a_zero():
+    r = run([story()])
+    r["report"]["previous_run"] = None
+    assert since_previous(r) == "first run"

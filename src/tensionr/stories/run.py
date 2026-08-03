@@ -72,10 +72,12 @@ def run(
 
     known: dict[str, list[str]] = {}
     captured: set[str] = set()
+    previous: str | None = None
     if state and Path(state).exists():
         prior = json.loads(Path(state).read_text("utf-8"))
         known = prior.get("open", {})
         captured = set(prior.get("window", []))
+        previous = prior.get("run")
 
     clusters = [[records[i]["url"] for i in s] for s in grouped["stories"]]
     reconciled = identity.reconcile(clusters, known)
@@ -125,6 +127,11 @@ def run(
         # A run publishes what it decided, not only what it produced: the page states
         # these when nothing clears them, and must not keep its own copy of them.
         "floors": {"evaluable": MIN_EVALUABLE, "polities": MIN_POLITIES},
+        # The cadence the reader is told is the *delivered* one, not the cron line
+        # (#10). GitHub delivers roughly 40% of what this schedule asks for, with
+        # observed gaps of hours, so the interval since the previous run is the only
+        # honest statement of how fresh the page is - and it is measured, per run.
+        "previous_run": previous,
         "published": {"stories": len(stories), "with_a_band": len(measurable)},
     }
 
