@@ -125,3 +125,41 @@ def test_two_stage_on_an_empty_window():
 def test_threshold_is_none_when_duplicates_dominate_at_every_resolution():
     edges = [(i, j, 1.0) for i in range(6) for j in range(i + 1, 6)]
     assert select_threshold(edges, 6, max_share=0.3) is None
+
+
+def test_edges_are_filed_to_the_theme_that_owns_both_their_ends():
+    """The sub-pass must see each theme's internal edges and no others.
+
+    This is the invariant behind the fix for the O(themes x edges) rescan: the loop
+    that filed one edge list per theme by re-reading every edge produced the right
+    answer and took 97 projected minutes at 2,113 themes against 71.7 million edges,
+    which killed a run on its own timeout. Bucketing in a single pass has to give
+    exactly the same grouping, and two well-separated themes is where a leak between
+    buckets would show up as a merge.
+    """
+    rng = np.random.default_rng(11)
+    rows = []
+    # two themes on orthogonal axes, two stories inside each
+    for axis in (0, 32):
+        for k in range(2):
+            centre = np.zeros(64, dtype=np.float32)
+            centre[axis] = 1.0
+            centre[axis + k + 1] = 0.55
+            centre /= np.linalg.norm(centre)
+            for _ in range(8):
+                rows.append(centre + rng.normal(0, 0.02, 64).astype(np.float32))
+    vectors = np.asarray(rows, dtype=np.float32)
+    vectors /= np.linalg.norm(vectors, axis=1, keepdims=True)
+
+    result = two_stage(
+        vectors, theme_max_share=0.6, story_max_share=0.6, min_theme=8, min_story=5
+    )
+    assert result["themes"] == 2
+    assert len(result["stories"]) == 4
+    assert sorted(len(s) for s in result["stories"]) == [8, 8, 8, 8]
+    # every story sits wholly inside one theme: an edge filed to the wrong bucket
+    # would join articles across the orthogonal axes
+    for story in result["stories"]:
+        assert len({i // 16 for i in story}) == 1
+    assigned = [i for story in result["stories"] for i in story]
+    assert len(assigned) == len(set(assigned))
