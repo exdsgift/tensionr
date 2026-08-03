@@ -40,10 +40,18 @@ on:
         type: boolean
         default: false
 
-# Pages allows one deployment at a time, and cancelling mid-flight can leave the
-# site half-published, so runs queue instead of superseding one another.
+# Pages allows one deployment at a time, and cancelling mid-flight can leave the site
+# half-published, so runs queue instead of superseding one another.
+#
+# But only one run may *queue* per group: a newer queued run cancels the older one, and
+# `cancel-in-progress: false` does not change that. A merged pull request's `closed`
+# event creates a run that does nothing (its jobs are skipped below) — and that empty run
+# was joining this group and cancelling the merge's own queued `push` rebuild. So a run
+# that will do nothing gets a group of its own and competes with no one.
 concurrency:
-  group: pages
+  group: >-
+    ${{ (github.event.action == 'closed' && github.event.pull_request.merged)
+        && format('pages-noop-{0}', github.run_id) || 'pages' }}
   cancel-in-progress: false
 
 permissions:
