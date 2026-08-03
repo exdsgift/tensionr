@@ -258,11 +258,13 @@ TEMPLATE = """<!doctype html><title>t</title>
 @@HOOK@@
 </div></div>
 <pre id="globe">@@MAP@@</pre>
+<pre id="globe-n">@@MAP_N@@</pre>
 <div class="cap">@@LEGEND@@</div>
 <div class="agg">@@BANDED@@ of @@STORIES@@ · @@ARTICLES@@ · @@POLITY_RATE@@ · @@SLOTS@@ · @@SINCE@@</div>
 @@ROWS@@
 <div class="foot">@@FOOT@@</div>
-<script>const PANEL=@@PANEL@@, W=@@MAP_W@@, H=@@MAP_H@@;</script>
+<script>const PANEL=@@PANEL@@, W=@@MAP_W@@, H=@@MAP_H@@;
+const PANEL_N=@@PANEL_N@@, W_N=@@MAP_N_W@@, H_N=@@MAP_N_H@@;</script>
 """
 
 
@@ -311,6 +313,105 @@ def test_an_actor_with_no_curated_label_still_reads_as_a_name():
 
 def test_labels_are_optional_and_absent_seeds_are_not_an_error(tmp_path):
     assert labels(tmp_path) == {}
+
+
+NARROW = {
+    "width": 2,
+    "height": 1,
+    "lat_top": 80.0,
+    "lat_bottom": -80.0,
+    "lon_left": -180.0,
+    "lon_right": 180.0,
+    "rows": ["⠿⠿"],
+}
+
+
+def test_the_narrow_map_gets_its_own_markers_from_its_own_projection():
+    """A marker computed against the wrong map is the #41 defect, twice over."""
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES, narrow=NARROW)
+    wide = json.loads(page.split("const PANEL=")[1].split(", W=")[0])
+    thin = json.loads(page.split("const PANEL_N=")[1].split(", W_N=")[0])
+    assert [m["n"] for m in wide] == [m["n"] for m in thin]
+    # half the columns and half the rows, so every column and row halves with them
+    # (to the rounding both sets are published at)
+    by_name = {m["n"]: m for m in wide}
+    for mark in thin:
+        assert abs(mark["c"] - by_name[mark["n"]]["c"] / 2) <= 0.01, mark["n"]
+        assert abs(mark["r"] - by_name[mark["n"]]["r"] / 2) <= 0.01, mark["n"]
+
+
+def test_one_map_is_used_for_every_width_when_only_one_was_given():
+    """A caller with a single rasterisation gets it everywhere, not an empty map."""
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "W=4, H=2" in page and "W_N=4, H_N=2" in page
+    assert (
+        page.split("const PANEL=")[1].split(", W=")[0]
+        == page.split("const PANEL_N=")[1].split(", W_N=")[0]
+    )
+
+
+def test_the_narrow_map_carries_its_own_size_into_the_script():
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES, narrow=NARROW)
+    assert "W=4, H=2" in page
+    assert "W_N=2, H_N=1" in page
+
+
+def test_the_evidence_scroller_can_be_reached_without_a_pointer():
+    """A region only a finger can scroll fails SC 2.1.1, and Safari does not help."""
+    table = evidence_table(story(), NAMES)
+    assert 'tabindex="0"' in table
+    assert 'role="region"' in table
+    # named by pointing at the table's own caption rather than repeating the string
+    caption_id = table.split('aria-labelledby="')[1].split('"')[0]
+    assert f'id="{caption_id}"' in table
+    assert "<caption " in table and caption_id.startswith("ev-cap-")
+
+
+def test_the_marks_columns_are_headers_of_their_columns():
+    table = evidence_table(story(), NAMES)
+    assert table.count('scope="col"') == 3 + len(story()["band"])
+
+
+def test_two_tables_on_one_page_do_not_share_a_caption_id():
+    page = render(run(many(3)), PROJECTION, COORDS, TEMPLATE, NAMES)
+    ids = [chunk.split('"')[0] for chunk in page.split('<caption class="vh" id="')[1:]]
+    assert len(ids) == 3
+    assert len(set(ids)) == 3
+
+
+def test_the_real_template_leaves_no_placeholder_behind():
+    """The fixture template only carries the placeholders the fixtures know about.
+
+    So it cannot catch a placeholder added to the shipped template and never filled —
+    which is exactly what a second map introduced four of.
+    """
+    from importlib import resources
+
+    tpl = (
+        resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
+    )
+    page = render(run([story()]), PROJECTION, COORDS, tpl, NAMES, narrow=NARROW)
+    assert "@@" not in page
+
+
+def test_the_grid_tracks_have_one_definition_for_the_heads_and_the_rows():
+    """The heads aligning with their cells is a property of there being one --cols.
+
+    A second `grid-template-columns` on `.colhead` or `.grid` is how they drift apart at
+    a width nobody tested, which is the complaint that produced `--cols` in review.
+    """
+    from importlib import resources
+
+    tpl = (
+        resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
+    )
+    assert tpl.count("grid-template-columns:var(--cols)") == 1
+    assert ".colhead{display:grid" not in tpl
+    # and no track list may be spelled `1fr` on its own: that is minmax(auto,1fr), whose
+    # content-based minimum is what let the map drag the page wider than the viewport
+    for line in tpl.splitlines():
+        if "grid-template-columns:" in line:
+            assert "grid-template-columns:1fr" not in line.replace(" ", ""), line
 
 
 def test_the_real_template_is_a_complete_document():
