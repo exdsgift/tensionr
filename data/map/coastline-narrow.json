@@ -1,0 +1,22 @@
+{
+ "_comment": "Coastline of Natural Earth 110m land, rasterised to a 76x44 dot grid, edge-traced and packed into braille at 2x4 dots per character. Exactly half the resolution of coastline.json on both axes, at the same 74N/56S crop, for viewports too narrow to draw 76 characters at a legible size (#51). Static: regenerating it needs tools/build_map.py and the Natural Earth download, and the output does not change.",
+ "width": 38,
+ "height": 11,
+ "lat_top": 74.0,
+ "lat_bottom": -56.0,
+ "lon_left": -180.0,
+ "lon_right": 180.0,
+ "rows": [
+  "⠤⠀⡖⠒⠤⠒⠉⠉⠉⡪⠏⢖⠄⢫⡩⠝⠃⠀⠀⠀⣠⢖⠢⠤⠬⠤⠢⠊⠉⠉⠉⠉⠑⠊⠑⢒⠢⣢",
+  "⠀⠨⠉⠉⠉⢆⠀⠀⠘⠤⠤⢓⣢⠀⠁⠀⠀⠀⢤⢈⣚⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢔⠉⠱⠉⠀",
+  "⠀⠀⠀⠀⠀⠈⡆⠀⠀⠀⢀⠕⠂⠁⠀⠀⠀⠀⣤⠗⢔⡴⣉⡢⠀⠀⠀⠀⠀⠀⠀⡠⡠⠊⠀⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠱⡀⢀⠤⠜⠀⠀⠀⠀⠀⠀⠀⡝⠚⠤⠤⢭⢂⢄⡀⠀⠀⠀⠀⠀⢪⠀⠈⠀⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠉⢧⡠⠐⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⢱⢣⡱⠊⠱⡠⠒⢤⡒⢑⠀⠀⠀⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠠⡒⠢⡀⠀⠀⠀⠱⡠⢄⠀⠀⠀⢉⠆⠀⠀⠃⠀⣈⠃⡈⠄⠀⠀⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠑⠤⡀⠀⠀⠀⠀⢇⠀⢠⠃⠀⠀⠀⠀⠀⠘⣘⠓⠀⢤⡄⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⢸⠀⠀⠀⠀⠀⢜⠀⢨⢂⠆⠀⠀⠀⠀⠀⠀⠀⡔⢆⡌⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⡰⠁⠀⠀⠀⠀⠀⠸⣀⠇⠘⠀⠀⠀⠀⠀⠀⠀⡏⣀⡀⢸⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢜⡔⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⠈⠚⠀⠀⡀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢟⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀"
+ ]
+}
