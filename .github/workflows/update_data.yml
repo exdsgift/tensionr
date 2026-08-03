@@ -7,7 +7,7 @@ name: Tensionr Data Synchronizer
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 # The timeout below lets a run outlast its own schedule, so runs can overlap, and two
