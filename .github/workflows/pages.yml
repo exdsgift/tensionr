@@ -56,11 +56,22 @@ jobs:
   build:
     name: Assemble site
     runs-on: ubuntu-latest
-    # A fork's pull request gets a read-only token and must never be able to
-    # publish to this Pages site.
+    # Two guards.
+    #
+    # A fork's pull request gets a read-only token and must never be able to publish to
+    # this Pages site.
+    #
+    # And a *merged* pull request needs nothing from this workflow: the merge is a push
+    # to master, which triggers a run of its own, and previews are derived from the open
+    # pull requests, so the merged branch drops out of that run by itself. Without this,
+    # one merge produced three runs — `pull_request: closed`, the `push`, and the
+    # hand-off dispatch the closed run fired — and the push was then cancelled as a
+    # superseded queue entry, which is pure waste. A pull request closed *without*
+    # merging is different: nothing else fires, and its preview has to be taken down.
     if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository) &&
+      !(github.event.action == 'closed' && github.event.pull_request.merged)
     permissions:
       contents: read
       pull-requests: read
