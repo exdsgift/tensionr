@@ -23,6 +23,15 @@ from tensionr.stories.marks import PRESENT, UNRESOLVED
 
 logger = logging.getLogger(__name__)
 
+COLUMN_HEADS = """    <div class="grid colhead">
+      <span>Story<button class="i" popovertarget="p-story" aria-label="How a story is defined">i</button></span>
+      <span>Sources<button class="i" popovertarget="p-src" aria-label="How sources are counted">i</button></span>
+      <span>Polities<button class="i" popovertarget="p-pol" aria-label="What a polity is">i</button></span>
+      <span>Named by<button class="i" popovertarget="p-named" aria-label="What named-by measures">i</button></span>
+    </div>
+
+"""
+
 # Marks, in the page's own vocabulary. The third is not a missing value (#22).
 GLYPH = {PRESENT: "●", UNRESOLVED: "–"}
 CLASS = {PRESENT: "yes", UNRESOLVED: "ne"}
@@ -235,6 +244,57 @@ def story_row(story: dict[str, Any], names: dict[str, str], *, first: bool) -> s
 """
 
 
+def hook(hero: dict[str, Any] | None, report: dict[str, Any], names: dict) -> str:
+    """The top-left column: a figure when there is one, a statement when there is not.
+
+    A window where nothing clears both floors is a real outcome, not a broken build, and
+    the page has to be able to say so. #6 decided the index declares itself
+    non-computable below a floor rather than printing a number it cannot support, and
+    this is that rule applied to the page's own headline.
+    """
+    if hero is None:
+        # Stated from the report, so the page names the floors the run actually applied.
+        floors = report.get("floors", {"evaluable": "the required", "polities": "two"})
+        return f"""      <span class="lede">Nothing cleared the floors in this window</span>
+      <div class="fig"><b class="num na">—</b>
+        <span class="unit">no figure this run can support</span></div>
+      <p class="say">{report["grouping"]["stories"]} stories were grouped from
+        {report["window"]["articles"]:,} articles, and none of them reached
+        {floors["evaluable"]} evaluable sources across {floors["polities"]} polities
+        with a measurable division. That is published rather than hidden: a figure below the
+        floor would be a number about the sample, not about the world.</p>
+      <div class="from"><span>{report["published"]["stories"]} <b>stories</b></span></div>"""
+
+    figure = _lead(hero)
+    say = (
+        f"{hero['sources']} publishers in {len(hero['polities'])} polities carried this "
+        f"story. {figure['named']} named {name(hero['band'][0], names)} and "
+        f"{figure['evaluable'] - figure['named']} did not — the widest split this run "
+        f"measured."
+    )
+    return f"""      <span class="lede">Sharpest disagreement in this window</span>
+      <div class="fig"><b class="num">{figure["named"]}<i>/{figure["evaluable"]}</i></b>
+        <span class="unit">sources named {name(hero["band"][0], names)}</span></div>
+      <p class="say">{say}</p>
+      <div class="from">{row_counts(hero, names)}<span>{len(hero["polities"])} <b>polities</b></span></div>"""
+
+
+def legend(hero: dict[str, Any] | None, plotted: int, names: dict) -> str:
+    """The map's caption. It names the states actually drawn, and nothing else."""
+    if hero is None:
+        return (
+            '<span class="dim">no polities plotted — no story carries a figure</span>'
+        )
+    return (
+        f'<span><span style="color:var(--cyan)">●</span> named '
+        f"{name(hero['band'][0], names)}</span>\n        "
+        '<span><span style="color:var(--grey)">○</span> carried it, did not</span>\n'
+        '        <span class="dim">pulse = signal received</span>\n        '
+        f'<span class="dim">{plotted} of {len(hero["polities"])} plotted</span>'
+        '<span class="dim">hover a point</span>'
+    )
+
+
 def render(
     stories: dict[str, Any],
     coastline: dict[str, Any],
@@ -242,27 +302,26 @@ def render(
     template: str,
     names: dict[str, str] | None = None,
 ) -> str:
-    """One page from one run. Raises if the run published nothing worth showing."""
+    """One page from one run, whether or not the run produced a figure."""
     names = names or {}
     banded = [s for s in stories["stories"] if s.get("band") and s.get("evidence")]
-    if not banded:
-        raise ValueError("no story in this run cleared both floors — nothing to render")
     banded.sort(key=lambda s: -_lead(s)["division"])
-    hero = banded[0]
-    figure = _lead(hero)
-    marks, plotted = panel(hero, coordinates, coastline)
+    hero = banded[0] if banded else None
+    marks, plotted = panel(hero, coordinates, coastline) if hero else ([], 0)
     report = stories["report"]
     stamp = dt.datetime.strptime(stories["run"], "%Y%m%dT%H%M%SZ").replace(
         tzinfo=dt.UTC
     )
     hours = report["window"]["slots"] * 15 / 60
 
-    say = (
-        f"{hero['sources']} publishers in {len(hero['polities'])} polities carried this "
-        f"story. {figure['named']} named {name(hero['band'][0], names)} and "
-        f"{figure['evaluable'] - figure['named']} did not — the widest split this run "
-        f"measured."
+    rows = (
+        "".join(story_row(s, names, first=i == 0) for i, s in enumerate(banded))
+        if banded
+        else '    <p class="read">No story in this window cleared both floors, so there '
+        "is no row to show. The window itself is described below.</p>\n"
     )
+    if banded:
+        rows = COLUMN_HEADS + rows
     foot = (
         f"{report['window']['articles']:,} articles from "
         f"{report['polities']['domains']:,} domains over the last {hours:.0f} hours, "
@@ -281,23 +340,15 @@ def render(
         .replace("@@MAP_W@@", str(coastline["width"]))
         .replace("@@MAP_H@@", str(coastline["height"]))
         .replace("@@PANEL@@", json.dumps(marks, ensure_ascii=False))
-        .replace("@@PLOTTED@@", str(plotted))
-        .replace("@@HERO_ACTOR@@", name(hero["band"][0], names))
-        .replace("@@HERO_NAMED@@", str(figure["named"]))
-        .replace("@@HERO_EVAL@@", str(figure["evaluable"]))
-        .replace("@@HERO_POLN@@", str(len(hero["polities"])))
-        .replace("@@HERO_SAY@@", say)
-        .replace("@@HERO_COUNTS@@", row_counts(hero, names))
+        .replace("@@HOOK@@", hook(hero, report, names))
+        .replace("@@LEGEND@@", legend(hero, plotted, names))
         .replace("@@BANDED@@", str(report["published"]["with_a_band"]))
         .replace("@@STORIES@@", str(report["published"]["stories"]))
         .replace("@@ARTICLES@@", f"{report['window']['articles']:,}")
         .replace("@@POLITY_RATE@@", f"{report['polities']['rate']:.0%}")
         .replace("@@SLOTS@@", str(report["window"]["slots"]))
         .replace("@@WHEN@@", stamp.strftime("%-d %b · %H:%M UTC"))
-        .replace(
-            "@@ROWS@@",
-            "".join(story_row(s, names, first=i == 0) for i, s in enumerate(banded)),
-        )
+        .replace("@@ROWS@@", rows)
         .replace("@@FOOT@@", foot)
     )
 

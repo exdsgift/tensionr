@@ -2,8 +2,6 @@
 
 import json
 
-import pytest
-
 from tensionr.ledger import cell, evidence_table, labels, panel, render, row_counts
 from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
 
@@ -69,6 +67,7 @@ def run(stories):
             "window": {"slots": 24, "articles": 54516, "parse_fidelity": 1.0},
             "grouping": {"themes": 427, "stories": 286},
             "polities": {"domains": 6706, "placed": 2799, "rate": 0.4174},
+            "floors": {"evaluable": 30, "polities": 2},
             "published": {"stories": 286, "with_a_band": 1},
         },
     }
@@ -142,9 +141,35 @@ def test_the_page_leads_with_the_widest_split():
     assert page.index("A headline about the strait") < page.index("A narrower one")
 
 
-def test_a_run_with_nothing_measurable_refuses_to_render():
-    with pytest.raises(ValueError, match="cleared both floors"):
-        render(run([story(band=[], evidence=[])]), PROJECTION, COORDS, TEMPLATE, NAMES)
+def test_a_run_with_nothing_measurable_still_renders_and_says_so():
+    """A window below the floors is an outcome, not a broken build (#6)."""
+    page = render(
+        run([story(band=[], evidence=[])]), PROJECTION, COORDS, TEMPLATE, NAMES
+    )
+    assert "@@" not in page
+    assert "Nothing cleared the floors in this window" in page
+    assert "no row to show" in page
+    # the floors named are the ones the run applied, not a copy kept by the page
+    assert "30 evaluable sources across 2 polities" in page
+    # and no figure is printed, because there is none to print
+    assert "sources named" not in page
+
+
+def test_a_run_with_nothing_measurable_plots_no_polities():
+    page = render(
+        run([story(band=[], evidence=[])]), PROJECTION, COORDS, TEMPLATE, NAMES
+    )
+    assert "const PANEL=[]," in page
+    assert "no polities plotted" in page
+
+
+def test_the_column_heads_appear_only_when_there_are_rows():
+    empty = render(
+        run([story(band=[], evidence=[])]), PROJECTION, COORDS, TEMPLATE, NAMES
+    )
+    full = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "colhead" in full
+    assert "colhead" not in empty
 
 
 def test_the_split_sentence_is_only_written_when_the_split_is_clean():
@@ -209,12 +234,11 @@ def test_the_balanced_twin_is_published_beside_the_figure():
 
 TEMPLATE = """<!doctype html><title>t</title>
 <span class="when">@@WHEN@@</span>
-<b class="num">@@HERO_NAMED@@<i>/@@HERO_EVAL@@</i></b>
-<span class="unit">sources named @@HERO_ACTOR@@</span>
-<p class="say">@@HERO_SAY@@</p>
-<div class="from">@@HERO_COUNTS@@<span>@@HERO_POLN@@</span></div>
+<div class="hook"><div>
+@@HOOK@@
+</div></div>
 <pre id="globe">@@MAP@@</pre>
-<span class="dim">@@PLOTTED@@ of @@HERO_POLN@@ plotted</span>
+<div class="cap">@@LEGEND@@</div>
 <div class="agg">@@BANDED@@ of @@STORIES@@ · @@ARTICLES@@ · @@POLITY_RATE@@ · @@SLOTS@@</div>
 @@ROWS@@
 <div class="foot">@@FOOT@@</div>
@@ -267,3 +291,28 @@ def test_an_actor_with_no_curated_label_still_reads_as_a_name():
 
 def test_labels_are_optional_and_absent_seeds_are_not_an_error(tmp_path):
     assert labels(tmp_path) == {}
+
+
+def test_the_real_template_is_a_complete_document():
+    """It is the homepage now. The prototype relied on an artifact wrapper for this."""
+    from importlib import resources
+
+    tpl = (
+        resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
+    )
+    assert tpl.lstrip().startswith("<!doctype html>")
+    for required in (
+        '<html lang="en">',
+        '<meta charset="utf-8">',
+        '<meta name="viewport"',
+        "<title>",
+        "</body>",
+        "</html>",
+    ):
+        assert required in tpl, required
+
+
+def test_the_rendered_page_declares_its_encoding_before_any_braille():
+    """Without a charset the map and non-Latin headlines are at the browser's mercy."""
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "@@" not in page
