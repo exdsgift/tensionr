@@ -102,6 +102,11 @@
   .rows > h2{font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--yellow);
              border-bottom:1px solid var(--grey); padding-bottom:var(--s2)}
   .grid{display:grid; grid-template-columns:var(--cols); gap:var(--s2) var(--s4); align-items:baseline}
+  /* A headline the page could not get in English is shown as the publisher wrote it,
+     with the language named. It is a quotation, not the page's own voice. */
+  .lang{font-style:normal; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+        color:var(--yellow); border:1px solid currentColor; padding:0 .28em; border-radius:2px;
+        vertical-align:.1em; margin-inline-start:.4em; white-space:nowrap}
   .colhead{position:sticky; top:var(--barh); z-index:10; background:var(--ink);
            padding:var(--s4) 0 var(--s2); border-bottom:1px solid var(--slate)}
   .colhead > span{display:flex; align-items:center; white-space:nowrap;

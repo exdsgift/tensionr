@@ -20,6 +20,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from tensionr.stories.languages import code_for
 from tensionr.stories.marks import PRESENT, UNRESOLVED
 
 # What the page may weigh, compressed, because that is what a reader downloads and what
@@ -202,6 +203,20 @@ def row_counts(story: dict[str, Any], names: dict[str, str]) -> str:
     return " · ".join(out)
 
 
+def headline(story: dict[str, Any]) -> str:
+    """The story's headline, marked when it is not in the page's own language.
+
+    Not translated. A translation is a claim about what a publisher said, and getting it
+    wrong misattributes — the one error this page exists not to make. So a foreign
+    headline is shown as the publisher wrote it, labelled, and read as a quotation.
+    """
+    text = esc(story["headline"][:150])
+    language = story.get("headline_language")
+    if language and code_for(language) != "en":
+        return f'<span dir="auto">{text}</span> <i class="lang">{esc(language.title())}</i>'
+    return text
+
+
 def story_row(
     story: dict[str, Any],
     names: dict[str, str],
@@ -260,7 +275,7 @@ def story_row(
     )
     return f"""    <details class="row"{" open" if first else ""}>
       <summary><div class="grid">
-        <span class="title"><span class="glyph">▸</span>{esc(story["headline"][:150])}
+        <span class="title"><span class="glyph">▸</span>{headline(story)}
           <small>{story["sources"]} sources · {len(story["polities"])} polities · division {figure["division"]:.3f}</small></span>
         <span class="cell num" data-l="sources">{story["sources"]}</span>
         <span class="cell num" data-l="polities">{len(story["polities"])}</span>

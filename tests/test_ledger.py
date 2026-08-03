@@ -6,6 +6,7 @@ from tensionr.ledger import (
     LEDGER_BUDGET_BYTES,
     cell,
     evidence_table,
+    headline,
     labels,
     panel,
     render,
@@ -431,3 +432,21 @@ def test_a_first_run_says_so_rather_than_showing_a_zero():
     r = run([story()])
     r["report"]["previous_run"] = None
     assert since_previous(r) == "first run"
+
+
+def test_a_foreign_headline_is_labelled_rather_than_translated():
+    """A wrong translation misattributes, which is the one error this page must not make."""
+    marked = headline({"headline": "Έφυγε από τη Ρωσία", "headline_language": "GREEK"})
+    assert "Greek" in marked
+    assert 'dir="auto"' in marked
+    assert "Έφυγε" in marked
+
+
+def test_an_english_headline_carries_no_label():
+    plain = headline({"headline": "He left Russia", "headline_language": "ENGLISH"})
+    assert "lang" not in plain
+    assert plain == "He left Russia"
+
+
+def test_a_headline_with_no_language_recorded_is_not_labelled():
+    assert headline({"headline": "He left Russia"}) == "He left Russia"

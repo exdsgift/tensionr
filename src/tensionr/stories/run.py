@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from tensionr.config import MIN_EVALUABLE, MIN_POLITIES
-from tensionr.stories import cluster, identity, measure, window
+from tensionr.stories import cluster, identity, languages, measure, window
 from tensionr.stories.polity import PolityTable
 from tensionr.stories.wikidata import load as load_aliases
 
@@ -92,9 +92,17 @@ def run(
         ]
         measured = measure.measure_story(rows, actors, table.resolve)
         band = [f["actor"] for f in measure.top_band(measured["figures"])]
+        # The page is written in English, so the headline it shows has to be one, when
+        # any source supplies one. Taking the longest title over all languages made the
+        # production homepage lead in Greek, Malayalam and Slovak. Where no English
+        # source carried the story the original stands, and the language travels with it
+        # so the page can say which it is rather than pass it off as its own prose.
+        english = [r for r in rows if languages.code_for(r.get("language")) == "en"]
+        chosen = max(english or rows, key=lambda r: len(r["title"]), default=None)
         story = {
             "id": assignment["id"],
-            "headline": max((r["title"] for r in rows), key=len, default=""),
+            "headline": chosen["title"] if chosen else "",
+            "headline_language": chosen.get("language") if chosen else None,
             "band": band,
             **measured,
         }
