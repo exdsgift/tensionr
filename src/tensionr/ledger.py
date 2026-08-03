@@ -331,6 +331,28 @@ def legend(hero: dict[str, Any] | None, plotted: int, names: dict) -> str:
     )
 
 
+def since_previous(stories: dict[str, Any]) -> str:
+    """How long since the run before this one, measured rather than promised.
+
+    #10 decided the reader is told the *delivered* rate, not the cron line. The schedule
+    asks for one run an hour and GitHub delivers roughly 40% of them, with gaps of
+    hours, so "hourly" would be a claim the system does not meet. A run knows exactly
+    when the previous one was, so it says that instead.
+    """
+    previous = stories["report"].get("previous_run")
+    if not previous:
+        return "first run"
+    fmt = "%Y%m%dT%H%M%SZ"
+    gap = dt.datetime.strptime(stories["run"], fmt) - dt.datetime.strptime(
+        previous, fmt
+    )
+    minutes = round(gap.total_seconds() / 60)
+    if minutes < 60:
+        return f"{minutes} min"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours} h {minutes:02d} min" if minutes else f"{hours} h"
+
+
 def transfer_bytes(page: str) -> int:
     """What a reader actually downloads. Pages serves gzip, so that is the number."""
     return len(gzip.compress(page.encode(), 9))
@@ -419,6 +441,7 @@ def render(
             .replace("@@ARTICLES@@", f"{report['window']['articles']:,}")
             .replace("@@POLITY_RATE@@", f"{report['polities']['rate']:.0%}")
             .replace("@@SLOTS@@", str(report["window"]["slots"]))
+            .replace("@@SINCE@@", since_previous(stories))
             .replace("@@WHEN@@", stamp.strftime("%-d %b · %H:%M UTC"))
             .replace("@@ROWS@@", rows)
             .replace("@@FOOT@@", foot + note)
