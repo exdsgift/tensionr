@@ -21,7 +21,7 @@ def row(domain, title, language="en", polity="A"):
 def resolver(named_by: dict[str, str]):
     """Answer from a table keyed by domain, so tests state marks directly."""
 
-    def resolve(title, actor):
+    def resolve(title, actor, language=None):
         return named_by.get(f"{title}|{actor}", ABSENT)
 
     return resolve

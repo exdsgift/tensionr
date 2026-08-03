@@ -15,7 +15,9 @@ logger = logging.getLogger(__name__)
 # dependency, and every module that already reads them from here keeps working.
 __all__ = ["ABSENT", "PRESENT", "UNRESOLVED"]
 
-Resolver = Callable[[str, str], str]
+# (title, actor, language) -> one of the three states. The language is not optional:
+# a row whose language nobody mapped is unmeasurable, not absent (#49).
+Resolver = Callable[[str, str, str | None], str]
 
 
 def _normalise(title: str) -> str:
@@ -101,7 +103,10 @@ def measure_story(
     figures = []
     for actor in actors:
         marks = [
-            (r.get("language", "unknown"), resolve(r.get("title", ""), actor))
+            (
+                r.get("language", "unknown"),
+                resolve(r.get("title", ""), actor, r.get("language")),
+            )
             for r in kept
         ]
         evaluable = [m for _, m in marks if m != UNRESOLVED]
@@ -162,7 +167,9 @@ def evidence(
             "polity": r.get("polity"),
             "language": r.get("language", "unknown"),
             "title": r.get("title", ""),
-            "marks": {a: resolve(r.get("title", ""), a) for a in actors},
+            "marks": {
+                a: resolve(r.get("title", ""), a, r.get("language")) for a in actors
+            },
         }
         for r in kept
     ]
