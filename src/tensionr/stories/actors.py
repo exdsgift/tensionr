@@ -109,7 +109,9 @@ class AliasTable:
                         continue
                     self._by_language.setdefault(actor, set()).add(language)
                     script = script_of(alias)
-                    bucket = self._by_script.setdefault(actor, {}).setdefault(script, [])
+                    bucket = self._by_script.setdefault(actor, {}).setdefault(
+                        script, []
+                    )
                     if alias not in bucket:
                         bucket.append(alias)
 
