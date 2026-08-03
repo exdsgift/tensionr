@@ -5,23 +5,34 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from tensionr.config import ALIAS_LANGUAGES, WIKIDATA_ENTITY_URL, WIKIDATA_SEARCH_URL
+from tensionr.config import WIKIDATA_ENTITY_URL, WIKIDATA_SEARCH_URL
 from tensionr.http_client import request_with_retry
 from tensionr.stories.actors import AliasTable, usable_alias
+from tensionr.stories.languages import codes
 
 logger = logging.getLogger(__name__)
 
 
 def select_aliases(
-    entity: dict[str, Any], languages: list[str] = ALIAS_LANGUAGES
-) -> list[str]:
-    """Labels and aliases in the languages we can read, filtered and deduplicated.
+    entity: dict[str, Any], languages: list[str] | None = None
+) -> dict[str, list[str]]:
+    """Labels and aliases per language, filtered and deduplicated within each.
 
-    Only strings that survive `usable_alias` are kept, so the script-aware length
-    floor and the ASCII-only code filter apply here too rather than at match time.
+    Keyed by language, not flattened, because the language is what decides whether a
+    headline can be measured at all: a row in a language we never fetched is
+    unmeasurable rather than an omission (#49). Flattening threw that away, and a
+    Bulgarian headline was then judged against Russian spellings.
+
+    Deduplication is within a language, not across. The same string in two languages is
+    kept in both — "Iran" is the label in English, Spanish and Italian, and each of those
+    is a separate claim about what can be read.
+
+    Only strings surviving `usable_alias` are kept, so the script-aware length floor and
+    the ASCII-only code filter apply here rather than at match time.
     """
-    found: list[str] = []
-    for language in languages:
+    table: dict[str, dict[str, list[str]]] = {}
+    for language in languages if languages is not None else codes():
+        found: list[str] = []
         label = entity.get("labels", {}).get(language, {}).get("value")
         if label:
             found.append(label)
@@ -30,15 +41,17 @@ def select_aliases(
             if value:
                 found.append(value)
 
-    seen: set[str] = set()
-    kept: list[str] = []
-    for value in found:
-        key = value.casefold()
-        if key in seen or not usable_alias(value):
-            continue
-        seen.add(key)
-        kept.append(value)
-    return kept
+        seen: set[str] = set()
+        kept: list[str] = []
+        for value in found:
+            key = value.casefold()
+            if key in seen or not usable_alias(value):
+                continue
+            seen.add(key)
+            kept.append(value)
+        if kept:
+            table[language] = kept
+    return table
 
 
 def describe(entity: dict[str, Any]) -> dict[str, Any]:
@@ -112,7 +125,7 @@ def build(seeds: dict[str, str]) -> dict[str, Any]:
     actually resolved to so the check can be repeated later.
     """
     records = entities(sorted(set(seeds.values())))
-    table: dict[str, list[str]] = {}
+    table: dict[str, dict[str, list[str]]] = {}
     audit: list[dict[str, Any]] = []
     missing: list[str] = []
 
@@ -126,7 +139,14 @@ def build(seeds: dict[str, str]) -> dict[str, Any]:
             missing.append(actor)
             continue
         table[actor] = aliases
-        audit.append({"actor": actor, **describe(entity), "aliases": len(aliases)})
+        audit.append(
+            {
+                "actor": actor,
+                **describe(entity),
+                "aliases": sum(len(v) for v in aliases.values()),
+                "languages": len(aliases),
+            }
+        )
 
     if missing:
         logger.warning(
@@ -152,3 +172,45 @@ def load(path: Path) -> AliasTable:
     """The resolver's table, loaded from data rather than constructed in code."""
     payload = json.loads(Path(path).read_text("utf-8"))
     return AliasTable(payload["table"])
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Rebuild the alias table from the curated seeds.
+
+    Deliberately a command rather than a scheduled job. The table is reference data a
+    human checks: every entity carries an audit row with its label and description so a
+    wrong QID can be seen, and #22 found 34 of 65 hand-written ids pointed at the wrong
+    entity while failing silently. Rebuilding is cheap; rebuilding unattended is how a
+    silent regression ships.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="python -m tensionr.stories.wikidata",
+        description="Rebuild data/actors/aliases.json from data/actors/seeds.json.",
+    )
+    parser.add_argument("--seeds", type=Path, default=Path("data/actors/seeds.json"))
+    parser.add_argument("--out", type=Path, default=Path("data/actors/aliases.json"))
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
+    )
+    result = build(read_seeds(args.seeds))
+    write(result, args.out)
+    logger.info(
+        "%d actors, %d aliases across %d languages, %d actors with nothing usable",
+        len(result["table"]),
+        sum(
+            len(v)
+            for by_language in result["table"].values()
+            for v in by_language.values()
+        ),
+        len({lang for by_language in result["table"].values() for lang in by_language}),
+        len(result["missing"]),
+    )
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())

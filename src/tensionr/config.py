@@ -235,26 +235,6 @@ FIELD_SIZE_LIMIT = 4 * 1024 * 1024
 # hand-written ids pointed at the wrong entity and failed silently (#22).
 WIKIDATA_SEARCH_URL = "https://www.wikidata.org/w/api.php"
 WIKIDATA_ENTITY_URL = "https://www.wikidata.org/w/api.php"
-ALIAS_LANGUAGES = [
-    "en",
-    "es",
-    "de",
-    "it",
-    "fr",
-    "pt",
-    "ru",
-    "tr",
-    "el",
-    "ar",
-    "zh",
-    "sr",
-    "hr",
-    "uk",
-    "fa",
-    "he",
-    "ja",
-    "id",
-    "nl",
-    "pl",
-    "ro",
-]
+# The languages to fetch labels for live in `tensionr.stories.languages`, beside the
+# GDELT-name-to-code mapping that decides which of them a row can be measured in.
+# Two lists would drift, and the drift is exactly the defect #49 records.

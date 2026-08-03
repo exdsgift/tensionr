@@ -5,7 +5,8 @@ import re
 import unicodedata
 from typing import Any
 
-from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
+from tensionr.stories.languages import code_for
+from tensionr.stories.marks import ABSENT, PRESENT, UNRESOLVED
 
 logger = logging.getLogger(__name__)
 
@@ -87,18 +88,30 @@ class AliasTable:
     table is loaded, and an actor absent from it is undecidable rather than absent.
     """
 
-    def __init__(self, actors: dict[str, list[str]]) -> None:
+    def __init__(self, actors: dict[str, dict[str, list[str]]]) -> None:
         self._by_script: dict[str, dict[str, list[str]]] = {}
+        self._by_language: dict[str, set[str]] = {}
         self._dropped: list[tuple[str, str]] = []
-        for actor, aliases in actors.items():
-            for alias in aliases:
-                if not usable_alias(alias):
-                    self._dropped.append((actor, alias))
-                    continue
-                script = script_of(alias)
-                self._by_script.setdefault(actor, {}).setdefault(script, []).append(
-                    alias
+        for actor, by_language in actors.items():
+            if not isinstance(by_language, dict):
+                # The pre-#49 file was a flat list per actor, with the language of each
+                # alias thrown away. Loading it would silently restore the defect, so it
+                # fails here instead: rebuild the table.
+                raise ValueError(
+                    f"{actor}: the alias table must be keyed by language. "
+                    "Rebuild data/actors/aliases.json — a flat list cannot say which "
+                    "language a row is answerable in (#49)."
                 )
+            for language, aliases in by_language.items():
+                for alias in aliases:
+                    if not usable_alias(alias):
+                        self._dropped.append((actor, alias))
+                        continue
+                    self._by_language.setdefault(actor, set()).add(language)
+                    script = script_of(alias)
+                    bucket = self._by_script.setdefault(actor, {}).setdefault(script, [])
+                    if alias not in bucket:
+                        bucket.append(alias)
 
     @property
     def dropped(self) -> list[tuple[str, str]]:
@@ -111,14 +124,27 @@ class AliasTable:
     def scripts_for(self, actor: str) -> set[str]:
         return set(self._by_script.get(actor, {}))
 
-    def resolve(self, title: str, actor: str) -> str:
+    def languages_for(self, actor: str) -> set[str]:
+        return set(self._by_language.get(actor, set()))
+
+    def resolve(self, title: str, actor: str, language: str | None) -> str:
         """Present, absent, or undecidable — never two states.
 
-        Undecidable means the table holds no alias in the title's own script, so the
-        question cannot be answered rather than answered "no". An undecidable row
-        leaves the denominator; counting it absent would manufacture an omission, and
-        omission is the signal.
+        **Evaluability is decided by language, matching by script**, and the two are not
+        the same question. Before #49 both were script: Cyrillic is shared by Russian,
+        Bulgarian, Ukrainian, Serbian and Macedonian, so a Bulgarian headline found the
+        Russian aliases, was judged answerable, matched none of them, and its author was
+        recorded as having omitted an actor they had in fact named. `Русия` was never
+        fetched, because Bulgarian was not among the languages asked for.
+
+        So: no alias in the row's own language, or a language nobody mapped, means the
+        question cannot be answered. Matching then uses every alias in the title's
+        script rather than only the language's own — more aliases can turn absent into
+        present but can never manufacture an omission, and omission is the signal.
         """
+        code = code_for(language)
+        if code is None or code not in self._by_language.get(actor, ()):
+            return UNRESOLVED
         script = script_of(title)
         aliases = self._by_script.get(actor, {}).get(script)
         if not aliases:
@@ -150,7 +176,7 @@ def coverage(
         script = script_of(row.get("title", ""))
         bucket = seen.setdefault(script, {"rows": 0, "answerable": 0, "named": 0})
         bucket["rows"] += 1
-        state = table.resolve(row.get("title", ""), actor)
+        state = table.resolve(row.get("title", ""), actor, row.get("language"))
         if state != UNRESOLVED:
             bucket["answerable"] += 1
         if state == PRESENT:

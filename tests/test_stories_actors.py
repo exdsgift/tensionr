@@ -3,13 +3,21 @@
 import pytest
 
 from tensionr.stories.actors import AliasTable, coverage, script_of, usable_alias
-from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
+from tensionr.stories.marks import ABSENT, PRESENT, UNRESOLVED
 
+# Keyed by language, because that is what decides whether a row can be answered at all
+# (#49). The scripts follow from the strings.
 TABLE = {
-    "iran": ["Iran", "Irán", "إيران", "Ιράν", "Иран"],
-    "trump": ["Trump", "ترامب"],
-    "hormuz": ["Strait of Hormuz", "Hormuz", "هرمز"],
-    "china": ["China", "中国"],
+    "iran": {
+        "en": ["Iran"],
+        "es": ["Irán"],
+        "ar": ["إيران"],
+        "el": ["Ιράν"],
+        "ru": ["Иран"],
+    },
+    "trump": {"en": ["Trump"], "ar": ["ترامب"]},
+    "hormuz": {"en": ["Strait of Hormuz", "Hormuz"], "ar": ["هرمز"]},
+    "china": {"en": ["China"], "zh": ["中国"]},
 }
 
 
@@ -50,53 +58,98 @@ def test_the_code_shape_filter_is_ascii_only():
 
 
 def test_unusable_aliases_are_dropped_visibly():
-    built = AliasTable({"iran": ["Iran", "IR", "Q794"]})
+    built = AliasTable({"iran": {"en": ["Iran", "IR", "Q794"]}})
     assert [a for _, a in built.dropped] == ["IR", "Q794"]
     assert built.scripts_for("iran") == {"latin"}
 
 
 def test_present_and_absent_in_latin(table):
-    assert table.resolve("Trump halts Iran strikes", "iran") == PRESENT
-    assert table.resolve("Trump halts strikes", "iran") == ABSENT
+    assert table.resolve("Trump halts Iran strikes", "iran", "ENGLISH") == PRESENT
+    assert table.resolve("Trump halts strikes", "iran", "ENGLISH") == ABSENT
 
 
 def test_accents_do_not_hide_a_match(table):
-    assert table.resolve("Trump suspende ataques contra Irán", "iran") == PRESENT
+    assert (
+        table.resolve("Trump suspende ataques contra Irán", "iran", "SPANISH")
+        == PRESENT
+    )
 
 
 def test_a_longer_alias_still_matches_inside_a_headline(table):
-    assert table.resolve("Iran rejects Strait of Hormuz deal", "hormuz") == PRESENT
+    assert (
+        table.resolve("Iran rejects Strait of Hormuz deal", "hormuz", "ENGLISH")
+        == PRESENT
+    )
 
 
 def test_an_actor_with_no_alias_in_the_title_script_is_undecidable(table):
     # The table has no Greek alias for Trump, so a Greek headline cannot be answered.
-    assert table.resolve("Ο Τραμπ ανακοίνωσε", "trump") == UNRESOLVED
+    assert table.resolve("Ο Τραμπ ανακοίνωσε", "trump", "GREEK") == UNRESOLVED
     # but Iran has one, so the same headline is answerable for Iran
-    assert table.resolve("Το Ιράν διαψεύδει", "iran") == PRESENT
+    assert table.resolve("Το Ιράν διαψεύδει", "iran", "GREEK") == PRESENT
 
 
 def test_arabic_matches_without_word_boundaries(table):
-    assert table.resolve("إيران ترد على ترامب", "iran") == PRESENT
-    assert table.resolve("إيران ترد على ترامب", "trump") == PRESENT
-    assert table.resolve("إيران ترد", "trump") == ABSENT
+    assert table.resolve("إيران ترد على ترامب", "iran", "ARABIC") == PRESENT
+    assert table.resolve("إيران ترد على ترامب", "trump", "ARABIC") == PRESENT
+    assert table.resolve("إيران ترد", "trump", "ARABIC") == ABSENT
 
 
 def test_cjk_matches_without_spaces(table):
-    assert table.resolve("中国外交部回应美国制裁", "china") == PRESENT
+    assert table.resolve("中国外交部回应美国制裁", "china", "Chinese") == PRESENT
 
 
 def test_an_unknown_actor_is_undecidable_rather_than_absent(table):
-    assert table.resolve("Trump halts Iran strikes", "not-in-table") == UNRESOLVED
+    assert (
+        table.resolve("Trump halts Iran strikes", "not-in-table", "ENGLISH")
+        == UNRESOLVED
+    )
 
 
 def test_coverage_separates_answerable_from_named(table):
     rows = [
-        {"title": "Trump halts Iran strikes"},
-        {"title": "Trump halts strikes"},
-        {"title": "Ο Τραμπ ανακοίνωσε"},
+        {"title": "Trump halts Iran strikes", "language": "ENGLISH"},
+        {"title": "Trump halts strikes", "language": "ENGLISH"},
+        {"title": "Ο Τραμπ ανακοίνωσε", "language": "GREEK"},
     ]
     seen = coverage(table, rows, "trump")
     assert seen["latin"] == {"rows": 2, "answerable": 2, "named": 2}
     # answerable but never matched is the morphology hazard; here it is simply
     # unanswerable, and the two must not be conflated
     assert seen["greek"] == {"rows": 1, "answerable": 0, "named": 0}
+
+
+def test_a_language_the_table_was_never_built_for_is_undecidable(table):
+    """The #49 defect, as a test.
+
+    A Bulgarian headline naming Russia in Bulgarian must not be recorded as an omission
+    just because Cyrillic aliases exist for Russian. Here `iran` has a Russian alias and
+    no Bulgarian one, and the Bulgarian row is unanswerable rather than absent.
+    """
+    assert table.resolve("Иран отговори", "iran", "RUSSIAN") == PRESENT
+    assert table.resolve("Иран отговори", "iran", "BULGARIAN") == UNRESOLVED
+
+
+def test_a_language_nobody_mapped_is_undecidable(table):
+    assert table.resolve("Trump halts Iran strikes", "iran", "KLINGON") == UNRESOLVED
+    assert table.resolve("Trump halts Iran strikes", "iran", None) == UNRESOLVED
+
+
+def test_matching_still_uses_every_alias_in_the_script(table):
+    """Evaluability is per language; matching is per script, and deliberately wider.
+
+    A Spanish page carrying the English spelling is still a naming. More aliases can
+    turn absent into present but can never manufacture an omission, and omission is the
+    signal.
+    """
+    assert table.resolve("El presidente de Iran responde", "iran", "SPANISH") == PRESENT
+
+
+def test_the_pre_49_flat_table_is_refused_rather_than_loaded():
+    with pytest.raises(ValueError, match="keyed by language"):
+        AliasTable({"iran": ["Iran", "Irán"]})
+
+
+def test_languages_for_reports_what_an_actor_can_be_read_in(table):
+    assert table.languages_for("trump") == {"en", "ar"}
+    assert table.languages_for("not-in-table") == set()
