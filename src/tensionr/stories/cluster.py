@@ -177,16 +177,30 @@ def two_stage(
         n,
     )
 
+    # One pass over the edge list, bucketed by theme, rather than one pass per theme.
+    # The obvious loop rescans every edge for every theme, which is O(themes x edges):
+    # at 210,538 articles that was 2,113 themes against 71.7 million edges — 1.5e11
+    # tuple inspections in Python, and a run killed by its own timeout after 32 minutes
+    # in this step alone. An edge is only ever needed by the theme containing both its
+    # ends, so it is filed once.
+    theme_of: dict[int, int] = {}
+    local_of: dict[int, int] = {}
+    for index, theme in enumerate(themes):
+        for position, node in enumerate(theme):
+            theme_of[node] = index
+            local_of[node] = position
+    buckets: list[list[Edge]] = [[] for _ in themes]
+    for a, b, score in edges:
+        if score < theme_threshold:
+            continue
+        index = theme_of.get(a)
+        if index is not None and index == theme_of.get(b):
+            buckets[index].append((local_of[a], local_of[b], score))
+
     stories: list[list[int]] = []
     chosen: list[float] = []
     unsplit = 0
-    for theme in themes:
-        local = {global_i: local_i for local_i, global_i in enumerate(theme)}
-        inner = [
-            (local[a], local[b], score)
-            for a, b, score in edges
-            if a in local and b in local and score >= theme_threshold
-        ]
+    for theme, inner in zip(themes, buckets, strict=True):
         threshold = select_threshold(
             inner, len(theme), max_share=story_max_share, floor=theme_threshold
         )
