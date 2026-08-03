@@ -206,6 +206,7 @@ IDENTITY_CONTAINMENT = 0.5
 MIN_EVALUABLE = 30
 MIN_POLITIES = 2
 
+
 # Several rows sit within 0.005 of the top division score while the artefact moves a
 # figure by as much again, so the lead is a band and its internal order is not a
 # claim (#23).

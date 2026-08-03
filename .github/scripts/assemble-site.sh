@@ -135,30 +135,41 @@ overlay_data() {
   echo "  -> data/ from '$DATA_BRANCH' ($(du -sh "$dest/data" | cut -f1))"
 }
 
-# The Ledger is generated rather than fetched (#14): by the time it reaches a browser
-# it is HTML, readable with scripting off, and the only script on it places the map
-# markers. Rendered per tree with *that tree's own* generator, so a branch changing the
-# page previews its own version — the generator imports nothing outside the standard
-# library precisely so this needs no virtualenv.
+# The Ledger *is* the homepage, and it is generated rather than fetched (#14): by the
+# time it reaches a browser it is HTML, readable with scripting off, and the only script
+# on it places the map markers. Rendered per tree with *that tree's own* generator, so a
+# branch changing the page previews its own version - the generator imports nothing
+# outside the standard library precisely so this needs no virtualenv.
+#
+# A window where nothing clears the floors is not a failure: the page says so itself.
+# So a failure here means the data is missing or malformed, and for production that must
+# stop the deployment rather than publish a site with no homepage - Pages then keeps
+# serving the last good build, which states the window it describes. A preview failing
+# is reported and skipped, so one bad branch cannot hold up everyone else's.
 render_ledger() {
-  local src="$1" dest="$2"
-  [[ -f "$src/src/tensionr/ledger.py" ]] || return 0
-  mkdir -p "$dest/ledger"
-  if PYTHONPATH="$src/src" python3 -m tensionr.ledger \
-       --data "$dest/data" --out "$dest/ledger/index.html" 2>&1 | sed 's/^/     /'; then
-    echo "  -> ledger/ generated ($(du -h "$dest/ledger/index.html" | cut -f1))"
-  else
-    # A run where no story clears both floors is a real outcome, not a build failure.
-    # Leaving the page absent is honest; publishing an empty one is not.
-    rm -rf "$dest/ledger"
-    echo "  ! ledger not generated - no story cleared both floors, or data is missing" >&2
+  local src="$1" dest="$2" required="$3"
+  if [[ ! -f "$src/src/tensionr/ledger.py" ]]; then
+    echo "  (no generator on this branch - its own index.html is kept)"
+    return 0
   fi
+  if PYTHONPATH="$src/src" python3 -m tensionr.ledger \
+       --data "$dest/data" --out "$dest/index.html" 2>&1 | sed 's/^/     /'; then
+    echo "  -> index.html generated ($(du -h "$dest/index.html" | cut -f1))"
+    return 0
+  fi
+  if [[ "$required" == required ]]; then
+    echo "  ! the ledger could not be generated and this is production - refusing to" >&2
+    echo "    publish a site with no homepage. The last good deployment stays live." >&2
+    return 1
+  fi
+  echo "  ! ledger not generated - preview skipped" >&2
+  return 0
 }
 
 echo "Assembling production from '$PRODUCTION_BRANCH':"
 copy_branch "$PRODUCTION_BRANCH" "production" ""
 overlay_data "$OUT_DIR"
-render_ledger "$WORK_DIR/production" "$OUT_DIR"
+render_ledger "$WORK_DIR/production" "$OUT_DIR" required
 
 published=""
 published_count=0
@@ -177,7 +188,7 @@ while IFS= read -r branch; do
   echo "Assembling preview for '$branch':"
   if copy_branch "$branch" "preview-$slot" "preview/$branch"; then
     overlay_data "$OUT_DIR/preview/$branch"
-    render_ledger "$WORK_DIR/preview-$slot" "$OUT_DIR/preview/$branch"
+    render_ledger "$WORK_DIR/preview-$slot" "$OUT_DIR/preview/$branch" optional
     published="${published}${branch}"$'\n'
     published_count=$((published_count + 1))
   fi

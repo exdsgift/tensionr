@@ -1,4 +1,15 @@
-<title>tensionr — Ledger</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tensionr — who is telling it differently</title>
+<meta name="description" content="Which publishers name an actor in a story and which leave it out, measured across polities of publication. Every figure carries its denominator and the sources behind it.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://exdsgift.github.io/tensionr/">
+<meta property="og:title" content="tensionr — who is telling it differently">
+<meta property="og:description" content="Which publishers name an actor and which leave it out, measured across polities of publication.">
+<meta name="color-scheme" content="dark">
 
 <style>
   :root{
@@ -152,6 +163,8 @@
     .agg > div{flex:1 1 45%}
   }
 </style>
+</head>
+<body>
 
 <div class="bar"><div class="in">
   <strong>tensionr</strong>
@@ -163,22 +176,13 @@
 
   <div class="hook">
     <div>
-      <span class="lede">Sharpest disagreement in this window</span>
-      <div class="fig"><b class="num">@@HERO_NAMED@@<i>/@@HERO_EVAL@@</i></b>
-        <span class="unit">sources named @@HERO_ACTOR@@</span></div>
-      <p class="say">@@HERO_SAY@@</p>
-      <div class="from">@@HERO_COUNTS@@<span>@@HERO_POLN@@ <b>polities</b></span></div>
+@@HOOK@@
     </div>
     <div class="earth" id="earth">
       <pre id="probe" aria-hidden="true"></pre>
       <pre id="globe" aria-hidden="true">@@MAP@@</pre>
       <div class="layer" id="rings" style="--cw:6px"></div>
-      <div class="cap">
-        <span><span style="color:var(--cyan)">●</span> named @@HERO_ACTOR@@</span>
-        <span><span style="color:var(--grey)">○</span> carried it, did not</span>
-        <span class="dim">pulse = signal received</span>
-        <span class="dim">@@PLOTTED@@ of @@HERO_POLN@@ plotted</span><span class="dim">hover a point</span>
-      </div>
+      <div class="cap">@@LEGEND@@</div>
     </div>
   </div>
 
@@ -192,13 +196,6 @@
 
   <div class="rows">
     <h2>Stories</h2>
-    <div class="grid colhead">
-      <span>Story<button class="i" popovertarget="p-story" aria-label="How a story is defined">i</button></span>
-      <span>Sources<button class="i" popovertarget="p-src" aria-label="How sources are counted">i</button></span>
-      <span>Polities<button class="i" popovertarget="p-pol" aria-label="What a polity is">i</button></span>
-      <span>Named by<button class="i" popovertarget="p-named" aria-label="What named-by measures">i</button></span>
-    </div>
-
 @@ROWS@@
   </div>
 
@@ -287,3 +284,5 @@
   const setBar=()=>document.documentElement.style.setProperty('--barh',bar.offsetHeight+'px');
   setBar(); new ResizeObserver(setBar).observe(bar);
 </script>
+</body>
+</html>

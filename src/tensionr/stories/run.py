@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from tensionr.config import MIN_EVALUABLE, MIN_POLITIES
 from tensionr.stories import cluster, identity, measure, window
 from tensionr.stories.polity import PolityTable
 from tensionr.stories.wikidata import load as load_aliases
@@ -121,6 +122,9 @@ def run(
             for e in ("created", "merged", "split", "dormant")
         },
         "polities": places.coverage(sorted({r["domain"] for r in records})),
+        # A run publishes what it decided, not only what it produced: the page states
+        # these when nothing clears them, and must not keep its own copy of them.
+        "floors": {"evaluable": MIN_EVALUABLE, "polities": MIN_POLITIES},
         "published": {"stories": len(stories), "with_a_band": len(measurable)},
     }
 
