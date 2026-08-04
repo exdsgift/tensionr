@@ -429,6 +429,38 @@ def legend(hero: dict[str, Any] | None, plotted: int, names: dict) -> str:
     )
 
 
+def selection_note(report: dict[str, Any], featured: int) -> str:
+    """What span the page selected over, and what the span could not reach.
+
+    "Of the day" and "of this window" are different claims and the page said neither. It
+    now says which, and how many stories that were divided during the day the current
+    window no longer carries — that number is what decides whether rebuilding an absent
+    story's evidence from the capture is worth building, and publishing it is how the
+    decision gets made on data rather than on a guess (#66).
+    """
+    span = report.get("selection")
+    if not span or not span.get("runs_in_span"):
+        return (
+            f"The {featured} most divided stories in this window, written up. The rest "
+            "cleared the floors and are listed below them."
+        )
+    text = (
+        f"The {featured} most divided stories of the last {span['span_hours']} hours, "
+        f"ranked by the widest division each reached over that span rather than by this "
+        f"window alone — {span['candidates']} candidates across {span['runs_in_span']} "
+        "runs."
+    )
+    gone = span.get("gone_from_the_window")
+    if gone:
+        widest = span.get("widest_gone")
+        text += (
+            f" {gone} of them are no longer carried by the current window and were not "
+            "eligible"
+        )
+        text += f", the widest at a division of {widest}." if widest else "."
+    return text
+
+
 def _never_reached(report: dict[str, Any]) -> str:
     """What the grouping threw away, published rather than absorbed.
 
@@ -548,7 +580,16 @@ def render(
     names = names or {}
     narrow = narrow or coastline
     banded = [s for s in stories["stories"] if s.get("band") and s.get("evidence")]
-    banded.sort(key=lambda s: -_lead(s)["division"])
+    # The engine chooses which stories are written up when it can see a day of history
+    # (#66); ranked by the peak division over that day, not by this window's snapshot.
+    # Without that history the page falls back to ranking what it has, which is what it
+    # did before and is still correct for a single window.
+    if any(s.get("featured") for s in banded):
+        banded.sort(
+            key=lambda s: (not s.get("featured"), -(s.get("span_division") or 0.0))
+        )
+    else:
+        banded.sort(key=lambda s: -_lead(s)["division"])
     hero = banded[0] if banded else None
     marks, plotted = panel(hero, coordinates, coastline) if hero else ([], 0)
     narrow_marks = panel(hero, coordinates, narrow)[0] if hero else []
@@ -596,6 +637,9 @@ def render(
             .replace("@@POLITY_RATE@@", f"{report['polities']['rate']:.0%}")
             .replace("@@SLOTS@@", str(report["window"]["slots"]))
             .replace("@@SINCE@@", since_previous(stories))
+            .replace(
+                "@@SELECTION@@", selection_note(report, min(FEATURED, len(banded)))
+            )
             .replace("@@WHEN@@", stamp.strftime("%-d %b · %H:%M UTC"))
             .replace("@@ROWS@@", rows)
             .replace("@@FOOT@@", foot + note)
