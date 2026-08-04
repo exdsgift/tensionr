@@ -34,6 +34,16 @@ from tensionr.stories.marks import PRESENT, UNRESOLVED
 # needs python-dotenv, which the site assembly deliberately does not have. One home.
 LEDGER_BUDGET_BYTES = 250 * 1024
 
+# How many stories are written up rather than merely listed (#29, decision 6). Five,
+# chosen by the project owner: sixteen thin rows read worse than five substantial ones,
+# and the reconstruction and generation each story needs is the binding cost, so the
+# number is a budget as much as a reading choice.
+#
+# The rest are kept as compact rows. Dropping them would turn a measurement into an
+# editorial selection, and the page's standing rule is to publish its limits: "13 stories
+# cleared the floors, 5 are written up" is a limit, and it is stated.
+FEATURED = 5
+
 logger = logging.getLogger(__name__)
 
 COLUMN_HEADS = """    <div class="grid colhead">
@@ -237,13 +247,36 @@ def headline(story: dict[str, Any]) -> str:
     return text
 
 
+def compact_row(story: dict[str, Any], names: dict[str, str]) -> str:
+    """A story that cleared the floors but is not written up.
+
+    The figures and nothing else. It is here so the page can be read as a ledger rather
+    than a front page: five stories are explained, and the reader can see how many more
+    the run measured without being told they do not exist.
+    """
+    figure = _lead(story)
+    return f"""    <div class="row quiet">
+      <div class="grid">
+        <span class="title">{headline(story)}
+          <small>{story["sources"]} sources · {len(story["polities"])} polities · division {figure["division"]:.3f}</small></span>
+        <span class="cell num" data-l="sources">{story["sources"]}</span>
+        <span class="cell num" data-l="polities">{len(story["polities"])}</span>
+        <span class="actors">{row_counts(story, names)}</span>
+      </div>
+    </div>
+"""
+
+
 def story_row(
     story: dict[str, Any],
     names: dict[str, str],
     *,
     first: bool,
+    featured: bool = True,
     with_evidence: bool = True,
 ) -> str:
+    if not featured:
+        return compact_row(story, names)
     figure = _lead(story)
     unresolved = figure["unresolved"]
     note = (
@@ -396,28 +429,36 @@ def transfer_bytes(page: str) -> int:
 def _fit(
     banded: list[dict[str, Any]], names: dict[str, str], build_page, budget: int
 ) -> tuple[str, int]:
-    """Rows for every story, with evidence for as many as the budget allows.
+    """The featured stories written up, the rest listed, inside the weight budget.
 
-    Every story that cleared the floors keeps its row and its figures — those are the
-    run's claim and they cost about a kilobyte each. What is bounded is the evidence
-    table, which is 92% of the page's weight and grows with how busy the news is rather
-    than with the code. Dropped from the *narrowest* divisions first, so what goes is
-    what the page was least interested in, and the count is stated on the page: a cap
-    nobody is told about reads as "this is everything".
+    Two separate bounds. The first is editorial: `FEATURED` stories carry their prose and
+    their sources, and every other story that cleared the floors keeps a compact row —
+    its figures are the run's claim and cost about a kilobyte. The second is the weight
+    budget, which can still bite on the featured few when the news is busy, and then
+    evidence goes from the *narrowest* division first. Either way the count that lost its
+    sources is stated on the page, because a cap nobody is told about reads as "this is
+    everything".
     """
-    for dropped in range(len(banded)):
-        keep = len(banded) - dropped
+    featured = min(FEATURED, len(banded))
+    for dropped in range(featured + 1):
+        keep = featured - dropped
         rows = COLUMN_HEADS + "".join(
-            story_row(s, names, first=i == 0, with_evidence=i < keep)
+            story_row(
+                s,
+                names,
+                first=i == 0,
+                featured=i < featured,
+                with_evidence=i < keep,
+            )
             for i, s in enumerate(banded)
         )
         weighed = transfer_bytes(build_page(rows, dropped))
-        if weighed <= budget or dropped == len(banded) - 1:
+        if weighed <= budget or dropped == featured:
             if dropped:
                 logger.info(
-                    "evidence dropped from %d of %d rows to stay inside %d KB gzipped",
+                    "evidence dropped from %d of %d featured rows to stay inside %d KB",
                     dropped,
-                    len(banded),
+                    featured,
                     budget // 1024,
                 )
             return rows, dropped
