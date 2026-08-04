@@ -137,8 +137,20 @@ def _lead(story: dict[str, Any]) -> dict[str, Any]:
 
 
 def evidence_table(story: dict[str, Any], names: dict[str, str]) -> str:
+    """Every source, one row each, in a table that keeps its columns.
+
+    The table is wider than a phone and stays that way. Six columns of which one is a
+    headline cannot be folded into 320 pixels without either wrapping the rows into
+    cards — which drops the table semantics browsers expose to a screen reader, and
+    with them the row/column relationship that is the whole point of showing the
+    evidence — or hiding columns, which here means hiding the marks the page exists to
+    publish. So it scrolls sideways inside its own box, and the box is made operable:
+    `tabindex=0` plus a role and a name, because a region only a mouse or a finger can
+    reach fails SC 2.1.1 — Safari still does not make scrollers focusable by itself, and
+    neither does Chrome once a scroller has a focusable child (#51).
+    """
     actors = story["band"]
-    head = "".join(f'<th class="m">{name(a, names)}</th>' for a in actors)
+    head = "".join(f'<th class="m" scope="col">{name(a, names)}</th>' for a in actors)
     body = []
     for row in story.get("evidence", []):
         marks = "".join(
@@ -151,9 +163,17 @@ def evidence_table(story: dict[str, Any], names: dict[str, str]) -> str:
             f'<td class="pol">{esc(row["polity"] or "—")}</td>'
             f'{marks}<td class="hl" dir="auto">{esc(row["title"][:160])}</td></tr>'
         )
+    # The region's name is the table's own caption, referenced rather than restated, so
+    # a screen reader announces one name for the scroller and the table it holds. The
+    # caption is clipped rather than display:none — an off-screen caption still names
+    # the table, and being out of flow it cannot widen it (CAPMIN).
+    cap = f"ev-cap-{esc(story['id'])}"
+    caption = f"{len(story.get('evidence', []))} sources, and who each one named"
     return (
-        '<div class="ev-scroll"><table class="src"><thead><tr>'
-        f"<th>Source</th><th>Polity</th>{head}<th>Headline</th>"
+        f'<div class="ev-scroll" tabindex="0" role="region" aria-labelledby="{cap}">'
+        f'<table class="src"><caption class="vh" id="{cap}">{caption}</caption>'
+        f'<thead><tr><th scope="col">Source</th><th scope="col">Polity</th>{head}'
+        f'<th scope="col">Headline</th>'
         f"</tr></thead><tbody>{''.join(body)}</tbody></table></div>"
     )
 
@@ -342,7 +362,7 @@ def legend(hero: dict[str, Any] | None, plotted: int, names: dict) -> str:
         '<span><span style="color:var(--grey)">○</span> carried it, did not</span>\n'
         '        <span class="dim">pulse = signal received</span>\n        '
         f'<span class="dim">{plotted} of {len(hero["polities"])} plotted</span>'
-        '<span class="dim">hover a point</span>'
+        '<span class="dim">tap or hover a point</span>'
     )
 
 
@@ -411,13 +431,28 @@ def render(
     template: str,
     names: dict[str, str] | None = None,
     budget: int = LEDGER_BUDGET_BYTES,
+    narrow: dict[str, Any] | None = None,
 ) -> str:
-    """One page from one run, whether or not the run produced a figure."""
+    """One page from one run, whether or not the run produced a figure.
+
+    Two coastlines, because a 76-character map is not a smaller map at 380 CSS pixels,
+    it is the same map at an illegible size: 76 characters of braille need 52 times the
+    font size in pixels, so filling a 358-pixel column asks for 6.9px type and leaves
+    each dot under a pixel of ink. The narrow map is a different artefact — half the
+    resolution on both axes at the same crop — and the page picks between them with a
+    media query so the choice survives with scripting off. Both carry their own
+    projection fields and each set of markers is derived from the map it belongs to
+    (#41): a marker computed against the wrong map is exactly the defect that produced
+    that rule. `narrow=None` means one map for every width, which is what a caller with
+    a single rasterisation gets.
+    """
     names = names or {}
+    narrow = narrow or coastline
     banded = [s for s in stories["stories"] if s.get("band") and s.get("evidence")]
     banded.sort(key=lambda s: -_lead(s)["division"])
     hero = banded[0] if banded else None
     marks, plotted = panel(hero, coordinates, coastline) if hero else ([], 0)
+    narrow_marks = panel(hero, coordinates, narrow)[0] if hero else []
     report = stories["report"]
     stamp = dt.datetime.strptime(stories["run"], "%Y%m%dT%H%M%SZ").replace(
         tzinfo=dt.UTC
@@ -449,6 +484,10 @@ def render(
             .replace("@@MAP_W@@", str(coastline["width"]))
             .replace("@@MAP_H@@", str(coastline["height"]))
             .replace("@@PANEL@@", json.dumps(marks, ensure_ascii=False))
+            .replace("@@MAP_N@@", "\n".join(narrow["rows"]))
+            .replace("@@MAP_N_W@@", str(narrow["width"]))
+            .replace("@@MAP_N_H@@", str(narrow["height"]))
+            .replace("@@PANEL_N@@", json.dumps(narrow_marks, ensure_ascii=False))
             .replace("@@HOOK@@", hook(hero, report, names))
             .replace("@@LEGEND@@", legend(hero, plotted, names))
             .replace("@@BANDED@@", str(report["published"]["with_a_band"]))
@@ -478,15 +517,17 @@ def build(data: Path, out: Path, budget: int = LEDGER_BUDGET_BYTES) -> Path:
     template = (
         resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
     )
+    maps = data / "map"
     page = render(
         json.loads((data / "stories.json").read_text("utf-8")),
-        json.loads((data / "map" / "coastline.json").read_text("utf-8")),
+        json.loads((maps / "coastline.json").read_text("utf-8")),
         json.loads((data / "polities" / "coordinates.json").read_text("utf-8"))[
             "polities"
         ],
         template,
         labels(data),
         budget,
+        narrow=json.loads((maps / "coastline-narrow.json").read_text("utf-8")),
     )
     out.write_text(page, "utf-8")
     logger.info(
