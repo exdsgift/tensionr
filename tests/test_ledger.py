@@ -264,6 +264,7 @@ TEMPLATE = """<!doctype html><title>t</title>
 <pre id="globe">@@MAP@@</pre>
 <pre id="globe-n">@@MAP_N@@</pre>
 <div class="cap">@@LEGEND@@</div>
+<p class="span">@@SELECTION@@</p>
 <div class="agg">@@BANDED@@ of @@STORIES@@ · @@ARTICLES@@ · @@POLITY_RATE@@ · @@SLOTS@@ · @@SINCE@@</div>
 @@ROWS@@
 <div class="foot">@@FOOT@@</div>
@@ -488,17 +489,15 @@ def many(n):
 def test_the_page_stays_inside_its_budget_by_dropping_the_narrowest_evidence():
     page = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
     assert transfer_bytes(page) <= BITES
-    # every story still has a row: the figures are the run's claim, not the evidence
-    assert (
-        page.count('<details class="row"') + page.count('<div class="row quiet">') == 40
-    )
+    # five rows regardless: the budget takes evidence, never a story
+    assert page.count('<details class="row"') == FEATURED
     assert "are not on this page" in page
 
 
 def test_the_widest_split_keeps_its_evidence_when_the_budget_bites():
     page = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
     first = page.index("Story 0")
-    last = page.index(f"Story {FEATURED}")
+    last = len(page)
     assert 'class="ev-scroll"' in page[first:last]  # the hero kept its table
     assert 'class="ev-scroll"' not in page[last:]  # past the featured few, none does
 
@@ -561,37 +560,44 @@ def test_a_headline_with_no_language_recorded_is_not_labelled():
     assert headline({"headline": "He left Russia"}) == "He left Russia"
 
 
-def test_only_the_featured_stories_are_written_up():
-    """Decision 6: five are explained, the rest are listed but never dropped."""
+def test_only_the_featured_stories_appear_at_all():
+    """The owner asked for five stories and nothing else."""
     page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert page.count('<details class="row"') == FEATURED
-    assert page.count('<div class="row quiet">') == 12 - FEATURED
-
-
-def test_every_story_that_cleared_the_floors_keeps_a_row():
-    """Dropping them would turn a measurement into an editorial selection."""
-    page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES)
-    for i in range(12):
+    for i in range(FEATURED):
         assert f"Story {i}" in page
+    for i in range(FEATURED, 12):
+        assert f"Story {i}" not in page
 
 
-def test_a_compact_row_carries_the_figures_and_no_evidence():
+def test_the_limit_is_still_published_even_though_the_rows_are_not():
+    """A page showing five of twelve without saying so is an editorial selection.
+
+    The rows went; the count did not. Dropping both would be the failure.
+    """
+    from importlib import resources
+
+    real = (
+        resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
+    )
+    # the strip carries the count and the note carries the span; the rows carry neither
+    assert "Stories with a band" in real
+    assert "@@BANDED@@ of @@STORIES@@" in real
+    assert "@@SELECTION@@" in real
+
     page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES)
-    tail = page[page.index("Story 11") - 400 :]
-    assert "division" in tail
-    assert "ev-scroll" not in tail
+    assert "most divided" in page
 
 
 def test_fewer_stories_than_featured_is_not_an_error():
     page = render(run(many(2)), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert page.count('<details class="row"') == 2
-    assert '<div class="row quiet">' not in page
 
 
 def test_the_budget_still_bites_on_the_featured_few():
     page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
     assert transfer_bytes(page) <= BITES
-    assert page.count('<div class="row quiet">') == 12 - FEATURED
+    assert page.count('<details class="row"') == FEATURED
     assert "are not on this page" in page
 
 
