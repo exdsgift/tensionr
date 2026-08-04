@@ -399,6 +399,34 @@ def legend(hero: dict[str, Any] | None, plotted: int, names: dict) -> str:
     )
 
 
+def _never_reached(report: dict[str, Any]) -> str:
+    """What the grouping threw away, published rather than absorbed.
+
+    #13 decided the page publishes the count of articles that never reached a measurable
+    story. Most of a window does not: an article has to join a theme, the theme has to
+    yield a story, and the story has to clear two floors. Stating only the survivors
+    would make the corpus look like the sample.
+    """
+    grouped = report.get("grouping", {})
+    kept = grouped.get("articles_in_stories")
+    total = report.get("window", {}).get("articles")
+    if not kept or not total:
+        return ""
+    dropped = total - kept
+    text = (
+        f"{dropped:,} of those articles never reached a story at all — "
+        f"{100 * dropped / total:.0f}% — because they joined no theme, or joined one "
+        "too uniform to separate."
+    )
+    unsplit = grouped.get("unsplit_themes")
+    if unsplit:
+        text += (
+            f" {unsplit} themes were dropped whole for being near-duplicates at every "
+            "resolution."
+        )
+    return text
+
+
 def since_previous(stories: dict[str, Any]) -> str:
     """How long since the run before this one, measured rather than promised.
 
@@ -505,6 +533,7 @@ def render(
         f"grouped into {report['grouping']['themes']} themes and "
         f"{report['grouping']['stories']} stories, of which "
         f"{report['published']['with_a_band']} cleared both floors. "
+        f"{_never_reached(report)} "
         f"{report['polities']['rate']:.0%} of domains could be placed in a polity, and "
         "the rest are counted rather than dropped. Stories keep their identity between "
         "runs by sharing article URLs, so a story that grows stays the same story. "
