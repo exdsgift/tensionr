@@ -106,13 +106,47 @@ def test_two_stage_splits_a_theme_into_stories():
     assert len(assigned) == len(set(assigned))
 
 
-def test_two_stage_records_a_theme_it_cannot_split():
-    # Twelve identical vectors: no resolution separates them, so the theme is
-    # reported as unsplit rather than emitted whole.
+def test_a_theme_too_small_to_split_is_one_story():
+    """It could never have been split, so discarding it discarded a real story.
+
+    A valid split needs a component at or above `min_story` while the largest stays
+    under `story_max_share` of the theme — so at least `min_story / story_max_share`
+    articles. Below that the two constants contradict each other, and every such theme
+    was admitted and then thrown away: 287 of 497 themes and 2,928 articles on one
+    measured window.
+    """
     vectors = np.tile(np.eye(1, 8, dtype=np.float32), (12, 1))
-    result = two_stage(vectors, theme_max_share=1.0, story_max_share=0.3)
+    result = two_stage(vectors, theme_max_share=1.0, story_max_share=0.3, min_story=5)
+    assert [len(s) for s in result["stories"]] == [12]
+    assert result["indivisible_themes"] == 1
+    assert result["unsplit_themes"] == 0
+
+
+def test_a_large_theme_that_cannot_split_is_still_dropped():
+    """For a big group, emitting it whole is the over-merge the second pass prevents."""
+    vectors = np.tile(np.eye(1, 8, dtype=np.float32), (40, 1))
+    result = two_stage(vectors, theme_max_share=1.0, story_max_share=0.3, min_story=5)
     assert result["stories"] == []
     assert result["unsplit_themes"] == 1
+    assert result["indivisible_themes"] == 0
+
+
+def test_a_theme_below_the_story_floor_is_not_rescued():
+    """Small enough to be indivisible is not the same as big enough to be a story."""
+    vectors = np.tile(np.eye(1, 8, dtype=np.float32), (4, 1))
+    result = two_stage(
+        vectors, theme_max_share=1.0, story_max_share=0.3, min_theme=3, min_story=5
+    )
+    assert result["stories"] == []
+    assert result["indivisible_themes"] == 0
+
+
+def test_the_run_reports_how_many_articles_never_reached_a_story():
+    """#13 decided this is published. It was not, so the loss had to be instrumented."""
+    vectors = np.tile(np.eye(1, 8, dtype=np.float32), (40, 1))
+    result = two_stage(vectors, theme_max_share=1.0, story_max_share=0.3, min_story=5)
+    assert result["articles"] == 40
+    assert result["articles_in_stories"] == 0
 
 
 def test_two_stage_on_an_empty_window():

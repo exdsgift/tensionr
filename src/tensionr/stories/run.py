@@ -164,7 +164,12 @@ def run(
             "theme_threshold": grouped["theme_threshold"],
             "themes": grouped["themes"],
             "unsplit_themes": grouped["unsplit_themes"],
+            "indivisible_themes": grouped.get("indivisible_themes", 0),
             "stories": len(clusters),
+            # #13 decided the page publishes the count of articles that never reached a
+            # measurable story. Until this landed it did not, and the loss had to be
+            # found by instrumenting the clustering by hand.
+            "articles_in_stories": grouped.get("articles_in_stories", 0),
         },
         "identity": {
             e: sum(1 for x in reconciled["events"] if x["type"] == e)

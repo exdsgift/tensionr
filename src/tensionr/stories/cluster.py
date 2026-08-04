@@ -197,26 +197,51 @@ def two_stage(
         if index is not None and index == theme_of.get(b):
             buckets[index].append((local_of[a], local_of[b], score))
 
+    # A theme this small could never have been split, whatever its contents: a valid
+    # split needs some component at or above `min_story` while the largest stays under
+    # `story_max_share` of the theme, so it needs at least `min_story / story_max_share`
+    # articles — 14.3 at the shipped constants, against a `min_theme` of 8. Every theme
+    # between those two numbers was admitted and then discarded, and on one measured
+    # window that was 287 of 497 themes and 2,928 articles. Such a theme is emitted
+    # whole, because for a group this small "whole" is not the over-merge the second pass
+    # exists to prevent — that concern is about large themes, and they are still dropped.
+    indivisible = min_story / story_max_share if story_max_share > 0 else 0
+
     stories: list[list[int]] = []
     chosen: list[float] = []
     unsplit = 0
+    indivisible_kept = 0
     for theme, inner in zip(themes, buckets, strict=True):
         threshold = select_threshold(
             inner, len(theme), max_share=story_max_share, floor=theme_threshold
         )
-        if threshold is None:
-            # Near-duplicates at every resolution inside this theme. Recorded and
-            # skipped: emitting it whole would be the over-merge the second pass exists
-            # to prevent.
+        groups: list[list[int]] = []
+        if threshold is not None:
+            chosen.append(threshold)
+            groups = [
+                g
+                for g in components(inner, len(theme), threshold)
+                if len(g) >= min_story
+            ]
+
+        if groups:
+            stories.extend([theme[i] for i in g] for g in groups)
+        elif len(theme) < indivisible and len(theme) >= min_story:
+            stories.append(list(theme))
+            indivisible_kept += 1
+        else:
+            # Large and dominated by near-duplicates at every resolution. Dropped, and
+            # counted, because emitting it whole really would over-merge.
             unsplit += 1
-            continue
-        chosen.append(threshold)
-        for group in components(inner, len(theme), threshold):
-            if len(group) >= min_story:
-                stories.append([theme[i] for i in group])
 
     logger.info(
-        "stories: %d from %d themes (%d unsplit)", len(stories), len(themes), unsplit
+        "stories: %d from %d themes (%d indivisible kept whole, %d dropped as "
+        "over-merged, %d articles never reached a story)",
+        len(stories),
+        len(themes),
+        indivisible_kept,
+        unsplit,
+        n - sum(len(g) for g in stories),
     )
     return {
         "stories": stories,
@@ -224,4 +249,11 @@ def two_stage(
         "story_thresholds": chosen,
         "themes": len(themes),
         "unsplit_themes": unsplit,
+        "indivisible_themes": indivisible_kept,
+        # #13 decided the page publishes the count of articles that never reached a
+        # measurable story. It never did, which is why the loss had to be found by
+        # instrumenting the clustering by hand: 7,227 discarded against 5,549 kept on
+        # the window that exposed it.
+        "articles": n,
+        "articles_in_stories": sum(len(g) for g in stories),
     }
