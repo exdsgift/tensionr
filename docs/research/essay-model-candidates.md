@@ -60,24 +60,30 @@ settle the remaining questions and states what it would cost.
    **145 essays a month on the free credit**. Five new featured stories a day is 150 a month. The
    free tier covers the requirement with no margin at all.
 
-4. **There is one genuinely zero-priced route, and I do not trust it yet.**
-   `prism-ml/Ternary-Bonsai-27B-gguf` — a ternary (1.71 bits/weight) quantisation of Qwen3.6-27B,
-   Apache-2.0, 761,269 downloads — is listed by Together at `pricing.input: 0`,
-   `pricing.output: 0`, 262,144 context, 312 ms to first token. It would make the whole question
-   free at 27B-class quality. But the same record says `is_free: false`, which contradicts the price;
-   the provider does not advertise structured output for it; and **it has no multilingual evaluation
-   of any kind** (§5.6). §9.1 says what would settle it.
+4. **There is one genuinely zero-priced route, and the provider says in its own words that it is
+   free.** `prism-ml/Ternary-Bonsai-27B-gguf` — a ternary (1.71 bits/weight) quantisation of
+   Qwen3.6-27B, Apache-2.0, 761,269 downloads — is listed by Together at `pricing.input: 0`,
+   `pricing.output: 0`, 262,144 context, 312 ms to first token, and Together's own model page states
+   three times *"Available free on Together AI serverless infrastructure"* with a *"99.9% SLA"*. It
+   would make the whole question free at 27B-class quality. Three cautions: HF's own router record
+   says `is_free: false` alongside the zero price, which is a contradiction; Together's pricing table
+   gives the input price as 0.00 with the **output** field unset rather than zero, so output may not
+   be free (immaterial here — the essay generates ~400 tokens); and **it has no multilingual
+   evaluation of any kind** (§5.6). §9.1 says what would settle it.
 
-5. **Route 3 — weights in the runner — is not obviously dead, and #63's reason for rejecting it was
-   the weaker of the two available reasons.** #63 rejected local weights because *"nothing that fits
-   in a runner with 4 vCPU, 16 GB and no GPU reads that set at a level worth publishing"*. That
-   reasoning is about quality. The harder objection is arithmetic: prefill on a GPU-less 4-vCPU
-   runner costs `2·N·T` FLOPs plus a quadratic attention term, and the quadratic term is what bites —
-   at 450,000 tokens it is **16× the weight term** for a 4B model, so parameter count stops being the
-   binding variable (§4.3). But the same low-bit 27B build in finding 4 changes that picture too: a
-   **7.15 GB resident footprint** and a **~75% linear-attention backbone** put a 27B-class model
-   inside 16 GB with the full 262K window at ~12.8 GB peak, and remove most of the quadratic cost.
-   Whether it prefills fast enough is the one number nobody has published (§9.2).
+5. **Route 3 — weights in the runner — fails on two grounds, and #63's stated reason was the weakest
+   of the three available.** #63 rejected local weights because *"nothing that fits in a runner with
+   4 vCPU, 16 GB and no GPU reads that set at a level worth publishing"*. That reasoning is about
+   quality. The second objection is arithmetic: prefill costs `2·N·T` FLOPs plus a quadratic attention
+   term, and the quadratic term is what bites — at 450,000 tokens it is **16× the weight term** for a
+   4B model, so parameter count stops being the binding variable (§4.3). The third objection is
+   contractual and does not depend on any measurement: 100+ CPU-hours a day of model inference fits
+   every documented GitHub quota and fails the Actions terms' *"burden … disproportionate to the
+   benefits"* clause, whose remedies reach the account that also publishes the site (§4.3). The
+   low-bit 27B build in finding 4 weakens the second objection — a **7.15 GB resident footprint** and
+   a **~75% linear-attention backbone** put a 27B-class model inside 16 GB at the full 262K window —
+   but not the third, and whether it prefills fast enough is the one number nobody has published
+   (§9.2).
 
 6. **This does not reopen #63, and I want to be exact about why.** #63's decision — hosted, over the
    network, one call per essay, generated once and kept — survives, and finding 3 vindicates it: the
@@ -396,6 +402,51 @@ request path reaches it, exactly as #63 recorded. Unauthenticated calls return *
 body**, not JSON, so a naive `response.json()` in error handling raises a parse error rather than
 surfacing the status.
 
+**Exhaustion returns HTTP 402, and the provenance of that needs stating.** There is **no
+error-handling page in the Inference Providers docs** — `.../inference-providers/errors` is a 404, and
+enumerating the whole doc set confirms one has never been published. The status code and message come
+from Hugging Face's own forum, corroborated by a Hugging Face staff reply in the same thread
+confirming the trigger condition:
+
+> 402 Client Error: Payment Required for url: https://router.huggingface.co/…
+
+> You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get
+> 20x more monthly included credits.
+
+— [discuss.huggingface.co/t/148414](https://discuss.huggingface.co/t/148414) and
+[/t/148551](https://discuss.huggingface.co/t/148551). Reported in 2025, so the wording may have
+moved; the 20× ratio is consistent with $0.10 → $2.00. **This is the answer to what happens when the
+model is unavailable mid-run**, and it is the right failure for this project: a distinct status code,
+on a hard stop, with no silent billing.
+
+**Automated scheduled use is permitted, and it is more than "not prohibited".** The Terms of Service
+(effective 2022-09-15) contain no clause on automation, bots, scraping, rate limits, resale or fair
+use — no prohibited-conduct section at all. The [Inference Services Supplemental Terms](https://cdn-media.huggingface.co/landing/assets/Supplemental+Terms+-+Inference+Services.pdf)
+(effective 2025-04-28, which prevail over the ToS on conflict) define the service affirmatively as
+programmatic: *"a machine learning model inference service **allowing to run inference
+programmatically**"*. And Hugging Face publishes a first-party guide,
+[*Automating Code Review with GitHub Actions*](https://huggingface.co/docs/inference-providers/guides/github-actions-code-review),
+which walks through storing an `HF_TOKEN` as a repository secret and calling the router from a
+workflow — and whose only warning about public repositories is about **cost control and who may
+trigger the job**, not about permission.
+
+Two smaller things worth recording. The credit is framed as being *"to experiment"*, but that is the
+only appearance of the framing and the same page endorses *"production workloads"* in the next
+paragraph, so the allowance is a **quantity**, not a **purpose** — nothing conditions it on the use
+being evaluation. And the Supplemental Terms say access *"is available to Users for personal use and
+to Organization accounts"*; that reads as naming which account types may access the service rather
+than imposing a non-commercial limit, and nothing elsewhere develops it into a restriction — but it
+is the only string in the corpus a scope objection could hang on, and **owning the token under an
+Organization account removes the ambiguity at zero cost**.
+
+**There is no other free route on Hugging Face.** Free CPU Spaces are no longer free to create:
+*"CPU Basic has no hourly cost, but creating a new Space that runs on compute (Gradio or Docker)
+requires a paid plan. Static Spaces are free for everyone."* ZeroGPU is genuinely free (2 Spaces for
+free accounts in good standing) but capped at **5 GPU-minutes a day** for a free account, Gradio-only,
+60 s default per call — enough for a handful of essays and nothing more. HF Jobs requires *"a positive
+credit balance"*. And GitHub's own hosted inference is not an alternative either:
+**GitHub Models was fully retired on 2026-07-30** and `models.github.ai` now returns HTTP 410.
+
 ### 4.2 Route 2 — dedicated inference endpoints
 
 Excluded by the constraint, and the exclusion is on the face of the pricing page: Inference Endpoints
@@ -498,11 +549,43 @@ rows only (M4 Pro `pp512` 125 t/s, M5 Max 830, H100 2596) and **no x86 CPU row**
 100,000 tokens per essay depending on a number nobody has measured — which is 180 to 450 characters
 per source. **It is worse than Route 1 at every point in the band, and Route 1 is free too.**
 
-**Two non-technical facts about Route 3.** Gated repositories need a token from an account that has
-individually accepted each model's terms — `meta-llama/*` and `google/gemma-3-*` are `gated=manual`,
-meaning a human reviews the request, which can block a pipeline for days. And five parallel 6-hour
-jobs several times a day is on the order of 100+ CPU-hours a day of neural inference on free
-runners; whether GitHub's Actions restrictions reach that is §9.4.
+**Route 3 fits every documented quota and fails the terms.** This is the finding that decides it
+independently of any throughput number, so it is worth setting out in full. Five parallel jobs is
+inside the 20-concurrent limit on the Free plan, minutes are *"free and unlimited on public
+repositories"*, and there is no documented monthly cap for public repositories at all. But the
+billing docs themselves route the permission question elsewhere — *"In addition to the usage limits,
+you must ensure that you use GitHub Actions within the GitHub Terms of Service"* — and the
+[Terms for Additional Products and Features](https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features)
+say Actions **should not be used for**, among five disjunctive items:
+
+> Any activity that places a burden on our servers, where that burden is disproportionate to the
+> benefits provided to users (for example, don't use Actions as a content delivery network **or as
+> part of a serverless application**, but a low benefit Action could be ok if it's also low burden)
+
+and, separately and without any public-repository qualification:
+
+> *Use for Development and Testing* — You may only access and use GitHub Actions to develop and test
+> your application(s).
+
+The clause's own test is a **ratio**, and 100+ CPU-hours a day of neural inference for a handful of
+300-word essays is about the worst ratio this workload could present; the escape hatch it offers —
+*"a low benefit Action could be ok if it's also low burden"* — is forfeited by the premise. The
+fifth item, *"any other activity unrelated to the production, testing, deployment, or publication of
+the software project associated with the repository"*, is genuinely arguable when the repository *is*
+the site, but the burden clause does not need it. **This is a reading, not a settled answer** — GitHub
+has published nothing on model inference on runners specifically, and its documented enforcement
+writing is about cryptomining. §9.4 says how to settle it.
+
+**The failure modes are not symmetric, and this is the strongest reason to prefer Route 1.** Route 1's
+worst case is a 402 and no essay that month. Route 3's stated remedies are *"termination of jobs,
+restrictions in your ability to use GitHub Actions, disabling of repositories created to run Actions
+in a way that violates these Terms, or in some cases, suspension or termination of your GitHub
+account."* The same account publishes the site through Pages. **Route 1 risks the essays; Route 3
+risks the website.**
+
+**One more operational fact.** Gated repositories need a token from an account that has individually
+accepted each model's terms — `meta-llama/*` and `google/gemma-3-*` are `gated=manual`, meaning a
+human reviews the request, which can block a pipeline for days.
 
 ---
 
@@ -845,10 +928,13 @@ The reasoning, in the order it decided me:
    few seconds, not the hours Route 3 needs.
 4. **Apache-2.0, ungated, no output obligation, no attribution duty.** Nothing to negotiate and
    nothing to display beyond the machine-written label that §6.6 recommends regardless.
-5. **Route 3 is dominated.** The same 4B class, run locally, reads *fewer* characters per source
-   (548 at the central throughput estimate, 183 at the pessimistic one), takes hours instead of
-   seconds, needs 100+ CPU-hours a day of free runner time whose acceptability is unestablished
-   (§9.4), and is free in exactly the same sense that Route 1 is. There is no axis on which it wins.
+5. **Route 3 is dominated on every axis, including the one that is not about capability.** The same 4B
+   class, run locally, reads *fewer* characters per source (548 at the central throughput estimate,
+   183 at the pessimistic one), takes hours instead of seconds, and is free in exactly the same sense
+   Route 1 is. And it fits every documented GitHub quota while failing the Actions terms on a reading
+   I would not want to test (§4.3) — where the stated remedies reach the account that also publishes
+   the site. **Route 1 risks the essays; Route 3 risks the website.** There is no axis on which it
+   wins.
 
 **What I am recommending against, and it should be said plainly.** This is a 4B model doing a job
 that the evidence says a 27B model does 17 points better in Greek, and a frontier model 31 points
@@ -876,12 +962,17 @@ class.**
 
 ## 9. What could not be determined
 
-**9.1 Whether `prism-ml/Ternary-Bonsai-27B-gguf` is genuinely free.** The router reports
-`pricing: {input: 0, output: 0}` and `is_free: false` on the same record, which is a contradiction. A
-zero price may mean "free" or may mean "unset". *Settled by:* one authenticated call to
-`together` for that model, then reading `https://huggingface.co/settings/billing`. Cost if it is not
-free: at 262,144 tokens and the most expensive plausible rate on the board ($0.09/M), one call is
-$0.024.
+**9.1 Whether `prism-ml/Ternary-Bonsai-27B-gguf` is free *through the Hugging Face router*.** Together
+says it is free on Together — three times, on its own model page, with a 99.9% SLA — and HF charges
+*"the same rates as the provider, with no additional fees"*, so pass-through of $0.00 should be $0.00.
+Against that: HF's router record says `is_free: false` beside the zero price, and if the router gates
+on that flag rather than on computed cost, calls could be refused once the $0.10 is spent elsewhere.
+This is the most consequential open question in the document — it is the difference between 145
+essays a month and an unbounded number, at 27B rather than 4B. *Settled by:* one authenticated call,
+then `https://huggingface.co/settings/billing` before and after to see whether the balance moves; then
+deliberately exhausting the $0.10 on a priced model and calling again. **That last step is the actual
+answer.** Cost if it is not free: at 262,144 tokens and the most expensive plausible rate on the board
+($0.09/M), one call is $0.024.
 
 **9.2 Prefill throughput on a GitHub runner.** No `llama-bench` prompt-processing figure exists at 4
 threads on x86, and none on an Actions runner. My 100–500 GFLOP/s band is an extrapolation from
@@ -895,12 +986,14 @@ defines exactly three buckets — Hub APIs, Resolvers, Pages — and never menti
 binding limit, not a request rate, but this is an assumption. *Settled by:* one authenticated router
 call, inspecting the response for `RateLimit` and `RateLimit-Policy` headers.
 
-**9.4 Whether GitHub's Actions restrictions reach 100+ CPU-hours a day of model inference.** "Free
-and unlimited on public repositories" is quoted from the docs, but the Additional Product Terms limit
-Actions to activity related to the repository's software project. Whether generating website content
-with a neural network falls inside that is a reading, not a settled answer, and it bears only on
-Route 3, which I am recommending against anyway. *Settled by:* asking GitHub Support, or not taking
-Route 3.
+**9.4 Whether GitHub would actually enforce its Actions terms against model inference.** The clause is
+established and quoted in §4.3, and on my reading Route 3 fails it — but that is inference from the
+text. GitHub has published nothing addressing LLM inference on runners; its documented enforcement
+writing concerns cryptomining, where it says it has *"spent thousands of hours combating abuse"* and
+that *"GitHub may monitor your use of GitHub Actions"*. *Settled by:* a GitHub Support ticket
+describing the workload, which the terms themselves invite — *"If you have questions about whether
+your use or intended use falls into these categories, please contact us through the GitHub Support
+portal"*. Cheap and definitive, and it bears only on Route 3, which I recommend against anyway.
 
 **9.5 How many essays a month are actually needed.** #63 generates once per story and keeps it, so
 the requirement is the *turnover* of the featured five, not five a day. The `data` ref is a single
@@ -986,23 +1079,29 @@ not consider truncating every body to its lede, which §3 argues is the cut that
 per-source anchoring gate. That is a decision the owner has not taken and this document does not take
 for them.
 
-**#63's stated reason for rejecting local weights is weaker than the reason available.** #63 said
+**#63's stated reason for rejecting local weights is the weakest of the three available.** #63 said
 nothing that fits the runner *reads the language set well enough to publish*. §5.2 supports that at
-the sizes the runner forces — a 1.7B model is at chance in Greek. But the harder objection is
-compute, and it does not depend on any benchmark: quadratic attention prefill on a GPU-less 4-vCPU
-runner puts every conventional model outside a 6-hour job well before quality enters the argument.
-Substituting the stronger reason for the weaker one is a correction, not a reopening.
+the sizes the runner forces — a 1.7B model is at chance in Greek. But two harder objections need no
+benchmark at all: quadratic attention prefill on a GPU-less 4-vCPU runner puts every conventional
+model outside a 6-hour job before quality enters the argument, and 100+ CPU-hours a day of model
+inference fails the Actions terms' disproportionate-burden clause, whose remedies reach the account
+that publishes the site. Substituting stronger reasons for a weaker one is a correction, not a
+reopening.
 
-**The one finding that would reopen it.** If `prism-ml/Ternary-Bonsai-27B-gguf` is genuinely free at
-$0/M *and* prefills fast enough on a 4-vCPU runner (§9.2) *and* retains its base model's multilingual
-ability through a 1.71-bit quantisation (§9.7), then a 27B-class model runs in the runner at 262k
-context for nothing, and #63's *"nothing that fits in a runner with 4 vCPU, 16 GB and no GPU reads
-that set at a level worth publishing"* would be false as a matter of fact. Three unknowns have to
-resolve favourably for that, two of them are cheap to test, and the third — whether a ternary
-quantisation preserves Greek and Ukrainian — is the one I would bet against, because low-bit
+**The one finding that would reopen it.** If `prism-ml/Ternary-Bonsai-27B-gguf` prefills fast enough
+on a 4-vCPU runner (§9.2) *and* retains its base model's multilingual ability through a 1.71-bit
+quantisation (§9.7), then a 27B-class model runs in the runner at 262k context for nothing, and #63's
+*"nothing that fits in a runner with 4 vCPU, 16 GB and no GPU reads that set at a level worth
+publishing"* would be false as a matter of fact. One of those two is cheap to test; the other — whether
+a ternary quantisation preserves Greek and Ukrainian — is the one I would bet against, because low-bit
 quantisation damages the least-represented parts of a model's training distribution first and that is
 precisely what these languages are. **It should be tested rather than assumed, and it is #74's
 business to test it, not to decide it.**
+
+Note that even both resolving favourably would not make Route 3 *advisable*, because the Actions-terms
+objection in §4.3 is untouched by either. The same finding would, however, make the model itself the
+strongest candidate on **Route 1**, where it is served at $0/M with a 262k window and no compute
+question at all — which is why §9.1 is the first thing to settle and §9.2 the second.
 
 ---
 
@@ -1023,20 +1122,29 @@ business to test it, not to decide it.**
    is served at 40,960 by one provider and 32,000 by another; `Llama-3.3-70B-Instruct` is served at
    **6,000** by one and 131,072 by three. The provider must be pinned, and pinning disables failover.
 
-4. **On native Greek, an open-weight model scores 79.41 at 27B, 62.24 at 4B, and 29.68 at 1.7B
+4. **Route 3 fits every documented GitHub quota and fails the Actions terms.** Five parallel jobs is
+   inside the 20-concurrent limit, minutes are *"free and unlimited on public repositories"*, and
+   there is no monthly cap for public repositories — but the terms forbid *"activity that places a
+   burden on our servers, where that burden is disproportionate to the benefits provided to users"*,
+   and separately *"You may only access and use GitHub Actions to develop and test your
+   application(s)."* The stated remedies include suspension of the account, which also publishes the
+   site. **Route 1's worst case is a 402 and no essay; Route 3's worst case is the website going
+   down.** This is a reading, not a settled answer, and §9.4 says how to settle it.
+
+5. **On native Greek, an open-weight model scores 79.41 at 27B, 62.24 at 4B, and 29.68 at 1.7B
    against a 30.42 random baseline.** Greek is 6.8% of the featured five's sources. The free budget
    affords the 4B row.
 
-5. **A 7B model's instruction-level accuracy falls from 73.7 in English to 49.4 in Greek, and a
+6. **A 7B model's instruction-level accuracy falls from 73.7 in English to 49.4 in Greek, and a
    frontier model's from 90.3 to 79.3.** Output is mechanically gated, so this is not a quality
    gradient but a rate at which sentences are discarded — and they are discarded in the languages the
    product exists to compare.
 
-6. **No long-context benchmark covers Greek, Arabic or Turkish; none measures multilingual
+7. **No long-context benchmark covers Greek, Arabic or Turkish; none measures multilingual
    comprehension past 128K; and none measures long context and instruction following together in any
    language.** The system needs all three at once, at 3–4× the furthest anything has been measured.
 
-7. **No model the router serves today has an independent per-language evaluation in any of the five
+8. **No model the router serves today has an independent per-language evaluation in any of the five
    languages that matter** — not Qwen3.5/3.6, not gemma-4, not GLM-5.x, not DeepSeek-V4, not Kimi-K3,
    and not either model this document recommends between. The evaluation in §10 costs about $0.01 on
    this project's own corpus and is the only thing that would change that.
