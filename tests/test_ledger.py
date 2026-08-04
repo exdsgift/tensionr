@@ -3,6 +3,7 @@
 import json
 
 from tensionr.ledger import (
+    FEATURED,
     LEDGER_BUDGET_BYTES,
     cell,
     evidence_table,
@@ -14,7 +15,7 @@ from tensionr.ledger import (
     since_previous,
     transfer_bytes,
 )
-from tensionr.stories.measure import ABSENT, PRESENT, UNRESOLVED
+from tensionr.stories.marks import ABSENT, PRESENT, UNRESOLVED
 
 # The real file's shape, small enough to reason about: 4 cells wide, 2 tall.
 PROJECTION = {
@@ -439,10 +440,11 @@ def test_the_rendered_page_declares_its_encoding_before_any_braille():
     assert "@@" not in page
 
 
-# Small enough to bite on the synthetic fixture, whose near-identical headlines
-# compress far better than real ones: 40 stories come to 18.5 KB gzipped here against
-# 123 KB for 16 real ones.
-BITES = 10 * 1024
+# Small enough to bite on the synthetic fixture, whose near-identical headlines compress
+# far better than real ones: 40 stories with 5 featured come to 4.49 KB gzipped here,
+# against 108 KB for a real run. Measured, not guessed — at 10 KB nothing was dropped and
+# the tests below passed while proving nothing.
+BITES = 3 * 1024
 
 
 def many(n):
@@ -483,16 +485,18 @@ def test_the_page_stays_inside_its_budget_by_dropping_the_narrowest_evidence():
     page = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
     assert transfer_bytes(page) <= BITES
     # every story still has a row: the figures are the run's claim, not the evidence
-    assert page.count('<details class="row"') == 40
+    assert (
+        page.count('<details class="row"') + page.count('<div class="row quiet">') == 40
+    )
     assert "are not on this page" in page
 
 
 def test_the_widest_split_keeps_its_evidence_when_the_budget_bites():
     page = render(run(many(40)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
     first = page.index("Story 0")
-    last = page.index("Story 39")
+    last = page.index(f"Story {FEATURED}")
     assert 'class="ev-scroll"' in page[first:last]  # the hero kept its table
-    assert 'class="ev-scroll"' not in page[last:]  # the narrowest did not
+    assert 'class="ev-scroll"' not in page[last:]  # past the featured few, none does
 
 
 def test_nothing_is_dropped_when_the_page_already_fits():
@@ -551,3 +555,37 @@ def test_an_english_headline_carries_no_label():
 
 def test_a_headline_with_no_language_recorded_is_not_labelled():
     assert headline({"headline": "He left Russia"}) == "He left Russia"
+
+
+def test_only_the_featured_stories_are_written_up():
+    """Decision 6: five are explained, the rest are listed but never dropped."""
+    page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert page.count('<details class="row"') == FEATURED
+    assert page.count('<div class="row quiet">') == 12 - FEATURED
+
+
+def test_every_story_that_cleared_the_floors_keeps_a_row():
+    """Dropping them would turn a measurement into an editorial selection."""
+    page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES)
+    for i in range(12):
+        assert f"Story {i}" in page
+
+
+def test_a_compact_row_carries_the_figures_and_no_evidence():
+    page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES)
+    tail = page[page.index("Story 11") - 400 :]
+    assert "division" in tail
+    assert "ev-scroll" not in tail
+
+
+def test_fewer_stories_than_featured_is_not_an_error():
+    page = render(run(many(2)), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert page.count('<details class="row"') == 2
+    assert '<div class="row quiet">' not in page
+
+
+def test_the_budget_still_bites_on_the_featured_few():
+    page = render(run(many(12)), PROJECTION, COORDS, TEMPLATE, NAMES, budget=BITES)
+    assert transfer_bytes(page) <= BITES
+    assert page.count('<div class="row quiet">') == 12 - FEATURED
+    assert "are not on this page" in page
