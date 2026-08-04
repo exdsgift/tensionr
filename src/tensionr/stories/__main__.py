@@ -33,6 +33,13 @@ def main(argv: list[str] | None = None) -> int:
         "--polities", type=Path, default=Path("data/polities/domains.json")
     )
     parser.add_argument(
+        "--history",
+        type=Path,
+        default=None,
+        help="directory of per-run index.json files from the last day, for the "
+        "day-wide selection; absent means select over this window alone",
+    )
+    parser.add_argument(
         "--state",
         type=Path,
         default=None,
@@ -51,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         aliases=args.aliases,
         polities=args.polities,
         state=args.state,
+        history=args.history,
     )
 
     # A run that measured nothing is not a failure — GDELT can publish a thin window —

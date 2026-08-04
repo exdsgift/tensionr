@@ -18,12 +18,17 @@ logger = logging.getLogger(__name__)
 # append-only (#10). The three outputs below sit on either side of that line:
 # `state` is a cache the next run overwrites, `stories` is what the site reads, and
 # `record` is written once and never rewritten.
-STATE, STORIES, RECORD, CAPTURE = (
+STATE, STORIES, RECORD, CAPTURE, INDEX = (
     "state.json",
     "stories.json",
     "record.json",
     "capture.json",
+    "index.json",
 )
+
+# How wide "of the day" is (#29 decision 6). Twenty-four hours, so the page means today
+# rather than whichever twelve hours the last run happened to cover.
+SPAN_HOURS = 24
 
 
 def _capture(records: list[dict[str, Any]], already: set[str]) -> list[dict[str, Any]]:
@@ -85,6 +90,89 @@ def _representative(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
     return max(zip(rows, bags, strict=True), key=agreement)[0]
 
 
+def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
+    """The slim per-run record a day-wide selection is made from.
+
+    Published to the append-only ref instead of the whole of `stories.json`. Measured per
+    run: `stories.json` is 2.68 MB against `capture.json`'s 13.7 MB, so publishing it
+    would add 20% to the project's largest cost, while this adds about 3%. The evidence
+    is not here because a mark is a pure function of title, actor and language, and the
+    capture already holds all three — so it can be rebuilt rather than stored twice (#66).
+    """
+    rows = []
+    for story in stories:
+        if not story.get("band"):
+            continue
+        figure = next(
+            (f for f in story["figures"] if f["actor"] == story["band"][0]), None
+        )
+        rows.append(
+            {
+                "id": story["id"],
+                "headline": story["headline"],
+                "headline_language": story.get("headline_language"),
+                "band": story["band"],
+                "division": (figure or {}).get("division"),
+                "sources": story["sources"],
+                "polities": len(story["polities"]),
+                # already in the evidence since #61, so derived rather than stored twice
+                "urls": [r["url"] for r in story.get("evidence", []) if r.get("url")],
+            }
+        )
+    return {"run": stamp, "stories": rows}
+
+
+def _feature(
+    stories: list[dict[str, Any]],
+    history: list[dict[str, Any]],
+    *,
+    count: int,
+) -> dict[str, Any]:
+    """Mark the stories to write up: the widest divisions of the last day, still live.
+
+    Ranked by each story's **peak** division over the span rather than by this window's
+    snapshot, which is what makes the selection mean "today" instead of "the last twelve
+    hours". A story that was the most divided thing in the corpus this morning keeps that
+    standing all day, even if the current window has caught it in a quieter moment.
+
+    Restricted to stories the current window still carries, and the count of candidates
+    that are **not** carried is returned rather than hidden. That number decides whether
+    rebuilding an absent story's evidence from the capture is worth building at all — a
+    story nobody is covering any more is arguably not one of today's five, and until the
+    number exists this is a guess either way (#66).
+    """
+    peak: dict[str, float] = {}
+    for past in history:
+        for row in past.get("stories", []):
+            division = row.get("division")
+            if division is None:
+                continue
+            peak[row["id"]] = max(peak.get(row["id"], 0.0), float(division))
+
+    live = {s["id"]: s for s in stories if s.get("band")}
+    for story in live.values():
+        figure = next(
+            (f for f in story["figures"] if f["actor"] == story["band"][0]), None
+        )
+        now = (figure or {}).get("division") or 0.0
+        story["span_division"] = round(max(now, peak.get(story["id"], 0.0)), 4)
+
+    ranked = sorted(live.values(), key=lambda s: -s["span_division"])
+    for story in ranked[:count]:
+        story["featured"] = True
+
+    absent = sorted(peak.items(), key=lambda kv: -kv[1])
+    absent = [(i, d) for i, d in absent if i not in live]
+    return {
+        "span_hours": SPAN_HOURS,
+        "runs_in_span": len(history),
+        "candidates": len(set(peak) | set(live)),
+        "gone_from_the_window": len(absent),
+        # what a rebuild would have to recover, if the number ever justifies it
+        "widest_gone": round(absent[0][1], 4) if absent else None,
+    }
+
+
 def run(
     out: Path,
     *,
@@ -92,6 +180,8 @@ def run(
     aliases: Path,
     polities: Path,
     state: Path | None = None,
+    history: Path | None = None,
+    featured: int = 5,
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
     """Produce one run's outputs from a live window.
@@ -152,6 +242,19 @@ def run(
         stories.append(story)
 
     measurable = [s for s in stories if s["band"]]
+
+    # Which five get written up, over a day rather than over this window (#29 d6). The
+    # indexes are handed in as files because the engine does not speak git; the job
+    # fetches them from the append-only ref, exactly as it already fetches the state.
+    past = []
+    if history and Path(history).is_dir():
+        for path in sorted(Path(history).glob("*.json")):
+            try:
+                past.append(json.loads(path.read_text("utf-8")))
+            except (OSError, json.JSONDecodeError):
+                logger.warning("unreadable index, skipped: %s", path)
+    span = _feature(stories, past, count=featured)
+
     report = {
         "run": stamp,
         "window": {
@@ -185,6 +288,7 @@ def run(
         # honest statement of how fresh the page is - and it is measured, per run.
         "previous_run": previous,
         "published": {"stories": len(stories), "with_a_band": len(measurable)},
+        "selection": span,
     }
 
     out.mkdir(parents=True, exist_ok=True)
@@ -213,6 +317,9 @@ def run(
         ),
         "utf-8",
     )
+    (out / INDEX).write_text(
+        json.dumps(_index(stamp, stories), ensure_ascii=False), "utf-8"
+    )
     (out / CAPTURE).write_text(
         json.dumps(
             {"run": stamp, "articles": _capture(records, captured)}, ensure_ascii=False
@@ -227,5 +334,15 @@ def run(
         len(stories),
         len(measurable),
         100 * report["polities"]["rate"],
+    )
+    logger.info(
+        "selection: %d candidates over %d h from %d runs, %d featured, "
+        "%d no longer in the window (widest %s)",
+        span["candidates"],
+        span["span_hours"],
+        span["runs_in_span"],
+        min(featured, len(measurable)),
+        span["gone_from_the_window"],
+        span["widest_gone"],
     )
     return report

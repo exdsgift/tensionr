@@ -12,6 +12,7 @@ from tensionr.ledger import (
     panel,
     render,
     row_counts,
+    selection_note,
     since_previous,
     source_link,
     transfer_bytes,
@@ -640,3 +641,38 @@ def test_the_evidence_table_links_every_source():
 def test_the_page_does_not_claim_it_checked_the_links():
     page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
     assert "does not check that the address still answers" in page
+
+
+def test_the_page_says_which_span_it_selected_over():
+    """ "Of the day" and "of this window" are different claims (#66)."""
+    note = selection_note(
+        {
+            "selection": {
+                "span_hours": 24,
+                "runs_in_span": 6,
+                "candidates": 31,
+                "gone_from_the_window": 3,
+                "widest_gone": 0.97,
+            }
+        },
+        5,
+    )
+    assert "last 24 hours" in note
+    assert "6" in note and "31" in note
+    assert "no longer carried" in note and "0.97" in note
+
+
+def test_without_history_the_page_claims_only_the_window():
+    note = selection_note({}, 5)
+    assert "this window" in note
+    assert "24 hours" not in note
+
+
+def test_the_page_honours_the_engines_selection_over_its_own_ranking():
+    """The engine can see a day; the page can only see this file."""
+    narrow, wide = story(id="s-narrow"), story(id="s-wide", headline="Wide")
+    narrow["featured"] = True
+    narrow["span_division"] = 0.99
+    wide["figures"][0]["division"] = 0.9999
+    page = render(run([wide, narrow]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert page.index("A headline about the strait") < page.index("Wide")
