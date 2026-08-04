@@ -13,6 +13,7 @@ from tensionr.ledger import (
     render,
     row_counts,
     since_previous,
+    source_link,
     transfer_bytes,
 )
 from tensionr.stories.marks import ABSENT, PRESENT, UNRESOLVED
@@ -32,8 +33,9 @@ COORDS = {"Iran": [35.7, 51.4], "Spain": [40.4, -3.7], "Chile": [-33.5, -70.7]}
 NAMES = {"hormuz": "Strait of Hormuz"}
 
 
-def source(domain, polity, marks, title="a headline", language="en"):
+def source(domain, polity, marks, title="a headline", language="en", url=None):
     return {
+        "url": url if url is not None else f"https://{domain}/a-story",
         "domain": domain,
         "polity": polity,
         "language": language,
@@ -441,10 +443,11 @@ def test_the_rendered_page_declares_its_encoding_before_any_braille():
 
 
 # Small enough to bite on the synthetic fixture, whose near-identical headlines compress
-# far better than real ones: 40 stories with 5 featured come to 4.49 KB gzipped here,
-# against 108 KB for a real run. Measured, not guessed — at 10 KB nothing was dropped and
-# the tests below passed while proving nothing.
-BITES = 3 * 1024
+# far better than real ones: 40 stories with 5 featured come to 10.23 KB gzipped here
+# once each source carries its URL, against 4.49 KB before #61. Measured each time it
+# moves, not guessed — an earlier value of 10 KB was above the page's own weight, so the
+# drop path was never exercised and the tests passed while proving nothing.
+BITES = 8 * 1024
 
 
 def many(n):
@@ -607,3 +610,33 @@ def test_the_page_does_not_override_the_readers_text_size():
     body = re.search(r"\n  body\{[^}]*\}", tpl)
     assert body, "the body rule moved; this test has to follow it"
     assert "font-size" not in body.group(0)
+
+
+def test_a_source_links_to_the_article_and_shows_the_domain():
+    """#61: the domain is the evidence, the URL is the proof under it."""
+    link = source_link({"domain": "abc.net.au", "url": "https://abc.net.au/x"})
+    assert 'href="https://abc.net.au/x"' in link
+    assert ">abc.net.au<" in link
+    assert 'rel="nofollow noopener"' in link
+
+
+def test_a_row_with_no_url_is_plain_text_not_a_dead_anchor():
+    """Anything captured before #61 has no URL, and must read as no link."""
+    assert source_link({"domain": "abc.net.au"}) == "abc.net.au"
+    assert source_link({"domain": "abc.net.au", "url": None}) == "abc.net.au"
+
+
+def test_the_url_is_not_rewritten():
+    """Upgrading it would invent an address nobody observed."""
+    link = source_link({"domain": "x.example", "url": "http://x.example/a?b=1&c=2"})
+    assert "http://x.example/a?b=1&amp;c=2" in link
+
+
+def test_the_evidence_table_links_every_source():
+    table = evidence_table(story(), NAMES)
+    assert table.count('<a class="src-link"') == len(story()["evidence"])
+
+
+def test_the_page_does_not_claim_it_checked_the_links():
+    page = render(run([story()]), PROJECTION, COORDS, TEMPLATE, NAMES)
+    assert "does not check that the address still answers" in page

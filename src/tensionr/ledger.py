@@ -146,6 +146,32 @@ def _lead(story: dict[str, Any]) -> dict[str, Any]:
     return by_actor[story["band"][0]]
 
 
+def source_link(row: dict[str, Any]) -> str:
+    """The publisher, as a link to the article it published.
+
+    The visible text stays the **domain**, because the domain is the evidence — a reader
+    is comparing publishers, and a row of URLs would be unreadable. The URL is the proof
+    underneath it.
+
+    `rel="nofollow"` because these links are generated in bulk and never reviewed:
+    pointing at an article is not a judgement about it. `noopener` because the link opens
+    in a new tab, which is what a reader comparing forty sources needs. The URL is left
+    exactly as GDELT recorded it, including `http`, since rewriting it would be inventing
+    an address nobody observed.
+
+    A row with no URL falls back to plain text rather than a dead anchor. That happens
+    for anything captured before #61 and it must read as "no link", not as a broken one.
+    """
+    domain = esc(row["domain"])
+    url = row.get("url")
+    if not url:
+        return domain
+    return (
+        f'<a class="src-link" href="{esc(url)}" rel="nofollow noopener" '
+        f'target="_blank">{domain}</a>'
+    )
+
+
 def evidence_table(story: dict[str, Any], names: dict[str, str]) -> str:
     """Every source, one row each, in a table that keeps its columns.
 
@@ -169,7 +195,7 @@ def evidence_table(story: dict[str, Any], names: dict[str, str]) -> str:
             for a in actors
         )
         body.append(
-            f'<tr><td class="who">{esc(row["domain"])}</td>'
+            f'<tr><td class="who">{source_link(row)}</td>'
             f'<td class="pol">{esc(row["polity"] or "—")}</td>'
             f'{marks}<td class="hl" dir="auto">{esc(row["title"][:160])}</td></tr>'
         )
@@ -289,6 +315,10 @@ def story_row(
         "signal."
         if unresolved
         else "No row is <b>–</b>: an alias exists in every script present."
+    )
+    note += (
+        " Each publisher links to the article at the address GDELT recorded; the page "
+        "does not check that the address still answers."
     )
     sentence = (
         f"{story['sources']} publishers across {len(story['polities'])} polities "

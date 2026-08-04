@@ -163,6 +163,11 @@ def evidence(
     kept, _ = collapse_syndication(rows)
     marked = [
         {
+            # The URL is what lets a reader check the row rather than take it. It was
+            # already here — it is the key story identity is joined on between runs
+            # (#10) — and it was being dropped at exactly the point where the evidence
+            # is published, which left the sources unlinkable (#61).
+            "url": r.get("url"),
             "domain": r["domain"],
             "polity": r.get("polity"),
             "language": r.get("language", "unknown"),
