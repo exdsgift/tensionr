@@ -24,8 +24,16 @@
     --cols:minmax(0,1fr) 6rem 7.5rem minmax(0,19rem);
   }
   *{box-sizing:border-box}
+  /* No font-size here, deliberately. An absolute size on `body` overrides the size the
+     reader chose, and it is the only thing on this page that does: it defeats both
+     `<meta name="text-scale">` (Chrome 146) and the iOS `font: -apple-system-body`
+     route, while `-webkit-text-size-adjust` gates nothing since Chromium deleted its
+     text autosizer in April 2026 (#55). Falling through lands on the browser's
+     *monospace* default — 13px, not 16, because `medium` for a fixed-pitch family is a
+     separate setting — so every rem on the page is relative to whatever the reader has
+     asked for, and the type scale moves with them rather than past them. */
   body{margin:0; background:var(--ink); color:var(--paper); font-family:var(--mono);
-       font-size:15px; line-height:1.55; -webkit-text-size-adjust:100%}
+       line-height:1.55; -webkit-text-size-adjust:100%}
   h2{margin:0}
   .num{font-variant-numeric:tabular-nums}
   .dim{color:var(--steel)}

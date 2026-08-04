@@ -589,3 +589,21 @@ def test_the_budget_still_bites_on_the_featured_few():
     assert transfer_bytes(page) <= BITES
     assert page.count('<div class="row quiet">') == 12 - FEATURED
     assert "are not on this page" in page
+
+
+def test_the_page_does_not_override_the_readers_text_size():
+    """#55: an absolute font-size on body is the one thing that defeats it.
+
+    `-webkit-text-size-adjust` gates nothing since Chromium deleted its text autosizer,
+    so this declaration was the whole of the problem. The page falls through to the
+    browser's monospace default and every rem moves with the reader.
+    """
+    import re
+    from importlib import resources
+
+    tpl = (
+        resources.files("tensionr.templates").joinpath("ledger.html").read_text("utf-8")
+    )
+    body = re.search(r"\n  body\{[^}]*\}", tpl)
+    assert body, "the body rule moved; this test has to follow it"
+    assert "font-size" not in body.group(0)
