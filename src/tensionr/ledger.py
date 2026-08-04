@@ -273,36 +273,13 @@ def headline(story: dict[str, Any]) -> str:
     return text
 
 
-def compact_row(story: dict[str, Any], names: dict[str, str]) -> str:
-    """A story that cleared the floors but is not written up.
-
-    The figures and nothing else. It is here so the page can be read as a ledger rather
-    than a front page: five stories are explained, and the reader can see how many more
-    the run measured without being told they do not exist.
-    """
-    figure = _lead(story)
-    return f"""    <div class="row quiet">
-      <div class="grid">
-        <span class="title">{headline(story)}
-          <small>{story["sources"]} sources · {len(story["polities"])} polities · division {figure["division"]:.3f}</small></span>
-        <span class="cell num" data-l="sources">{story["sources"]}</span>
-        <span class="cell num" data-l="polities">{len(story["polities"])}</span>
-        <span class="actors">{row_counts(story, names)}</span>
-      </div>
-    </div>
-"""
-
-
 def story_row(
     story: dict[str, Any],
     names: dict[str, str],
     *,
     first: bool,
-    featured: bool = True,
     with_evidence: bool = True,
 ) -> str:
-    if not featured:
-        return compact_row(story, names)
     figure = _lead(story)
     unresolved = figure["unresolved"]
     note = (
@@ -533,14 +510,8 @@ def _fit(
     for dropped in range(featured + 1):
         keep = featured - dropped
         rows = COLUMN_HEADS + "".join(
-            story_row(
-                s,
-                names,
-                first=i == 0,
-                featured=i < featured,
-                with_evidence=i < keep,
-            )
-            for i, s in enumerate(banded)
+            story_row(s, names, first=i == 0, with_evidence=i < keep)
+            for i, s in enumerate(banded[:featured])
         )
         weighed = transfer_bytes(build_page(rows, dropped))
         if weighed <= budget or dropped == featured:
