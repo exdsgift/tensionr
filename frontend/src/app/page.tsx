@@ -14,7 +14,6 @@ import { EvidenceTable } from "@/components/evidence-table";
 import { InfoPopover } from "@/components/info-popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  AggregateStrip,
   Hook,
   SiteFooter,
   TopBar,
