@@ -37,7 +37,12 @@ export interface BrailleMapProps {
   narrow: Coastline;
   wideMarkers: Marker[];
   narrowMarkers: Marker[];
-  legend: { named: string; silent: string; plotted: string } | null;
+  legend: {
+    actor: string;
+    plotted: number;
+    carried: number;
+    sources: number;
+  } | null;
 }
 
 export function BrailleMap({
@@ -70,13 +75,19 @@ export function BrailleMap({
       {legend ? (
         <div className="cap">
           <span>
-            <span className="mark-on">●</span> {legend.named}
+            <span className="mark-on">●</span> most of its sources named {legend.actor}
           </span>
           <span>
-            <span className="mark-off">○</span> {legend.silent}
+            <span className="mark-off">○</span> most did not
           </span>
-          <span className="dim">pulse = signal received</span>
-          <span className="dim">{legend.plotted}</span>
+          <span className="dim">· = one or two sources, no rate</span>
+          {/* Not "N of N plotted", which divided a number by itself and always read
+              "we drew everything". What a reader needs to know is how much of the
+              story never reached the map at all. */}
+          <span className="dim">
+            {legend.plotted} of {legend.carried} countries drawn
+            {legend.sources ? `, from ${legend.sources} placed sources` : ""}
+          </span>
           <span className="dim">tap or hover a point</span>
         </div>
       ) : (
@@ -122,16 +133,13 @@ const PLACEMENT = /* js */ `(function(){
 
   var maps = [].slice.call(document.querySelectorAll('.earth')).map(function(earth){
     var m = MAPS[earth.dataset.map], layer = earth.querySelector('.layer');
-    var blips = m.panel.map(function(p, i){
+    var blips = m.panel.map(function(p){
       var d = document.createElement('span');
-      d.className = 'blip' + (p.on ? '' : ' off');
+      d.className = 'blip blip-' + p.state;
       d.dataset.n = p.n;
       d.tabIndex = 0;
-      d.setAttribute('aria-label', p.n + (p.on ? ', reporting' : ', silent'));
-      d.innerHTML = '<span class="dot"></span><span class="r"></span><span class="r"></span>';
-      [].forEach.call(d.querySelectorAll('.r'), function(r, k){
-        r.style.animationDelay = (i * 0.31 + k * 1.5) + 's';
-      });
+      d.setAttribute('aria-label', p.n);
+      d.innerHTML = '<span class="dot"></span>';
       layer.appendChild(d);
       return d;
     });

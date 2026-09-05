@@ -29,7 +29,6 @@ import {
   footer,
   foreignLanguage,
   hook,
-  legend,
   percent,
   readingSentence,
   rowCounts,
@@ -61,12 +60,10 @@ export default function Ledger() {
   const featured = rows.slice(0, FEATURED);
   const report = run.report;
 
-  const widePanel = hero
-    ? panel(hero, coordinates, wide)
-    : { markers: [], plotted: 0 };
-  const narrowPanel = hero
-    ? panel(hero, coordinates, narrow)
-    : { markers: [], plotted: 0 };
+  const heroActor = hero ? actorName(hero.band[0], labels) : "";
+  const empty = { markers: [], plotted: 0, carried: 0 };
+  const widePanel = hero ? panel(hero, coordinates, wide, heroActor) : empty;
+  const narrowPanel = hero ? panel(hero, coordinates, narrow, heroActor) : empty;
 
   const views: StoryRowView[] = featured.map((story) => ({
     id: story.id,
@@ -137,7 +134,18 @@ export default function Ledger() {
             narrow={narrow}
             wideMarkers={widePanel.markers}
             narrowMarkers={narrowPanel.markers}
-            legend={legend(hero, widePanel.plotted, labels)}
+            legend={
+              hero
+                ? {
+                    actor: heroActor,
+                    plotted: widePanel.plotted,
+                    carried: widePanel.carried,
+                    // Placed sources, which is what the map could ever draw: the
+                    // rest of the story has no country and never reaches it.
+                    sources: hero.evidence.filter((r) => r.polity).length,
+                  }
+                : null
+            }
           />
         </section>
 

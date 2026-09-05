@@ -265,20 +265,6 @@ export function hook(
   };
 }
 
-/** The map's caption. It names the states actually drawn, and nothing else. */
-export function legend(
-  hero: Story | null,
-  plotted: number,
-  labels: Labels,
-): { named: string; silent: string; plotted: string } | null {
-  if (!hero) return null;
-  return {
-    named: `named ${actorName(hero.band[0], labels)}`,
-    silent: "carried it, did not",
-    plotted: `${plotted} of ${hero.polities.length} plotted`,
-  };
-}
-
 /**
  * What span the page selected over, and what the span could not reach.
  *

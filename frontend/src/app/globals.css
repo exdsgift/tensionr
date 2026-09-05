@@ -212,6 +212,17 @@
   :root {
     --cols: minmax(0, 1fr) 6rem 7.5rem minmax(0, 19rem);
     --barh: 44px;
+    /* One scale, used everywhere below. The page had accumulated 40px, 32px, 16px,
+       12px and 0px between its major blocks, which reads as carelessness even when
+       each gap was reasonable on its own. */
+    --s1: .25rem;
+    --s2: .5rem;
+    --s3: .75rem;
+    --s4: 1rem;
+    --s5: 1.5rem;
+    --s6: 2rem;
+    --s7: 3rem;
+    --s8: 4rem;
   }
 
   .skip {
@@ -356,50 +367,59 @@
     font-family: var(--font-mono); letter-spacing: 0;
   }
 
-  .blip { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center }
+  /* Three marks, and no pulse.
+     The pulse was scaled to nine times the dot and the rings overlapped into a grey
+     mass over Europe that covered the data it was decorating. It also explained itself
+     in the legend, which is a sign that a decoration is asking to be read. Removed.
+
+     The states carry the same reading as the country table below: solid where most of
+     a country's sources named the actor, hollow where most did not, a hairline where
+     one or two sources cannot carry a rate. Shape, not colour (ADR 0001 §2). */
+  .blip {
+    position: absolute; transform: translate(-50%, -50%);
+    display: grid; place-items: center;
+  }
   .blip .dot {
-    width: calc(var(--cw, 6px) * .9); height: calc(var(--cw, 6px) * .9);
-    border-radius: 50%; background: var(--primary); position: relative; z-index: 2;
+    width: calc(var(--cw, 6px) * .95); height: calc(var(--cw, 6px) * .95);
+    border-radius: 50%; position: relative; z-index: 2;
   }
-  .blip.off .dot { background: transparent; box-shadow: inset 0 0 0 1px var(--muted-foreground) }
-  .blip .r {
-    position: absolute; width: calc(var(--cw, 6px) * 1.6); height: calc(var(--cw, 6px) * 1.6);
-    border-radius: 50%; border: 1px solid var(--primary); opacity: 0;
-    animation: sonar 4.2s ease-out infinite;
+  .blip-most .dot { background: var(--foreground) }
+  .blip-few .dot {
+    background: var(--background);
+    box-shadow: inset 0 0 0 1.25px var(--foreground);
   }
-  .blip.off .r { border-color: var(--muted-foreground); animation-duration: 6.6s }
-  @keyframes sonar {
-    0% { transform: scale(.3); opacity: .9 }
-    65% { opacity: .14 }
-    100% { transform: scale(9); opacity: 0 }
+  /* Deliberately smaller and quieter: a country with two sources should not draw the
+     eye as hard as one with thirty. */
+  .blip-thin .dot {
+    width: calc(var(--cw, 6px) * .45); height: calc(var(--cw, 6px) * .45);
+    background: var(--muted-foreground);
   }
-  /* display:none until wanted rather than transparent: an opacity:0 box still
-     occupies layout, and 31 of them on a 286px map is another way to push the
-     page sideways. `.flip` turns the ones in the right half inward. */
+  .blip:hover .dot, .blip:focus .dot { outline: 2px solid var(--ring); outline-offset: 2px }
   .blip::after {
     content: attr(data-n); position: absolute; left: calc(var(--cw, 6px) * 2);
     top: 50%; transform: translateY(-50%); display: none; white-space: nowrap;
-    font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+    font-size: .66rem; letter-spacing: .02em;
     color: var(--popover-foreground); background: var(--popover);
-    border: 1px solid var(--border); padding: .1em .4em; z-index: 4;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: .2em .5em; z-index: 4; box-shadow: 0 1px 3px rgb(0 0 0 / .12);
   }
   .blip.flip::after { left: auto; right: calc(var(--cw, 6px) * 2) }
   .blip:hover::after, .blip:focus::after { display: block }
-  .blip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+  .blip:focus-visible { outline: none }
 
   .globe .cap {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1.5rem;
-    margin-top: 1rem; font-size: .62rem; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--muted-foreground); text-align: center;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: var(--s2) var(--s5); margin-top: var(--s5);
+    font-size: .66rem; letter-spacing: .06em; line-height: 1.5;
+    color: var(--muted-foreground); text-align: center;
   }
+  .globe .cap .mark-on, .globe .cap .mark-off { margin-right: .15em }
 
-  @media (prefers-reduced-motion: reduce) {
-    .blip .r { animation: none; opacity: .28; transform: scale(2) }
-  }
+
 
   /* Aggregate strip */
   .agg {
-    margin-top: 2.5rem; border-block: 1px solid var(--border);
+    margin-top: var(--s7); border-block: 1px solid var(--border);
     display: flex; flex-wrap: wrap;
   }
   .agg > div { padding: 1rem 1.5rem 1rem 0; flex: 1 1 15ch; min-width: 14ch }
@@ -410,7 +430,7 @@
   .agg .v { display: block; margin-top: 3px; font-size: .98rem; font-variant-numeric: tabular-nums }
 
   /* Stories */
-  .rows { margin-top: 2rem }
+  .rows { margin-top: var(--s7) }
   .rows > h2 {
     font-size: .66rem; letter-spacing: .18em; text-transform: uppercase;
     border-bottom: 1px solid var(--border); padding-bottom: .5rem;
@@ -418,10 +438,13 @@
   /* The one paragraph a first-time reader has to get through, so it is set at reading
      size and in the page's own colour rather than in the grey the notes use. */
   .rows > .how {
-    font-size: .95rem; margin-top: 1rem; max-width: 62ch; line-height: 1.6;
+    font-size: .95rem; margin-top: var(--s5); max-width: 62ch; line-height: 1.6;
   }
   .rows > .how b { font-weight: 600 }
-  .rows > .span { font-size: .82rem; color: var(--muted-foreground); margin-top: .75rem; max-width: 76ch }
+  .rows > .span {
+    font-size: .82rem; color: var(--muted-foreground);
+    margin-top: var(--s4); margin-bottom: var(--s6); max-width: 76ch;
+  }
 
   /* Not `.grid`. Tailwind owns that name and emits `.grid{display:grid}` into
      @layer utilities, which outranks @layer components - so `.colhead{display:flex}`
@@ -442,7 +465,25 @@
     color: var(--muted-foreground);
   }
 
-  .row-trigger { width: 100%; text-align: left }
+  /* Stories were running into one another: the divider was `--border` at 1.26:1, and
+     an expanded row's content had nothing tying it to the headline above it, so it
+     read as the start of the next story. Three changes, together:
+       - the divider is drawn in the control-border token, which is 4.3:1
+       - each row gets real vertical room rather than the trigger's own padding
+       - an open row's content is indented behind a rule, so it visibly hangs off its
+         own headline instead of floating between two.  */
+  .row { border-bottom: 1px solid var(--control-border) }
+  .row:first-child { border-top: 1px solid var(--control-border) }
+  .row-trigger { width: 100%; text-align: left; padding: var(--s5) 0 var(--s4) }
+
+  [data-slot="accordion-content"] > div {
+    padding-left: var(--s5);
+    margin-left: var(--s1);
+    /* This rule is not decoration: it says which story the content below belongs to,
+       which is the whole reason it exists. ADR 0001 §1 puts it above 3:1. */
+    border-left: 2px solid var(--control-border);
+    padding-bottom: var(--s6);
+  }
   .title { font-size: .92rem; font-weight: 500 }
   .title small {
     display: block; margin-top: 4px; font-size: .72rem; font-weight: 400;
@@ -528,14 +569,14 @@
      is the only place the counts appear. */
   .title-counts { display: none }
 
-  .read { font-size: .92rem; max-width: 76ch; margin-top: .5rem }
+  .read { font-size: .92rem; max-width: 76ch; margin-top: var(--s3) }
   .read.sub { color: var(--muted-foreground); font-size: .82rem }
 
   /* Whether the split runs along the country of publication. Sits above the evidence
      because it is the claim the evidence supports, and reads as prose with a table
      under it rather than as a statistics panel. */
   .bycountry {
-    margin-top: 1.25rem; padding: 1rem 1.1rem;
+    margin-top: var(--s5); padding: var(--s4) var(--s5);
     border: 1px solid var(--border); border-radius: var(--radius-md);
     background: var(--muted);
   }
@@ -730,4 +771,14 @@
 :root {
   --font-geist-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
+}
+
+/* The map's pulse is gone, but the accordion still animates and the theme still
+   transitions. Anyone who has asked for less motion should get less of all of it. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }
