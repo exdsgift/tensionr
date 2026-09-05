@@ -40,11 +40,12 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
           python-version: "3.12"
 
       - name: Install dependencies
         run: uv sync --frozen
+        working-directory: backend
 
       # Story identity is a join against the previous run, so a missing state file
       # does not fail the run — it just makes every story look new for one cycle.
@@ -85,7 +86,10 @@ jobs:
       # Measured at 47s for 21.7k articles (#10); the ceiling is here for a hung fetch.
       - name: Run the engine
         run: |
-          timeout 2400 uv run python -m tensionr.stories \
+          # --project rather than --directory: the engine's paths (data/, out/,
+          # history/) are relative to the repository root, and --directory would
+          # move the working directory into backend/ along with the project.
+          timeout 2400 uv run --project backend python -m tensionr.stories \
             --out out \
             --state out/state.json \
             --history history \

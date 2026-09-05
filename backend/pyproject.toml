@@ -1,0 +1,77 @@
+[project]
+name = "tensionr"
+version = "1.0.0"
+description = "tensionr story engine: cluster the day's news and measure how differently its sources name the same actors"
+requires-python = ">=3.12"
+# Three, and the engine imports nothing else that it did not write itself. The v1
+# pipeline needed feedparser, pandas, scikit-learn, yfinance and spaCy (plus click,
+# and a pinned language-model wheel); retiring it in #80 left every one of them
+# unused. Checked by grepping the surviving tree for third-party imports rather
+# than by reasoning about what should still be needed - re-run that grep before
+# adding anything back.
+dependencies = [
+    "requests>=2.32",
+    "numpy>=2.0",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.16,<0.17"]
+
+[project.scripts]
+tensionr = "tensionr.stories.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.6"]
+build-backend = "uv_build"
+
+[tool.ruff]
+# Keep this in step with the ruff pin in the `dev` dependency group: the default
+# rule set changes between minor releases, and CI must not start failing because
+# a new ruff shipped.
+target-version = "py312"
+# Research documents are a record of what was measured, and ruff formats Python
+# blocks inside markdown. Reformatting a sample silently edits the evidence.
+exclude = ["docs"]
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Deliberately an explicit allow-list rather than ruff's rolling defaults.
+# Every rule below passes on the tree as of this commit, so the gate is green on
+# arrival and any future violation is genuinely new. Widening the set is a
+# separate, reviewable change - see the note under `future-rules` below.
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "C4",   # flake8-comprehensions
+    "PTH",  # flake8-use-pathlib
+    "ISC",  # implicit string concatenation
+    "PIE",  # flake8-pie
+    "RSE",  # flake8-raise
+    "T20",  # no print() - this pipeline logs
+    "TID",  # tidy imports
+]
+ignore = [
+    # The formatter owns line wrapping. The 11 remaining long lines are strings
+    # and comments it cannot split, so E501 would only ever fail on things the
+    # formatter has already declared correct.
+    "E501",
+]
+
+# Rules that are worth adopting but do not pass today, recorded here instead of
+# being silently dropped. Adopting them is a code change, not a CI change.
+#
+# The list below was measured against the pre-#80 tree, and most of its hits were
+# in modules that no longer exist - DTZ in pipeline.py and analytics.py, BLE001 in
+# fetchers/markets.py. Re-measure before treating any count here as current:
+#   ARG      unused arguments, several in test doubles.
+#   B905     zip() without explicit strict=.
+#   SIM105, N806, RUF046
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may shadow builtins in fixtures and assert on magic values.
+"tests/**" = ["T20"]

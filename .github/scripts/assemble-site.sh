@@ -44,31 +44,33 @@ if [[ -z "${REPO_REMOTE:-}" ]]; then
   fi
 fi
 
-# Paths that are in the repository but are not part of the published site.
-# The legacy Jekyll build served the repository root verbatim, so the Python
-# package, the lockfile and a stray server.log are all publicly served today;
-# a workflow build is the moment to stop shipping them.
-EXCLUDES=(
-  "--exclude=/.git/"
-  "--exclude=/.github/"
-  "--exclude=/.gitignore"
-  "--exclude=/src/"
-  "--exclude=/tests/"
-  "--exclude=/docs/"
-  "--exclude=/pyproject.toml"
-  "--exclude=/uv.lock"
-  "--exclude=/CLAUDE.md"
-  "--exclude=/server.log"
-  "--exclude=__pycache__/"
-  "--exclude=.venv/"
-  "--exclude=.DS_Store"
+# What the published site is made of, as an allow-list.
+#
+# This used to be a deny-list — copy the whole tree, subtract the things that are not
+# site. It failed the way deny-lists fail: when the v1 dashboard was retired to
+# `v1.html` it was not added to the list, so eleven source files stayed publicly served
+# and crawlable for a year (#80). The tree is now mostly *not* site — an engine, a
+# frontend project, its node_modules — so naming the few things that are is both
+# shorter and safe by default. Anything new is unpublished until someone says otherwise.
+#
+# `data/` is here *and* handled below. The reference tables a human edits - the alias
+# table, the polity table, the coastline - live on the production ref, while the
+# pipeline's output lives on the data branch and is overlaid on top by overlay_data().
+# Copying it here is what makes an absent data branch a degradation rather than an
+# error: the site then serves whatever data/ production carries.
+SITE_FILES=(
+  "data"
+  "robots.txt"
+  "sitemap.xml"
+  "ledger"      # a redirect stub for the Ledger's old subpath
 )
 
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
-# Clone one branch at depth 1 into $WORK_DIR/<slot> and copy its site files into
-# $OUT_DIR/<subpath>. Returns non-zero if the branch does not exist.
+# Clone one branch at depth 1 into $WORK_DIR/<slot> and copy its *static* site files
+# into $OUT_DIR/<subpath>. The page itself is not here — it is built from the same
+# clone by build_frontend(). Returns non-zero if the branch does not exist.
 copy_branch() {
   local branch="$1" slot="$2" subpath="$3"
   local src="$WORK_DIR/$slot"
@@ -81,10 +83,12 @@ copy_branch() {
   fi
 
   mkdir -p "$dest"
-  rsync -a "${EXCLUDES[@]}" "$src/" "$dest/"
-  local size
-  size="$(du -sh "$dest" | cut -f1)"
-  echo "  -> ${subpath:-<root>} ($size)"
+  local item
+  for item in "${SITE_FILES[@]}"; do
+    [[ -e "$src/$item" ]] || continue
+    rsync -a --exclude=".DS_Store" "$src/$item" "$dest/"
+  done
+  echo "  -> ${subpath:-<root>} (static files)"
 }
 
 # Reject anything that could escape the preview directory or confuse a web
@@ -135,41 +139,115 @@ overlay_data() {
   echo "  -> data/ from '$DATA_BRANCH' ($(du -sh "$dest/data" | cut -f1))"
 }
 
-# The Ledger *is* the homepage, and it is generated rather than fetched (#14): by the
-# time it reaches a browser it is HTML, readable with scripting off, and the only script
-# on it places the map markers. Rendered per tree with *that tree's own* generator, so a
-# branch changing the page previews its own version - the generator imports nothing
-# outside the standard library precisely so this needs no virtualenv.
+# The site's pages are built from each tree's *own* frontend, so a branch that changes
+# the page previews its own version (#81, #82). This replaced a Python generator that
+# needed nothing but an interpreter; a Next.js build needs node_modules, which is why
+# this is the expensive part of an assembly and why the workflow caches npm.
 #
-# A window where nothing clears the floors is not a failure: the page says so itself.
-# So a failure here means the data is missing or malformed, and for production that must
-# stop the deployment rather than publish a site with no homepage - Pages then keeps
-# serving the last good build, which states the window it describes. A preview failing
-# is reported and skipped, so one bad branch cannot hold up everyone else's.
-render_ledger() {
-  local src="$1" dest="$2" required="$3"
-  if [[ ! -f "$src/src/tensionr/ledger.py" ]]; then
-    echo "  (no generator on this branch - its own index.html is kept)"
+# `basePath` is the reason the build happens per tree rather than once. It cannot be
+# relative and Next inlines it into the client bundle, so the same artifact cannot be
+# served from `/tensionr/` and from `/tensionr/preview/<branch>/`. See decision 3 on #79.
+#
+# The failure contract is inherited from the generator this replaces, and matters just
+# as much: for production a failure must stop the deployment rather than publish a site
+# with no homepage, so Pages keeps serving the last good build. A preview failing is
+# reported and skipped, so one broken branch cannot hold up everyone else's.
+build_frontend() {
+  local src="$1" dest="$2" base_path="$3" required="$4"
+
+  # A branch with no frontend at all. Two cases, and they are not the same thing.
+  #
+  # For a preview this is just a branch that predates #81: skip it.
+  #
+  # For production it is the transition itself. This script always rebuilds production
+  # from the production ref, so while #81 is still open, every run - including the run
+  # on #81's own pull request - assembles a master that has no frontend and no
+  # checked-in index.html either, because the old homepage was generated. Failing there
+  # would make #81's own checks unpassable until it merged, which is a check that can
+  # only ever be red and tells nobody anything.
+  #
+  # So production gets a holding page instead, loudly. This is deliberately narrow: it
+  # triggers only when frontend/ is absent *entirely*, never when a build fails, so a
+  # broken frontend still stops the deployment. Once master carries a frontend this
+  # branch is dead code, and it should be deleted when #82 lands.
+  if [[ ! -f "$src/frontend/package.json" ]]; then
+    if [[ "$required" != required ]]; then
+      echo "  ! no frontend on this branch - preview skipped" >&2
+      return 0
+    fi
+    echo "  ! the production branch has no frontend/ - this is the #81 transition." >&2
+    echo "    Publishing a holding page so the site keeps answering." >&2
+    cat > "$dest/index.html" <<'HOLDING'
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>tensionr</title>
+<style>
+  :root { color-scheme: dark }
+  body { font: 16px/1.6 ui-monospace, Menlo, monospace; max-width: 34rem;
+         margin: 20vh auto; padding: 0 1.25rem; background: #0a0a0a; color: #e8e8e8 }
+  a { color: #8ecaff }
+</style>
+<h1>tensionr</h1>
+<p>The interface is being rebuilt. The engine still runs, and every window it
+   measures is still published as data.</p>
+<p>The measurements are in <a href="data/stories.json">data/stories.json</a>, which
+   needs nothing from this page to be useful.</p>
+HOLDING
+    echo "  -> holding page written"
     return 0
   fi
-  if PYTHONPATH="$src/src" python3 -m tensionr.ledger \
-       --data "$dest/data" --out "$dest/index.html" 2>&1 | sed 's/^/     /'; then
-    echo "  -> index.html generated ($(du -h "$dest/index.html" | cut -f1))"
+
+  # The build reads the data it will be published beside, not the data the branch
+  # happens to carry. overlay_data() has already put the data branch's files in $dest;
+  # without this the build would see only the reference tables that live on the
+  # production ref (aliases, polities, coastline) and no stories.json at all.
+  if [[ -d "$dest/data" ]]; then
+    mkdir -p "$src/data"
+    rsync -a "$dest/data/" "$src/data/"
+  fi
+
+  local log="$WORK_DIR/build-$(echo "$base_path" | tr -c 'A-Za-z0-9' '-').log"
+  if (
+      cd "$src/frontend" &&
+      npm ci --no-audit --no-fund &&
+      PAGES_BASE_PATH="$base_path" npm run build
+     ) > "$log" 2>&1; then
+    rsync -a "$src/frontend/out/" "$dest/"
+    echo "  -> built at base '${base_path:-/}' ($(du -sh "$dest" | cut -f1) total)"
     return 0
   fi
+
+  echo "  ! the frontend build failed at base '${base_path:-/}':" >&2
+  tail -30 "$log" | sed 's/^/     /' >&2
   if [[ "$required" == required ]]; then
-    echo "  ! the ledger could not be generated and this is production - refusing to" >&2
-    echo "    publish a site with no homepage. The last good deployment stays live." >&2
+    echo "  ! this is production - refusing to publish a site with no homepage." >&2
+    echo "    The last good deployment stays live." >&2
     return 1
   fi
-  echo "  ! ledger not generated - preview skipped" >&2
+  echo "  ! preview skipped" >&2
   return 0
 }
+
+# The path component of the Pages URL, with no trailing slash: `/tensionr` for
+# https://exdsgift.github.io/tensionr/. Empty when SITE_BASE_URL is unset, which is the
+# local case - a local assembly serves from the filesystem root and wants no prefix.
+site_base_path() {
+  [[ -n "$SITE_BASE_URL" ]] || { printf ''; return; }
+  local path="${SITE_BASE_URL#*://}"
+  path="/${path#*/}"
+  path="${path%/}"
+  [[ "$path" == "/" ]] && path=""
+  printf '%s' "$path"
+}
+
+BASE_PATH="$(site_base_path)"
 
 echo "Assembling production from '$PRODUCTION_BRANCH':"
 copy_branch "$PRODUCTION_BRANCH" "production" ""
 overlay_data "$OUT_DIR"
-render_ledger "$WORK_DIR/production" "$OUT_DIR" required
+build_frontend "$WORK_DIR/production" "$OUT_DIR" "$BASE_PATH" required
 
 published=""
 published_count=0
@@ -188,7 +266,8 @@ while IFS= read -r branch; do
   echo "Assembling preview for '$branch':"
   if copy_branch "$branch" "preview-$slot" "preview/$branch"; then
     overlay_data "$OUT_DIR/preview/$branch"
-    render_ledger "$WORK_DIR/preview-$slot" "$OUT_DIR/preview/$branch" optional
+    build_frontend "$WORK_DIR/preview-$slot" "$OUT_DIR/preview/$branch" \
+      "$BASE_PATH/preview/$branch" optional
     published="${published}${branch}"$'\n'
     published_count=$((published_count + 1))
   fi

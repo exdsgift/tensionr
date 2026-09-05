@@ -1,66 +1,93 @@
-# ⚡️ tensionr
-> **Real-time Global Intelligence & Narrative Resonance Engine.**
+# tensionr
+
+> tensionr does not measure the world's tension. It measures the **disagreement between
+> those who narrate it**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](https://opensource.org/licenses/MIT)
-[![Status: Live](https://img.shields.io/badge/Status-Live-00ff41.svg?style=flat-square)](#)
-[![Engine: Python/JS](https://img.shields.io/badge/Engine-Python%20%7C%20JS-blue.svg)](#)
 
-**tensionr** is a high-fidelity intelligence dashboard designed to monitor global instability, narrative shifts, and strategic asset movements in real-time. By synthesizing multi-domain signals (from GDELT news flows to ADS-B aerial telemetry) tensionr provides a unified "Geopolitical Tactical Picture" for rapid situational awareness.
+Every few hours the engine takes a window of the world's news, groups articles that are
+telling the **same story** across different sources and languages, and measures how
+differently those sources name the people and places in it. It publishes the five most
+divided stories, the evidence behind each one — every source, and who each one named —
+and a statement of what it did *not* see.
 
-![tensionr Dashboard](images/dashboard1.png)
+## What it is not
 
-## 🛰️ Core Capabilities
+There is no tension score. Two independent attempts at aggregating divergence into a
+single number both ranked noise first and the visibly divergent story near the bottom,
+for a structural reason rather than a tunable one, so the index was removed. What
+survives is the per-(story, actor) count, which is checkable row by row.
 
-- **LLM-Powered SITREP & Insight:** Tactical bulletins summarized via **DistilBART**, plus a cross-domain "Strategic Insight" correlation synthesized via **Mistral-7B-Instruct**.
-- **Geopolitical Time Machine:** A "Static Data Lake" of daily archives, allowing users to select past dates and visualize historical geopolitical shifts.
-- **Narrative Resonance Mapping:** Uses NLP (GoEmotions) to extract granular emotional undertones (Fear, Anger, Sadness, etc.) from global news nodes.
-- **Strategic Aerial Telemetry:** Real-time tracking of military assets with automated anomaly detection for strategic airframes.
-- **Multi-Domain GTI:** A composite algorithmic score quantifying global instability based on news sentiment, market volatility (VIX, Gold), and tactical telemetry.
-- **Resilient Data Pipeline:** Parallelized RSS fetching and smart API fallbacks ensuring continuous intelligence even under rate-limiting.
+The unit is the **story**, never the event. A ten-word headline does not distinguish
+*"Starmer will resign"* from *"Starmer has resigned"*, and human annotators do not
+either. Measured on a hand-built gold set: precision **0.86 at story granularity**,
+**0.23 at event granularity**. That is a property of the input, not a tuning problem.
 
-## 🎯 Who is it for?
+Every figure carries its unit, its procedure, and its uncertainty, or it is not
+published.
 
-- **OSINT Analysts:** Rapidly aggregate and filter unverified raw chatter and verified news nodes.
-- **Risk Managers:** Monitor the GTI to assess corporate or asset exposure in volatile regions.
-- **Geopolitical Researchers:** Visualize how narratives evolve and spread across different domains and languages.
-- **Data Enthusiasts:** A showcase of real-time data orchestration using Python, JS, and automated CI/CD pipelines.
+## Layout
 
-## 🛠️ Tech Stack
+```
+backend/     the engine. Python, reads GDELT, writes JSON. Self-contained.
+frontend/    the site. Next.js + shadcn/ui, exported as static files.
+data/        the contract between them, and published as-is.
+docs/adr/    decisions that constrain the code.
+docs/research/  what was measured, and how.
+tools/       things run by hand.
+```
 
-- **Backend:** Python (Data harvesting, GDELT integration, NLP sentiment analysis).
-- **Frontend:** Vanilla JS / Bootstrap 5 / Leaflet.js (Tactical mapping and hardware-accelerated UI).
-- **Orchestration:** GitHub Actions (automated telemetry sync every hour).
-- **Environments:** Managed via `uv` with a committed `uv.lock` for reproducible builds.
+`data/` sits between the two on purpose. The engine writes it, the frontend build reads
+it, and readers can fetch it: the footer points at `data/stories.json`, which needs
+nothing from this site to be useful.
 
-## 🚀 Quick Start
+## Running the engine
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/exdsgift/tensionr.git
-   cd tensionr
-   ```
+From the repository root, so that `data/` resolves — `--project` rather than
+`--directory`, because the engine's paths are relative to the root and `--directory`
+would move there along with the project:
 
-2. **Setup environment:**
-   ```bash
-   uv sync
-   ```
+```bash
+uv sync --project backend
+uv run --project backend python -m tensionr.stories --out out
+```
 
-3. **Launch the Engine:**
-   Run the data pipeline to populate the dashboard (set `HF_TOKEN` in `.env` to enable the ML stages):
-   ```bash
-   uv run tensionr
-   ```
-   Then serve the dashboard locally (the app fetches `data/*.json`, so it needs an HTTP server, not `file://`):
-   ```bash
-   python -m http.server 8123
-   ```
-   and open <http://localhost:8123>.
+Three runtime dependencies — `requests`, `numpy`, `python-dotenv`. Set `HF_TOKEN` in
+`.env` at the repository root to enable the Hugging Face stages.
 
-4. **Run the tests:**
-   ```bash
-   uv run pytest
-   ```
+Tests:
+
+```bash
+cd backend && uv run pytest
+```
+
+## Running the site
+
+```bash
+tools/serve-site.sh          # build the static export and serve it at :8123
+```
+
+This builds the site the way it is actually published, then serves the files. For
+writing components, `cd frontend && npm run dev` is faster.
+
+The pipeline's output is not in this repository — it is on the `data` branch, so the
+production ref stays protectable. For a page with real stories on it:
+
+```bash
+git fetch origin data && git show origin/data:data/stories.json > data/stories.json
+```
+
+## How it is published
+
+GitHub Pages, assembled by `.github/scripts/assemble-site.sh` on every deploy:
+production at the site root, plus one preview per open pull request under
+`preview/<branch>/`. The whole tree is rebuilt from git refs every time — Pages
+publishes a single artifact as the entire site, so anything less would take production
+down.
+
+Two scheduled workflows and one publishing workflow, none of which run on a pull
+request.
 
 ---
 
-*tensionr © 2026 // Engineered for the next generation of global observers.*
+*MIT. Built by [exdsgift](https://github.com/exdsgift).*

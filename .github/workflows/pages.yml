@@ -16,12 +16,16 @@ name: Pages
 # the set of previews is derived from the open pull requests rather than stored
 # anywhere.
 #
-# The data pipeline is not involved. It lives in update_data.yml on `schedule` +
+# The data pipeline is not involved. It lives in stories.yml on `schedule` +
 # `workflow_dispatch` and must never run on a pull request (#6). It does, however,
 # *ask* for a rebuild: the pipeline writes to the `data` branch rather than to
 # `master` (#10), so nothing about a data update changes a ref this workflow watches.
-# Both publishing jobs dispatch this workflow when they land new data, and without
+# The publishing job dispatches this workflow when it lands new data, and without
 # that the site would freeze at whatever the last merge produced.
+#
+# Since #81 the page is a Next.js static export rather than a generated HTML file, and
+# `basePath` cannot be relative — so assembly builds the frontend once per tree it
+# publishes, which is the slow part of a run. See assemble-site.sh.
 #
 # A pull request can never deploy: its ref is `refs/pull/<n>/merge`, which no
 # environment branch policy can name. So a pull-request run assembles and uploads —
@@ -91,6 +95,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # assemble-site.sh builds each tree's frontend, so this job needs a Node
+      # toolchain even though it never runs npm itself. The cache is keyed on this
+      # checkout's lockfile rather than each cloned tree's, which is the right trade:
+      # branches nearly always share dependencies with master, so the cache hits, and
+      # a branch that genuinely changes them just installs from the registry.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Read the current Pages configuration
         id: pages_state
