@@ -72,7 +72,7 @@ export function StoryRows({
         {rows.map((row) => (
           <AccordionItem value={row.id} key={row.id} className="row">
             <AccordionTrigger className="row-trigger">
-              <span className="grid">
+              <span className="row-grid">
                 <span className="title">
                   {row.headline}
                   {row.language ? <i className="lang">{row.language}</i> : null}
@@ -87,7 +87,7 @@ export function StoryRows({
                 <span className="cell num" data-l="polities">
                   {row.polities}
                 </span>
-                <span className="actors">
+                <span className="actors" data-l="named by">
                   {row.counts.map((c, i) => (
                     <span key={c.actor} className={c.miss ? "miss" : undefined}>
                       {i > 0 ? " · " : ""}

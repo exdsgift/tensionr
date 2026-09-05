@@ -33,3 +33,6 @@ frontend/out/
 # Locally assembled sites: tools/serve-site.sh writes _site/, and so does a local
 # run of .github/scripts/assemble-site.sh.
 /_site/
+
+# Hosted-embedding cache for tools/embedding_divergence.py. Regenerable.
+/.cache/

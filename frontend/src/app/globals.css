@@ -214,6 +214,15 @@
     --barh: 44px;
   }
 
+  .skip {
+    position: absolute; left: .5rem; top: -3rem; z-index: 60;
+    background: var(--background); color: var(--foreground);
+    border: 1px solid var(--control-border); border-radius: var(--radius-sm);
+    padding: .5rem .75rem; font-size: .8rem;
+    transition: top .15s;
+  }
+  .skip:focus { top: .5rem }
+
   .vh {
     position: absolute;
     width: 1px;
@@ -245,7 +254,23 @@
   }
   .bar strong { font-size: .76rem; letter-spacing: .16em; text-transform: uppercase }
   .bar .sub, .bar .when { font-size: .72rem; color: var(--muted-foreground) }
+  .bar h1 {
+    font-size: .76rem; letter-spacing: .16em; text-transform: uppercase;
+    font-weight: 600; margin: 0; display: flex; flex-wrap: wrap;
+    align-items: baseline; gap: .5rem 1.25rem;
+  }
   .bar .when { margin-left: auto; font-variant-numeric: tabular-nums }
+
+  .theme-toggle {
+    display: inline-grid; place-items: center;
+    width: 28px; height: 28px; margin-left: .75rem; flex: none;
+    background: transparent; border: 1px solid var(--control-border);
+    border-radius: var(--radius-sm); color: var(--muted-foreground); cursor: pointer;
+  }
+  .theme-toggle svg { width: 14px; height: 14px }
+  .theme-toggle:hover { color: var(--foreground); border-color: var(--foreground) }
+  .theme-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+
 
   .wrap { max-width: 1200px; margin-inline: auto; padding: 2rem 1.5rem 4rem }
 
@@ -284,7 +309,16 @@
   .from b { font-weight: 500; color: var(--foreground) }
   /* A rate below 0.4 is the thing the page exists to show, so it is marked —
      and marked with weight as well as colour. */
-  .from .miss b, .actors .miss b { color: var(--destructive); font-weight: 600 }
+  /* Not --destructive. Red is the colour of a fault, and a low naming rate is the
+     page's finding rather than something going wrong. Weight and an underline mark it
+     without claiming an error, and the glyph-plus-class rule of ADR 0001 is satisfied
+     by the fraction being printed either way. */
+  .from .miss b, .actors .miss b {
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+  }
 
   /* The map is two maps. 76 characters of braille are ~52em wide, so filling a
      358px column with them asks for 6.9px type, at which each dot is 0.83px of
@@ -383,7 +417,12 @@
   }
   .rows > .span { font-size: .85rem; color: var(--muted-foreground); margin-top: .75rem; max-width: 76ch }
 
-  .grid {
+  /* Not `.grid`. Tailwind owns that name and emits `.grid{display:grid}` into
+     @layer utilities, which outranks @layer components - so `.colhead{display:flex}`
+     in the mobile block below lost every time and the column heads never collapsed.
+     Nothing looked broken; they simply stacked into four orphan labels with dangling
+     separators. Any class here that shares a name with a utility loses the same way. */
+  .row-grid {
     display: grid; grid-template-columns: var(--cols); gap: .5rem 1rem;
     align-items: baseline; width: 100%;
   }
@@ -430,9 +469,21 @@
   /* The evidence table keeps its columns and scrolls sideways inside its own
      box. Fixed layout with declared widths, because automatic layout gave the
      two nowrap columns 375 of 620px and wrapped headlines to five lines. */
+  /* Both axes are contained. The tallest table in a real window is 600 rows and
+     measured 22,239px, which put the column heads a screen-height of scrolling away
+     from most of the data. A capped scroller with a stuck header keeps the header in
+     view; `dvh` rather than `vh` so a phone's collapsing address bar does not change
+     the height mid-scroll. */
   .ev-scroll {
-    margin-top: .75rem; overscroll-behavior-x: contain;
+    margin-top: .75rem;
+    overflow: auto; overscroll-behavior: contain;
+    max-height: min(70dvh, 40rem);
     border: 1px solid var(--control-border); border-radius: var(--radius-md);
+  }
+  table.src thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--background);
+    box-shadow: inset 0 -1px 0 var(--border);
   }
   .ev-scroll:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
   table.src { table-layout: fixed; min-width: 620px; font-size: .8rem }
@@ -454,9 +505,19 @@
   .i {
     font: inherit; font-size: .58rem; line-height: 1; background: transparent;
     border: 1px solid var(--control-border); border-radius: 50%;
-    width: 1.35em; height: 1.35em; padding: 0; cursor: pointer;
-    margin-left: .5em; flex: none; display: grid; place-items: center;
+    padding: 0; cursor: pointer; flex: none; display: inline-grid; place-items: center;
     color: var(--muted-foreground);
+    /* WCAG 2.5.8 wants 24x24 CSS px. These were 13x13 - on a phone the only route to
+       this page's vocabulary, and not reliably hittable. The ring stays small so the
+       control still reads as a footnote marker; the target is grown underneath it with
+       a pseudo-element, so the layout does not gain 11px of gutter per label. */
+    width: 1.35em; height: 1.35em; position: relative;
+    margin-left: .5em;
+  }
+  .i::after {
+    content: ""; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: max(24px, 100%); height: max(24px, 100%);
   }
   .i:hover { background: var(--foreground); color: var(--background); border-color: var(--foreground) }
   .i:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
@@ -486,7 +547,7 @@
   }
 
   .foot-rule { margin-top: 3rem }
-  .foot { margin-top: 1.5rem; border: none; background: transparent }
+  .foot { margin-top: 1.5rem; border: none; background: transparent; padding: 0 }
   .foot p {
     font-size: .78rem; line-height: 1.7; color: var(--muted-foreground);
     max-width: 88ch;
@@ -510,10 +571,16 @@
       display: flex; flex-wrap: wrap; gap: .35rem .75rem;
     }
     .colhead > span:not(:last-child)::after { content: "·"; margin-left: .75rem }
-    .row .cell::before {
-      content: attr(data-l) " ";
+    /* The numeric cells are dropped, not labelled. The line under the headline
+       already reads "53 sources · 7 polities · division 0.998", so labelling them
+       printed both counts twice in a row, three lines apart. What is kept is the one
+       thing that line does not carry. */
+    .row .cell { display: none }
+    .row .actors::before {
+      display: block;
+      content: attr(data-l);
       text-transform: uppercase; letter-spacing: .1em; font-size: .62rem;
-      color: var(--muted-foreground);
+      color: var(--muted-foreground); margin-top: .5rem;
     }
     .agg > div { flex: 1 1 45% }
     .wrap { padding: 1.5rem 1rem 3rem }

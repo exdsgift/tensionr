@@ -81,7 +81,7 @@ export function BrailleMap({
         </div>
       ) : (
         <div className="cap">
-          <span className="dim">no polities plotted — no story carries a figure</span>
+          <span className="dim">no polities plotted, no story carries a figure</span>
         </div>
       )}
 
@@ -127,7 +127,7 @@ const PLACEMENT = /* js */ `(function(){
       d.className = 'blip' + (p.on ? '' : ' off');
       d.dataset.n = p.n;
       d.tabIndex = 0;
-      d.setAttribute('aria-label', p.n + (p.on ? ' — reporting' : ' — silent'));
+      d.setAttribute('aria-label', p.n + (p.on ? ', reporting' : ', silent'));
       d.innerHTML = '<span class="dot"></span><span class="r"></span><span class="r"></span>';
       [].forEach.call(d.querySelectorAll('.r'), function(r, k){
         r.style.animationDelay = (i * 0.31 + k * 1.5) + 's';

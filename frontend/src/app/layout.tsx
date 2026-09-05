@@ -37,6 +37,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       */}
       <body className="min-h-full flex flex-col">
         {/*
+          Applies a stored theme choice before the first paint. Without it a reader who
+          has chosen light on a dark machine sees a dark frame first, and the flash is
+          worst on the slowest devices. It runs ahead of React on purpose; the toggle
+          component only handles clicks.
+
+          Absent or unreadable storage means no class, which means the page follows
+          `prefers-color-scheme` - the same thing it does with scripting off entirely.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('tensionr-theme');" +
+              "if(t==='light'||t==='dark')document.documentElement.classList.add(t)}catch(e){}",
+          }}
+        />
+        {/*
           Without scripting, Base UI never removes the `hidden` attribute from a
           collapsed panel, so the five stories would be in the markup and invisible.
           `hiddenUntilFound` puts them in the HTML; this is what makes them readable.

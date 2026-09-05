@@ -154,7 +154,7 @@ export function evidenceNote(story: Story): {
       `${story.collapsed} reprint(s) that shared a headline word for word.`,
     unresolved: figure.unresolved
       ? `${figure.unresolved} row(s) are –, not evaluable: no alias exists in that ` +
-        `script, and that must never be read as an omission — omission is the signal.`
+        `script, and that must never be read as an omission. Omission is the signal.`
       : `No row is –: an alias exists in every script present.`,
     links:
       `Each publisher links to the article at the address GDELT recorded; the page ` +
@@ -228,7 +228,7 @@ export function hook(
     say:
       `${hero.sources} publishers in ${hero.polities.length} polities carried this ` +
       `story. ${figure.named} named ${actor} and ${figure.evaluable - figure.named} ` +
-      `did not — the widest split this run measured.`,
+      `did not. That is the widest split this run measured.`,
   };
 }
 
@@ -265,7 +265,7 @@ export function selectionNote(report: Report, featured: number): string {
   let text =
     `The ${featured} most divided stories of the last ${span.span_hours} hours, ` +
     `ranked by the widest division each reached over that span rather than by this ` +
-    `window alone — ${span.candidates} candidates across ${span.runs_in_span} runs.`;
+    `window alone, over ${span.candidates} candidates across ${span.runs_in_span} runs.`;
   if (span.gone_from_the_window) {
     text +=
       ` ${span.gone_from_the_window} of them are no longer carried by the current ` +
@@ -290,8 +290,8 @@ export function neverReached(report: Report): string {
   if (!kept || !total) return "";
   const dropped = total - kept;
   let text =
-    `${thousands(dropped)} of those articles never reached a story at all — ` +
-    `${Math.round((100 * dropped) / total)}% — because they joined no theme, or ` +
+    `${thousands(dropped)} of those articles never reached a story at all, ` +
+    `${Math.round((100 * dropped) / total)}%, because they joined no theme, or ` +
     `joined one too uniform to separate.`;
   if (report.grouping.unsplit_themes) {
     text +=

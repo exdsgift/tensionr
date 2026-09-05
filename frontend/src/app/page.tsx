@@ -19,6 +19,7 @@ import {
   TopBar,
 } from "@/components/page-parts";
 import { StoryRows, type StoryRowView } from "@/components/story-rows";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { capNote, fitEvidence } from "@/lib/fit";
 import { panel } from "@/lib/map";
 import {
@@ -103,13 +104,17 @@ export default function Ledger() {
 
   return (
     <>
-      <TopBar when={runStamp(run)} />
+      <a className="skip" href="#stories">
+        Skip to the stories
+      </a>
+      <TopBar when={runStamp(run)}>
+        <ThemeToggle />
+      </TopBar>
 
-      <div className="wrap">
+      <main className="wrap">
         <section className="hook">
           <Hook
             hook={hook(hero, report, labels)}
-            counts={hero ? rowCounts(hero, labels) : []}
             polities={hero ? hero.polities.length : 0}
           />
           <BrailleMap
@@ -123,13 +128,13 @@ export default function Ledger() {
 
         <AggregateStrip tiles={tiles} />
 
-        <section className="rows">
+        <section className="rows" id="stories">
           <h2>Stories</h2>
           <p className="span">
             {selectionNote(report, Math.min(FEATURED, rows.length))}
           </p>
 
-          <div className="grid colhead">
+          <div className="row-grid colhead">
             <span>
               Story
               <InfoPopover
@@ -173,7 +178,7 @@ export default function Ledger() {
                   The state a publisher&rsquo;s domain could be placed in.
                   Placement is incomplete and the rate is published above; a
                   domain that could not be placed is counted, never dropped, and
-                  shows as <em>&mdash;</em> in the evidence.
+                  shows as <em>&mdash;</em> in the evidence table.
                 </p>
               </InfoPopover>
             </span>
@@ -186,11 +191,11 @@ export default function Ledger() {
               >
                 <p>
                   How many evaluable sources used a name for this actor, over
-                  how many could have. <em>Evaluable</em> excludes rows where no
-                  alias exists in that script &mdash; shown as <em>&ndash;</em>{" "}
-                  &mdash; because silence there is the tool&rsquo;s, not the
-                  publisher&rsquo;s. Omission is the signal, so it must never be
-                  confused with an absent alias.
+                  how many could have. <em>Evaluable</em> excludes rows shown as{" "}
+                  <em>&ndash;</em>, where no alias exists in that script, because
+                  silence there is the tool&rsquo;s and not the publisher&rsquo;s.
+                  Omission is the signal, so it must never be confused with an absent
+                  alias.
                 </p>
               </InfoPopover>
             </span>
@@ -211,7 +216,7 @@ export default function Ledger() {
         </section>
 
         <SiteFooter text={footer(report)} />
-      </div>
+      </main>
     </>
   );
 }

@@ -122,6 +122,6 @@ export function capNote(dropped: number): string | null {
   return (
     `The sources behind the ${dropped} narrowest of these rows are not on this page, ` +
     `which would otherwise go past its weight budget. They are in data/stories.json, ` +
-    `one row per publisher — the same rows the figures above were computed from.`
+    `one row per publisher, the same rows the figures above were computed from.`
   );
 }
