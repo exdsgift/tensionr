@@ -218,3 +218,140 @@ this publisher use this name?*
 The next thing worth trying in that family is not another embedding. It is another
 discrete, checkable property of the surface text: which verb is attached to an actor,
 or whether a casualty figure is attributed to a named agent or left agentless.
+
+---
+
+# Part two: is there a political *direction* inside a story?
+
+Added 2026-09-05, after the owner restated the question. The idea was not distance but
+**polarity**: within a story, use the latent space to find a left/right axis in how
+outlets present the same facts.
+
+Distance and direction are different objects, and the difference is the whole problem.
+Distance says how differently something is worded; a political axis says which side it
+is on. Two outlets can be far apart because one led with the local angle. To get a side
+you need an axis, and an axis has to be anchored.
+
+Three ways to anchor one were put to the owner: declare it by hand, take it from an
+external database of outlet leanings, or look for it in the data first. **(c) was
+chosen, with (b) as the fallback.** `tools/embedding_axis.py` implements (c).
+
+## The design
+
+A first principal component always exists. Take any set of vectors, and one comes back
+with headlines at each end, and it will look like something. So the test is not whether
+a direction appears, but whether the method can find a direction **already known to be
+there**.
+
+**Positive control: the Falklands.** 286 outlets, 29 Argentine and 29 Spanish, on
+islands whose *name* is the disagreement. If the first component cannot separate the
+Argentine outlets here, nothing it reports about a division we cannot check is worth
+reading.
+
+**The hypothesis: Saxony-Anhalt.** 25 outlets, all German, all one language, on a
+domestic election. Nothing separating them can be nationality or language, so if a
+left/right axis exists in this corpus it is here.
+
+Prediction on record before the run: Argentine outlets at one end, Spanish and Mexican
+at the other, with *Malvinas* and *Falkland* splitting cleanly.
+
+## The positive control failed
+
+    first component carries 15.1% of the variance
+    separating Argentina from the rest:  AUC 0.477   p = 0.694
+
+0.5 is no separation. 0.477 is no separation. On a story where the disagreement is the
+name of the islands, the method finds nothing.
+
+## Why it failed, which is the useful part
+
+The extremes explain it immediately. One end:
+
+    [Türkiye] Argentina initiates sanction process against 45 entities over Fa…
+    [Peru]    Argentina inició sanciones a 45 personas y empresas por activida…
+    [Russia]  Аргентина ввела санкции против 45 лиц и компаний из-за нефти у с…
+
+The other end:
+
+    [Spain]   CRISIS MIGRATORIA | Última hora de la entrada masiva a Ceuta, en…
+    [Spain]   Zarzuela y Moncloa, ante el reto de la histórica visita del rey…
+    [Spain]   "¡Hasta la siguiente amigos!"
+
+**The second group is not covering the Falklands differently. It is not covering the
+Falklands.** The component separated on-topic from off-topic, and the token count
+confirms it: split at the median of the axis, `falkland` appears **19 times on one side
+and 0 on the other**.
+
+Counted by hand across every name the outlets actually use (falkland, malvinas,
+malouines, malwiny, фолкленд, мальвин, 马尔维纳斯, ...): **190 of 286 outlets, 66%, name
+the islands in no language at all.** The cluster contains a Venezuela–GeoPark oil deal,
+Corina Machado, and the Ceuta migration crisis.
+
+## What this does to a published figure
+
+That story's published line is **`spain: named 19 of 286, division 0.3525`**. The
+denominator counts 286 articles of which roughly two thirds are about something else.
+
+`M = evaluable sources` was chosen precisely so the denominator would mean *sources in
+this story*. Cluster contamination silently redefines it as *sources that landed in this
+bucket*, and it moves the figure in a known direction: intruders almost never name the
+story's actor, so every contaminated story reports **less agreement than it has**. On a
+page whose subject is disagreement, the error flatters the finding.
+
+This is an engine defect, not a defect of the experiment, and it is the most valuable
+thing to come out of this line of work.
+
+## Saxony-Anhalt: suggestive, unvalidated
+
+One end is procedural: *pollsters expect no surprise like 2021*, *1.7 million can vote
+on Sunday*. The other is consequence: *IW chief warns against an AfD win*, *thousands at
+rallies*, *an AfD win would drive Saxony-Anhalt economically into the wall*, *AfD ahead,
+other parties tremble*.
+
+That is a real editorial distinction, horse-race against alarm. It is **not** left and
+right, there is no label to score it against, and n = 25. Recorded as interesting, not
+as a result. Anyone tempted to build on it should note that the same eyeballing would
+have endorsed the Falklands component, which is measuring nothing.
+
+## Cluster spread is the thing worth keeping
+
+Mean cosine distance to a story's own centroid, over the 20 banded stories:
+
+| spread | n | story |
+| ---: | ---: | --- |
+| 0.479 | 286 | Falkland Islands (66% off-topic, verified by hand) |
+| 0.476 | 152 | The stock market just did something for the first time |
+| 0.392 | 394 | Trump calls the Iran conflict "small potatoes" *(featured)* |
+| 0.380 | 53 | Colombia's president announces a capture *(featured)* |
+| … | | |
+| 0.142 | 158 | Bolivia military base explosion |
+| 0.119 | 31 | Mercator v Equal Earth |
+
+The two loosest clusters are **the same two stories that topped part one's divergence
+ranking**. Correlation between that ranking and this spread: Spearman +0.399, Pearson
++0.519. On twelve stories that is suggestive and not decisive, and it is quoted that way
+— but together with the hand count on the Falklands it is the most likely reading of
+part one: the "divergence" score was substantially reporting loose clustering.
+
+Nothing in the engine measures this today. `report.grouping` publishes thresholds and
+counts, never whether the resulting stories hold together.
+
+## Verdict on (c), and on (b)
+
+**(c) is answered: no.** There is a dominant direction inside a story and it is not
+political. On the one story where the political direction is known in advance, the
+method scores 0.477 against a 0.5 null.
+
+**(b) should not be attempted next.** An external table of outlet leanings would have
+been laid over the same clusters, and 66% of one of them is a different story. Fixing
+what a story *contains* has to come before measuring how its members differ, or the
+axis is fitted to noise with a political name attached to it.
+
+**The order to work in, if this is pursued:**
+
+1. Measure cluster spread per story and publish it, so a loose story is visible rather
+   than silently inflating a denominator.
+2. Decide what to do about intruders. Excluding them changes every published figure and
+   is a data-semantics decision, not a cleanup.
+3. Only then revisit an axis, and only with the positive control repeated on a story
+   that is verified to be one story.
