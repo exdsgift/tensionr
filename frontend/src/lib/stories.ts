@@ -114,7 +114,21 @@ function readJson<T>(...parts: string[]): T {
 }
 
 export function loadRun(): Run {
-  return readJson<Run>("stories.json");
+  try {
+    return readJson<Run>("stories.json");
+  } catch (cause) {
+    // The engine's output lives on the `data` branch, not in this one, so this is the
+    // first thing that breaks when the overlay did not happen. Left as an ENOENT it
+    // surfaces as a Next export stack trace with a temp path in it, which says nothing
+    // about what to do.
+    throw new Error(
+      `data/stories.json is missing, so there is no run to render.\n` +
+        `It is produced by the engine and published to the \`data\` branch; ` +
+        `assemble-site.sh overlays it onto each tree before building.\n` +
+        `Locally: git fetch origin data && git show origin/data:data/stories.json > data/stories.json`,
+      { cause },
+    );
+  }
 }
 
 export function loadCoastlines(): { wide: Coastline; narrow: Coastline } {
