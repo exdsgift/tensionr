@@ -22,10 +22,22 @@ since.
 
 ## What the page actually weighs
 
-Measured on the first real run rendered by the new frontend — 5 featured stories, 499
-evidence rows, gzip level 9, counting only what a modern browser fetches for a first
-load (the `noModule` legacy bundle is excluded because module-capable browsers never
-request it):
+**The page's weight is a property of the run, not of the code.** Two consecutive runs,
+seven hours apart, measured on real builds:
+
+| | evidence rows | content | total |
+| --- | ---: | ---: | ---: |
+| `20260905T044830Z` | 499 | 67.3 KB | 313.9 KB |
+| `20260905T115847Z` | 1,227 | 147.2 KB | 486.1 KB |
+
+A single story carried 600 rows in the second. **2.5× between two runs of the same
+engine, hours apart** — so a budget set from one measurement is a build that fails on a
+Tuesday. This was found the way it should be: the budget check failed on its own first
+CI run, against data fresher than the local copy it had been calibrated on.
+
+Decomposed, on the lighter of the two — gzip level 9, counting only what a modern
+browser fetches for a first load (the `noModule` legacy bundle is excluded because
+module-capable browsers never request it):
 
 | | gzip |
 | --- | ---: |
@@ -53,33 +65,39 @@ Two reductions were taken and one was measured and rejected:
 
 ## Decision
 
-**The budget is 340 KB gzipped for a first load, and it is a reader-facing number, not a
-content-facing one.**
+**520 KB gzipped for a first load, and 160 KB for the content half** — the latter counted
+as HTML with `<script>` blocks stripped, plus CSS.
 
-340 rather than 322 so the ceiling is a ceiling rather than a tripwire: the page's weight
-moves with the run, since a window with a 233-source story is heavier than one without.
-Roughly 5% of headroom over the measured figure.
+Both are set from the *heavier* observed run with ~8% headroom, not from a single sample.
+An earlier draft of this ADR said 340 and 120, taken from the lighter run alone; those two
+numbers were also mutually inconsistent, since the RSC payload tracks the content almost
+exactly and `total ≈ 2 × content + 181 KB`, which puts a 120 KB content ceiling at a
+420 KB total rather than 340. Corrected here rather than quietly adjusted, because the
+first version would have failed on ordinary days.
 
-**The content half keeps a budget of its own: 120 KB gzipped**, counted as HTML with
-`<script>` blocks stripped, plus CSS. That is the half this project controls, it is 68,680
-today, and it is the number that says whether the page is getting fatter for reasons that
-are anybody's fault.
+The content half is the one this project controls, and the only one where growth is
+somebody's decision.
 
 The framework half is not budgeted, because it is not a variable — it is what Next costs.
-Recording it as its own line is the point: a future reader comparing 340 KB against the
-old 250 KB should see immediately that the page did not grow by 90 KB, the platform under
-it did.
+Recording it as its own line is the point: a future reader comparing 520 KB against the
+old 250 KB should see immediately that the page did not grow by 270 KB, the platform
+under it did.
 
 ## Consequences
 
-- The old `_fit()` behaviour — dropping evidence tables under pressure and saying so — is
-  **not** reimplemented. It existed to keep a hard cap that a static HTML file could
-  actually hit; at 68,680 against 120,000 the content half has room, and dropping evidence
-  is the most expensive thing this page can give up, since the evidence is what makes the
-  figures checkable.
-- If the content half is ever exceeded, drop evidence tables from the narrowest rows
-  first and announce the cap on the page, as `ledger.py` did. Do not silently truncate;
-  a page that hides rows without saying so is claiming a completeness it does not have.
+- **`_fit()` is reimplemented**, in `frontend/src/lib/fit.ts`, as a backstop rather than a
+  routine mechanism: at 147 KB against 160 the heavier observed run keeps every table, and
+  the fitting only fires on a run beyond anything measured. Its rules are the part that
+  matters and are tested: figures are never dropped, only the tables behind them; the hero
+  keeps its evidence longest, because leading with an unevidenced claim is the one thing
+  this page exists not to do; the narrowest rows go first; and the page says how many it
+  gave up and where those rows are. Never truncate silently — a page that hides rows
+  without saying so is claiming a completeness it does not have.
+- The fitting costs a table by gzipping the text it will print rather than by rendering
+  it, because `react-dom/server` is not importable from a server component under
+  Turbopack. That proxy is calibrated — `content ≈ 26 KB + 2.03 × proxy`, from the two
+  runs above — and `check-weight.mjs` measures the built page and is the real gate.
+  Recalibrate by re-solving against a build, not by feel.
 - Both figures are gzip, not brotli. Pages serves brotli to browsers that ask for it, so
   the real transfer is smaller. Measuring the larger number is deliberate.
 - Revisiting the framework choice would move the framework line, not the content line.

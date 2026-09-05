@@ -50,75 +50,95 @@ export interface StoryRowView {
 export function StoryRows({
   rows,
   evidence,
+  capNote,
 }: {
   rows: StoryRowView[];
-  /** One rendered evidence table per row, keyed by story id. */
+  /** One rendered evidence table per row, keyed by story id. Absent means the page
+      could not afford that table; the row says so rather than showing nothing. */
   evidence: Record<string, ReactNode>;
+  /** Stated once, above the rows, when the page had to give tables up. */
+  capNote: string | null;
 }) {
   return (
-    <Accordion
-      // The first row open, so the page shows what an expanded row looks like without
-      // asking the reader to guess that the rows expand at all.
-      defaultValue={rows.length ? [rows[0].id] : []}
-      hiddenUntilFound
-      className="rows-list"
-    >
-      {rows.map((row) => (
-        <AccordionItem value={row.id} key={row.id} className="row">
-          <AccordionTrigger className="row-trigger">
-            <span className="grid">
-              <span className="title">
-                {row.headline}
-                {row.language ? <i className="lang">{row.language}</i> : null}
-                <small>
-                  {row.sources} sources · {row.polities} polities · division{" "}
-                  {row.division.toFixed(3)}
-                </small>
+    <>
+      {capNote ? <p className="read sub cap-note">{capNote}</p> : null}
+      <Accordion
+        // The first row open, so the page shows what an expanded row looks like without
+        // asking the reader to guess that the rows expand at all.
+        defaultValue={rows.length ? [rows[0].id] : []}
+        hiddenUntilFound
+        className="rows-list"
+      >
+        {rows.map((row) => (
+          <AccordionItem value={row.id} key={row.id} className="row">
+            <AccordionTrigger className="row-trigger">
+              <span className="grid">
+                <span className="title">
+                  {row.headline}
+                  {row.language ? <i className="lang">{row.language}</i> : null}
+                  <small>
+                    {row.sources} sources · {row.polities} polities · division{" "}
+                    {row.division.toFixed(3)}
+                  </small>
+                </span>
+                <span className="cell num" data-l="sources">
+                  {row.sources}
+                </span>
+                <span className="cell num" data-l="polities">
+                  {row.polities}
+                </span>
+                <span className="actors">
+                  {row.counts.map((c, i) => (
+                    <span key={c.actor} className={c.miss ? "miss" : undefined}>
+                      {i > 0 ? " · " : ""}
+                      <b>{c.actor}</b> {c.named}/{c.evaluable}
+                    </span>
+                  ))}
+                </span>
               </span>
-              <span className="cell num" data-l="sources">
-                {row.sources}
-              </span>
-              <span className="cell num" data-l="polities">
-                {row.polities}
-              </span>
-              <span className="actors">
-                {row.counts.map((c, i) => (
-                  <span key={c.actor} className={c.miss ? "miss" : undefined}>
-                    {i > 0 ? " · " : ""}
-                    <b>{c.actor}</b> {c.named}/{c.evaluable}
-                  </span>
-                ))}
-              </span>
-            </span>
-          </AccordionTrigger>
+            </AccordionTrigger>
 
-          <AccordionContent>
-            <p className="read">
-              {row.reading.before}
-              {row.reading.balanced ? (
-                <>
-                  , which is <em>{row.reading.balanced.replace(/^which is /, "")}</em>
-                </>
-              ) : null}
-              .{row.reading.split ? ` ${row.reading.split}` : ""}
-            </p>
+            <AccordionContent>
+              <p className="read">
+                {row.reading.before}
+                {row.reading.balanced ? (
+                  <>
+                    , which is{" "}
+                    <em>{row.reading.balanced.replace(/^which is /, "")}</em>
+                  </>
+                ) : null}
+                .{row.reading.split ? ` ${row.reading.split}` : ""}
+              </p>
 
-            {row.bandNote ? <p className="read sub">{row.bandNote}</p> : null}
+              {row.bandNote ? <p className="read sub">{row.bandNote}</p> : null}
 
-            <Collapsible>
-              <CollapsibleTrigger className="ev-toggle">
-                All {row.sources} sources, and who each one named
-              </CollapsibleTrigger>
-              <CollapsibleContent hiddenUntilFound>
-                {evidence[row.id]}
+              {evidence[row.id] ? (
+                <Collapsible>
+                  <CollapsibleTrigger className="ev-toggle">
+                    All {row.sources} sources, and who each one named
+                  </CollapsibleTrigger>
+                  <CollapsibleContent hiddenUntilFound>
+                    {evidence[row.id]}
+                    <p className="ev-note">
+                      {row.note.collapsed} {row.note.unresolved}{" "}
+                      {row.note.links}
+                    </p>
+                  </CollapsibleContent>
+                </Collapsible>
+              ) : (
+                // Bounded, and said out loud. The figures above are the run's claim; the
+                // rows behind them are served beside this page.
                 <p className="ev-note">
-                  {row.note.collapsed} {row.note.unresolved} {row.note.links}
+                  The {row.sources} sources behind this row are not on this
+                  page: it would have gone past its weight budget. They are in{" "}
+                  <a href="data/stories.json">data/stories.json</a>, one row per
+                  publisher, the same rows the figures were computed from.
                 </p>
-              </CollapsibleContent>
-            </Collapsible>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </>
   );
 }

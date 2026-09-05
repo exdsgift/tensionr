@@ -12,8 +12,14 @@
 import { BrailleMap } from "@/components/braille-map";
 import { EvidenceTable } from "@/components/evidence-table";
 import { InfoPopover } from "@/components/info-popover";
-import { AggregateStrip, Hook, SiteFooter, TopBar } from "@/components/page-parts";
+import {
+  AggregateStrip,
+  Hook,
+  SiteFooter,
+  TopBar,
+} from "@/components/page-parts";
 import { StoryRows, type StoryRowView } from "@/components/story-rows";
+import { capNote, fitEvidence } from "@/lib/fit";
 import { panel } from "@/lib/map";
 import {
   bandNote,
@@ -71,11 +77,17 @@ export default function Ledger() {
     note: evidenceNote(story),
   }));
 
+  // How heavy the page is depends on the run, not on this code: consecutive runs
+  // carried 499 and 1,227 evidence rows. Rather than let that decide whether the build
+  // passes, the page gives up its narrowest tables until it fits, and says so.
+  const fitted = fitEvidence(featured);
   const evidence = Object.fromEntries(
-    featured.map((story) => [
-      story.id,
-      <EvidenceTable story={story} labels={labels} key={story.id} />,
-    ]),
+    featured
+      .filter((story) => fitted.kept.has(story.id))
+      .map((story) => [
+        story.id,
+        <EvidenceTable story={story} labels={labels} key={story.id} />,
+      ]),
   );
 
   const tiles = [
@@ -113,7 +125,9 @@ export default function Ledger() {
 
         <section className="rows">
           <h2>Stories</h2>
-          <p className="span">{selectionNote(report, Math.min(FEATURED, rows.length))}</p>
+          <p className="span">
+            {selectionNote(report, Math.min(FEATURED, rows.length))}
+          </p>
 
           <div className="grid colhead">
             <span>
@@ -126,30 +140,40 @@ export default function Ledger() {
                 <p>
                   Articles about the same happening, grouped across sources and
                   languages. Not an <em>event</em>: a ten-word headline does not
-                  distinguish &ldquo;will resign&rdquo; from &ldquo;has resigned&rdquo;,
-                  and neither do human annotators. Measured on a hand-built gold set,
-                  precision is 0.86 at story granularity and 0.23 at event granularity.
+                  distinguish &ldquo;will resign&rdquo; from &ldquo;has
+                  resigned&rdquo;, and neither do human annotators. Measured on
+                  a hand-built gold set, precision is 0.86 at story granularity
+                  and 0.23 at event granularity.
                 </p>
               </InfoPopover>
             </span>
             <span>
               Sources
-              <InfoPopover id="p-src" label="What a source is" title="What a source is">
+              <InfoPopover
+                id="p-src"
+                label="What a source is"
+                title="What a source is"
+              >
                 <p>
-                  One publisher, counted once, after reprints that shared a headline word
-                  for word have been collapsed. A wire story reprinted by six outlets is
-                  one voice agreeing with itself, not six sources agreeing.
+                  One publisher, counted once, after reprints that shared a
+                  headline word for word have been collapsed. A wire story
+                  reprinted by six outlets is one voice agreeing with itself,
+                  not six sources agreeing.
                 </p>
               </InfoPopover>
             </span>
             <span>
               Polities
-              <InfoPopover id="p-pol" label="What a polity is" title="What a polity is">
+              <InfoPopover
+                id="p-pol"
+                label="What a polity is"
+                title="What a polity is"
+              >
                 <p>
-                  The state a publisher&rsquo;s domain could be placed in. Placement is
-                  incomplete and the rate is published above; a domain that could not be
-                  placed is counted, never dropped, and shows as{" "}
-                  <em>&mdash;</em> in the evidence.
+                  The state a publisher&rsquo;s domain could be placed in.
+                  Placement is incomplete and the rate is published above; a
+                  domain that could not be placed is counted, never dropped, and
+                  shows as <em>&mdash;</em> in the evidence.
                 </p>
               </InfoPopover>
             </span>
@@ -161,22 +185,27 @@ export default function Ledger() {
                 title="What &ldquo;named by&rdquo; means"
               >
                 <p>
-                  How many evaluable sources used a name for this actor, over how many
-                  could have. <em>Evaluable</em> excludes rows where no alias exists in
-                  that script &mdash; shown as <em>&ndash;</em> &mdash; because silence
-                  there is the tool&rsquo;s, not the publisher&rsquo;s. Omission is the
-                  signal, so it must never be confused with an absent alias.
+                  How many evaluable sources used a name for this actor, over
+                  how many could have. <em>Evaluable</em> excludes rows where no
+                  alias exists in that script &mdash; shown as <em>&ndash;</em>{" "}
+                  &mdash; because silence there is the tool&rsquo;s, not the
+                  publisher&rsquo;s. Omission is the signal, so it must never be
+                  confused with an absent alias.
                 </p>
               </InfoPopover>
             </span>
           </div>
 
           {featured.length ? (
-            <StoryRows rows={views} evidence={evidence} />
+            <StoryRows
+              rows={views}
+              evidence={evidence}
+              capNote={capNote(fitted.dropped)}
+            />
           ) : (
             <p className="read">
-              No story in this window cleared both floors, so there is no row to show.
-              The window itself is described below.
+              No story in this window cleared both floors, so there is no row to
+              show. The window itself is described below.
             </p>
           )}
         </section>

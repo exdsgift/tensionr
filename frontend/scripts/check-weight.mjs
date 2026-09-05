@@ -14,11 +14,46 @@
 import { gzipSync } from "node:zlib";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { statSync, readdirSync } from "node:fs";
+
+/**
+ * Refuse to grade a stale build.
+ *
+ * A failed `next build` leaves the previous `out/` in place, so these checks happily
+ * measured output from before the change that broke the build and reported a pass. A
+ * check that passes on stale output is worse than no check: it says the thing it was
+ * written to catch did not happen.
+ */
+function refuseStaleOutput(outDir) {
+  const built = statSync(path.join(outDir, "index.html")).mtimeMs;
+  const roots = [
+    path.join(outDir, "..", "src"),
+    path.join(outDir, "..", "..", "data", "stories.json"),
+  ];
+  let newest = 0;
+  const walk = (p) => {
+    const s = statSync(p);
+    if (s.isDirectory()) for (const e of readdirSync(p)) walk(path.join(p, e));
+    else newest = Math.max(newest, s.mtimeMs);
+  };
+  for (const r of roots) {
+    try { walk(r); } catch { /* absent input is not this check's business */ }
+  }
+  if (newest > built) {
+    console.error(
+      "out/index.html is older than the sources it was built from — run `npm run build`.\n" +
+      "(A failed build leaves the previous export in place, and grading that reports a\n" +
+      " pass for output nobody produced.)",
+    );
+    process.exit(1);
+  }
+}
 
 const OUT = path.join(import.meta.dirname, "..", "out");
-const CONTENT_BUDGET = 120 * 1024;
-const TOTAL_BUDGET = 340 * 1024;
+const CONTENT_BUDGET = 160 * 1024;
+const TOTAL_BUDGET = 520 * 1024;
 
+refuseStaleOutput(OUT);
 const html = readFileSync(path.join(OUT, "index.html"), "utf-8");
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
 const read = (href) => readFileSync(path.join(OUT, href.replace(/^\//, "")));
