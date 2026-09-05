@@ -720,7 +720,67 @@
     padding: .3rem .6rem; cursor: pointer; font-family: inherit;
   }
 
-  .foot-rule { margin-top: 3rem }
+  /* After the stories, before the methods paragraph. Two cards side by side where
+     there is room, stacked where there is not - the leaderboard is a list and the run
+     facts are a grid, and forcing them into one shape would serve neither. */
+  .rightnow {
+    margin-top: var(--s7);
+    display: grid; gap: var(--s5);
+    /* The leaderboard is five columns wide and the facts are a single stack, so the
+       split is not even. At 1.15/1 the last two columns were clipped and the header
+       read "Storie". */
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  @media (max-width: 900px) { .rightnow { grid-template-columns: minmax(0, 1fr) } }
+
+  .rn-card { background: var(--card) }
+  .rn-card [data-slot="card-title"] { font-size: .95rem }
+  .rn-sub {
+    margin: var(--s2) 0 0; font-size: .78rem; line-height: 1.55;
+    color: var(--muted-foreground); max-width: 60ch;
+  }
+  .rn-scroll { max-height: 26rem; overflow: auto; overscroll-behavior: contain }
+  table.rn-table { font-size: .78rem; table-layout: auto; min-width: 0 }
+  table.rn-table th, table.rn-table td { padding: .32rem .55rem .32rem 0 }
+  table.rn-table th:last-child, table.rn-table td:last-child { padding-right: 0 }
+  table.rn-table thead th {
+    position: sticky; top: 0; background: var(--card);
+    box-shadow: inset 0 -1px 0 var(--border); white-space: nowrap;
+  }
+  .rn-actor { white-space: nowrap; font-weight: 500 }
+  .rn-n { white-space: nowrap; font-variant-numeric: tabular-nums }
+  .rn-n b { font-weight: 600 }
+  .rn-barhead { width: 100% }
+  .rn-bar {
+    display: inline-block; vertical-align: middle;
+    width: min(5rem, 12vw); height: 5px; border-radius: 999px;
+    background: var(--muted); overflow: hidden;
+  }
+  .rn-bar i { display: block; height: 100%; background: var(--foreground) }
+  .rn-pct {
+    display: inline-block; margin-left: .5rem; min-width: 3.5ch;
+    font-variant-numeric: tabular-nums; color: var(--muted-foreground);
+  }
+  .rn-note {
+    margin: var(--s4) 0 0; font-size: .73rem; line-height: 1.6;
+    color: var(--muted-foreground); max-width: 68ch;
+  }
+  .rn-note b { color: var(--foreground); font-weight: 600 }
+
+  .rn-facts { margin: 0; display: grid; gap: var(--s4) }
+  .rn-facts > div { display: grid; gap: 2px }
+  .rn-facts dt {
+    font-size: .64rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .rn-facts dd {
+    margin: 0; font-size: 1.05rem; font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .rn-facts p { margin: 0; font-size: .72rem; color: var(--muted-foreground) }
+
+  .foot-rule { margin-top: var(--s7) }
   .foot { margin-top: 1.5rem; border: none; background: transparent; padding: 0 }
   .foot p {
     font-size: .78rem; line-height: 1.7; color: var(--muted-foreground);

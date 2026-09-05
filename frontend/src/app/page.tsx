@@ -19,11 +19,13 @@ import {
   SiteFooter,
   TopBar,
 } from "@/components/page-parts";
+import { RightNow } from "@/components/right-now";
 import { StoryRows, type StoryRowView } from "@/components/story-rows";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { capNote, fitEvidence } from "@/lib/fit";
 import { panel } from "@/lib/map";
 import {
+  actorBoard,
   bandNote,
   evidenceNote,
   footer,
@@ -102,6 +104,15 @@ export default function Ledger() {
         <EvidenceTable story={story} labels={labels} key={story.id} />,
       ]),
   );
+
+  const board = actorBoard(run, labels);
+  // How many the run could measure at all, so a short board reads as a fact about the
+  // actor table rather than as a truncation.
+  const measurableActors = new Set(
+    run.stories.flatMap((s) =>
+      s.figures.filter((f) => f.measurable !== false).map((f) => f.actor),
+    ),
+  ).size;
 
   const tiles = [
     {
@@ -252,6 +263,32 @@ export default function Ledger() {
             </Alert>
           )}
         </section>
+
+        {/* After the stories, not before: the five are what the reader came for, and
+            the corpus behind them is what qualifies them. */}
+        <RightNow
+          actors={board}
+          measurable={measurableActors}
+          facts={{
+            articles: thousands(report.window.articles),
+            domains: thousands(report.polities.domains),
+            hours: Math.round((report.window.slots * 15) / 60),
+            themes: report.grouping.themes,
+            stories: report.grouping.stories,
+            withBand: report.published.with_a_band,
+            neverReached: thousands(
+              report.window.articles - (report.grouping.articles_in_stories ?? 0),
+            ),
+            neverReachedPct: Math.round(
+              (100 *
+                (report.window.articles -
+                  (report.grouping.articles_in_stories ?? 0))) /
+                report.window.articles,
+            ),
+            polityRate: percent(report.polities.rate),
+            since: sincePrevious(run),
+          }}
+        />
 
         <SiteFooter text={footer(report)} />
       </main>
