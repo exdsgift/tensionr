@@ -155,9 +155,47 @@ overlay_data() {
 build_frontend() {
   local src="$1" dest="$2" base_path="$3" required="$4"
 
+  # A branch with no frontend at all. Two cases, and they are not the same thing.
+  #
+  # For a preview this is just a branch that predates #81: skip it.
+  #
+  # For production it is the transition itself. This script always rebuilds production
+  # from the production ref, so while #81 is still open, every run - including the run
+  # on #81's own pull request - assembles a master that has no frontend and no
+  # checked-in index.html either, because the old homepage was generated. Failing there
+  # would make #81's own checks unpassable until it merged, which is a check that can
+  # only ever be red and tells nobody anything.
+  #
+  # So production gets a holding page instead, loudly. This is deliberately narrow: it
+  # triggers only when frontend/ is absent *entirely*, never when a build fails, so a
+  # broken frontend still stops the deployment. Once master carries a frontend this
+  # branch is dead code, and it should be deleted when #82 lands.
   if [[ ! -f "$src/frontend/package.json" ]]; then
-    echo "  ! no frontend on this branch - nothing to build" >&2
-    [[ "$required" == required ]] && return 1
+    if [[ "$required" != required ]]; then
+      echo "  ! no frontend on this branch - preview skipped" >&2
+      return 0
+    fi
+    echo "  ! the production branch has no frontend/ - this is the #81 transition." >&2
+    echo "    Publishing a holding page so the site keeps answering." >&2
+    cat > "$dest/index.html" <<'HOLDING'
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>tensionr</title>
+<style>
+  :root { color-scheme: dark }
+  body { font: 16px/1.6 ui-monospace, Menlo, monospace; max-width: 34rem;
+         margin: 20vh auto; padding: 0 1.25rem; background: #0a0a0a; color: #e8e8e8 }
+  a { color: #8ecaff }
+</style>
+<h1>tensionr</h1>
+<p>The interface is being rebuilt. The engine still runs, and every window it
+   measures is still published as data.</p>
+<p>The measurements are in <a href="data/stories.json">data/stories.json</a>, which
+   needs nothing from this page to be useful.</p>
+HOLDING
+    echo "  -> holding page written"
     return 0
   fi
 
