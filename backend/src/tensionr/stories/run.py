@@ -10,6 +10,7 @@ from typing import Any
 from tensionr.config import MIN_EVALUABLE, MIN_POLITIES
 from tensionr.stories import cluster, identity, languages, measure, window
 from tensionr.stories.polity import PolityTable
+from tensionr.stories.structure import structure
 from tensionr.stories.wikidata import load as load_aliases
 
 logger = logging.getLogger(__name__)
@@ -239,6 +240,17 @@ def run(
         # evidence behind the figures it prints, and nothing else needs it.
         if band:
             story["evidence"] = measure.evidence(rows, band, table.resolve)
+            # Whether the split runs along the polity of publication, or is a coin.
+            # `division` cannot tell those apart - it peaks at one half, which is
+            # exactly what a fair coin gives - and on a published run it was ranking
+            # coin flips first: the top row scored a perfect 1.00 at p = 0.62.
+            #
+            # Banded stories only. Two thousand permutations across thirteen hundred
+            # stories would cost more than the rest of the engine, and a story with no
+            # band has no figure for the question to be about.
+            found = structure(story["evidence"], band[0])
+            if found is not None:
+                story["structure"] = found
         stories.append(story)
 
     measurable = [s for s in stories if s["band"]]
