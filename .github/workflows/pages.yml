@@ -4,6 +4,7 @@ name: Pages
 # whatever happens to sit on `master` (#6, decision 1 and 3):
 #
 #   production            <- the `master` tip
+#   staging/              <- the `staging` tip
 #   preview/<branch>/     <- the tip of every branch with an open pull request
 #
 # actions/deploy-pages publishes ONE artifact as the entire site root, so every
@@ -15,6 +16,14 @@ name: Pages
 # Previews appear when a pull request opens and disappear when it closes, because
 # the set of previews is derived from the open pull requests rather than stored
 # anywhere.
+#
+# `staging` is a long-lived sandbox: pushed to directly, force-pushed freely, published
+# at a real URL on the real data, and never able to take production down. A push to it
+# deploys, and that is safe for the same reason a preview deployment is - the artifact
+# is assembled from refs every time, so the production half of it always comes from
+# `master` no matter which branch triggered the run. Staging is also `optional` in
+# assemble-site.sh: a staging tree that will not build is reported and skipped, while a
+# production tree that will not build aborts the deployment.
 #
 # The data pipeline is not involved. It lives in stories.yml on `schedule` +
 # `workflow_dispatch` and must never run on a pull request (#6). It does, however,
@@ -34,7 +43,7 @@ name: Pages
 
 on:
   push:
-    branches: [master]
+    branches: [master, staging]
   pull_request:
     types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
@@ -160,6 +169,10 @@ jobs:
         id: assemble
         env:
           PRODUCTION_BRANCH: master
+          STAGING_BRANCH: staging
+          # A branch with an open pull request already gets a preview; it does not also
+          # need to be listed as staging, and `staging` itself normally has no pull
+          # request open.
           PREVIEW_BRANCHES: ${{ steps.previews.outputs.branches }}
           SITE_BASE_URL: ${{ steps.pages_state.outputs.html_url }}
         run: .github/scripts/assemble-site.sh _site
@@ -174,12 +187,18 @@ jobs:
           BASE_URL: ${{ steps.pages_state.outputs.html_url }}
           BRANCHES: ${{ steps.previews.outputs.branches }}
           BUILD_TYPE: ${{ steps.pages_state.outputs.build_type }}
+          STAGING: ${{ steps.assemble.outputs.staging_published }}
         run: |
           {
             echo "### Pages artifact assembled"
             echo
             echo "- Pages \`build_type\`: \`$BUILD_TYPE\`"
             echo "- production: ${BASE_URL:-<Pages base URL unknown>}"
+            if [[ "$STAGING" == "1" ]]; then
+              echo "- staging: ${BASE_URL%/}/staging/"
+            else
+              echo "- staging: not published (no \`staging\` branch)"
+            fi
             if [[ -n "${BRANCHES// /}" ]]; then
               echo "- previews:"
               while IFS= read -r b; do

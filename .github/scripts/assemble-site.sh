@@ -23,6 +23,11 @@
 #                      an error: the site then serves whatever data/ production
 #                      carries, which is how this stays safe to deploy before the
 #                      branch exists.
+#   STAGING_BRANCH     branch published under staging/ (default: staging). A long-lived
+#                      sandbox that can be pushed to and force-pushed directly, so work
+#                      can be tried on the real data at a real URL without a pull
+#                      request and without touching production. Absent branch is not an
+#                      error - the site is then assembled without it.
 #   PREVIEW_BRANCHES   newline-separated branch names (default: none)
 #   REPO_REMOTE        git remote to clone (default: derived from
 #                      GITHUB_SERVER_URL/GITHUB_REPOSITORY, else `origin`)
@@ -33,6 +38,7 @@ set -euo pipefail
 OUT_DIR="${1:-_site}"
 PRODUCTION_BRANCH="${PRODUCTION_BRANCH:-master}"
 DATA_BRANCH="${DATA_BRANCH:-data}"
+STAGING_BRANCH="${STAGING_BRANCH:-staging}"
 PREVIEW_BRANCHES="${PREVIEW_BRANCHES:-}"
 SITE_BASE_URL="${SITE_BASE_URL:-}"
 
@@ -249,6 +255,20 @@ copy_branch "$PRODUCTION_BRANCH" "production" ""
 overlay_data "$OUT_DIR"
 build_frontend "$WORK_DIR/production" "$OUT_DIR" "$BASE_PATH" required
 
+# Staging: the same tree as production, from a branch nobody has to protect. It is
+# assembled after production and before the previews, and it is optional in the strong
+# sense - a broken staging must never be able to hold up a production deployment, which
+# is the whole point of having somewhere to break things.
+staging_published=0
+if [[ -n "$STAGING_BRANCH" && "$STAGING_BRANCH" != "$PRODUCTION_BRANCH" ]]; then
+  echo "Assembling staging from '$STAGING_BRANCH':"
+  if copy_branch "$STAGING_BRANCH" "staging" "staging"; then
+    overlay_data "$OUT_DIR/staging"
+    build_frontend "$WORK_DIR/staging" "$OUT_DIR/staging" "$BASE_PATH/staging" optional
+    staging_published=1
+  fi
+fi
+
 published=""
 published_count=0
 slot=0
@@ -273,10 +293,14 @@ while IFS= read -r branch; do
   fi
 done <<< "$PREVIEW_BRANCHES"
 
-# Previews are public URLs; keep them out of search results. robots.txt matching
-# is longest-path-wins, so this beats the site-wide `Allow: /`.
+# Staging and previews are public URLs; keep them out of search results. robots.txt
+# matching is longest-path-wins, so these beat the site-wide `Allow: /`.
+#
+# Written unconditionally rather than only when the tree exists: a rule for a path that
+# is briefly absent costs nothing, while a missing rule during the window when staging
+# is up and robots.txt has not caught up is how a sandbox gets indexed.
 if [[ -f "$OUT_DIR/robots.txt" ]]; then
-  printf '\n# Branch previews are not production and must not be indexed.\nDisallow: /preview/\n' \
+  printf '\n# Neither staging nor branch previews are production; neither may be indexed.\nDisallow: /staging/\nDisallow: /preview/\n' \
     >> "$OUT_DIR/robots.txt"
 fi
 
@@ -304,10 +328,11 @@ if [[ "$published_count" -gt 0 ]]; then
 fi
 
 echo
-echo "Site assembled at '$OUT_DIR' ($(du -sh "$OUT_DIR" | cut -f1)), previews: $published_count"
+echo "Site assembled at '$OUT_DIR' ($(du -sh "$OUT_DIR" | cut -f1)), staging: $staging_published, previews: $published_count"
 
 # Consumed by the workflow for the run summary.
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  echo "staging_published=$staging_published" >> "$GITHUB_OUTPUT"
   echo "preview_count=$published_count" >> "$GITHUB_OUTPUT"
   {
     echo "preview_branches<<__EOF__"

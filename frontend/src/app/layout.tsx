@@ -7,11 +7,22 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+/**
+ * Anything published under `staging/` or `preview/` is not production and must not be
+ * indexed. `robots.txt` already disallows crawling both, but a disallowed URL can still
+ * be indexed without being fetched — a link from anywhere is enough — and a search
+ * result pointing at a sandbox is worse than one pointing nowhere. This says it in the
+ * document itself, where a crawler that has the page cannot miss it.
+ */
+const basePath = process.env.PAGES_BASE_PATH ?? "";
+const isProduction = !/\/(staging|preview)(\/|$)/.test(basePath);
+
 export const metadata: Metadata = {
   title: "tensionr — who is telling it differently",
   description:
     "tensionr does not measure the world's tension. It measures the disagreement " +
     "between those who narrate it.",
+  robots: isProduction ? undefined : { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

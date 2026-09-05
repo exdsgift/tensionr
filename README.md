@@ -77,16 +77,32 @@ production ref stays protectable. For a page with real stories on it:
 git fetch origin data && git show origin/data:data/stories.json > data/stories.json
 ```
 
+## Branches
+
+| | | |
+| --- | --- | --- |
+| `master` | the site root | production. Reached by pull request. |
+| `staging` | `staging/` | a sandbox. Push to it, force-push it, break it. |
+| any branch with an open PR | `preview/<branch>/` | appears when the PR opens, goes when it closes. |
+| `data` | not a site | the engine's output. The pipeline writes here so production stays protectable. |
+
+`staging` and the previews answer different questions. Staging is where changes live
+together on real data at a real URL; a preview is where one change is judged on its own.
+
+Neither is indexed — `robots.txt` disallows both, and their pages carry `noindex` as
+well, because a disallowed URL can still be indexed without being fetched.
+
+**Staging cannot take production down.** The site is reassembled from git refs on every
+deploy, so whichever branch triggers a run, the production half of the artifact always
+comes from `master`. A staging tree that will not build is reported and skipped; a
+production tree that will not build aborts the deployment and Pages keeps serving the
+last good build.
+
 ## How it is published
 
-GitHub Pages, assembled by `.github/scripts/assemble-site.sh` on every deploy:
-production at the site root, plus one preview per open pull request under
-`preview/<branch>/`. The whole tree is rebuilt from git refs every time — Pages
-publishes a single artifact as the entire site, so anything less would take production
-down.
-
-Two scheduled workflows and one publishing workflow, none of which run on a pull
-request.
+GitHub Pages, assembled by `.github/scripts/assemble-site.sh` on every deploy. The whole
+tree is rebuilt from git refs every time — Pages publishes a single artifact as the
+entire site, so anything less would take production down.
 
 ---
 
