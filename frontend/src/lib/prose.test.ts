@@ -117,7 +117,7 @@ describe("an unresolved mark", () => {
     );
     expect(note.unresolved).toContain("4 row(s) are –");
     expect(note.unresolved).toContain("not evaluable");
-    expect(note.unresolved).toContain("omission is the signal");
+    expect(note.unresolved.toLowerCase()).toContain("omission is the signal");
   });
 
   it("says so plainly when there is none", () => {

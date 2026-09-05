@@ -7,17 +7,31 @@
  * single reading of the page across four places without making any of them clearer.
  */
 
-import { Card, CardContent } from "@/components/ui/card";
+import type { ReactNode } from "react";
+
+import { SplitBar } from "@/components/split-bar";
 import { Separator } from "@/components/ui/separator";
 import type { Hook } from "@/lib/prose";
 
-export function TopBar({ when }: { when: string }) {
+export function TopBar({
+  when,
+  children,
+}: {
+  when: string;
+  children?: ReactNode;
+}) {
   return (
     <header className="bar">
       <div className="in">
-        <strong>tensionr</strong>
-        <span className="sub">who is telling it differently</span>
+        {/* The page's only h1. It was a <strong>, which left the document outline
+            starting at <h2>Stories</h2> and gave a screen reader no title at all. The
+            tagline is inside it because together they are the page's name, and it is
+            styled to look exactly as it did. */}
+        <h1>
+          tensionr <span className="sub">who is telling it differently</span>
+        </h1>
         <span className="when">{when}</span>
+        {children}
       </div>
     </header>
   );
@@ -32,11 +46,9 @@ export function TopBar({ when }: { when: string }) {
  */
 export function Hook({
   hook,
-  counts,
   polities,
 }: {
   hook: Hook;
-  counts: { actor: string; named: number; evaluable: number; miss: boolean }[];
   polities: number;
 }) {
   if (hook.kind === "empty") {
@@ -68,16 +80,21 @@ export function Hook({
         </b>
         <span className="unit">{hook.unit}</span>
       </div>
+      {/* The same bar the rows use, so the reading is taught once at the top and
+          recognised below rather than explained twice. */}
+      <SplitBar
+        named={hook.named}
+        evaluable={hook.evaluable}
+        actor={hook.unit.replace(/^sources named /, "")}
+        evenSplit
+        className="split-hero"
+      />
       <p className="say">{hook.say}</p>
       <div className="from">
-        {counts.map((c) => (
-          <span key={c.actor} className={c.miss ? "miss" : undefined}>
-            <b>{c.actor}</b> {c.named}/{c.evaluable}
-          </span>
-        ))}
         <span>
           {polities} <b>polities</b>
         </span>
+        <a href="#stories">read the story below</a>
       </div>
     </div>
   );
@@ -116,16 +133,17 @@ export function SiteFooter({ text }: { text: string }) {
   return (
     <>
       <Separator className="foot-rule" />
-      <Card className="foot">
-        <CardContent>
-          <p>{text}</p>
-          <p>
-            The rows behind every figure are in{" "}
-            <a href="data/stories.json">data/stories.json</a>, the same file this page
-            was built from. It needs nothing from this site to be useful.
-          </p>
-        </CardContent>
-      </Card>
+      {/* A landmark, not a Card. It was the only boxed element on the page, which made
+          the methods statement read as an aside rather than as the thing that qualifies
+          every figure above it. */}
+      <footer className="foot">
+        <p>{text}</p>
+        <p>
+          The rows behind every figure are in{" "}
+          <a href="data/stories.json">data/stories.json</a>, the same file this page was
+          built from. It needs nothing from this site to be useful.
+        </p>
+      </footer>
     </>
   );
 }

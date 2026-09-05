@@ -22,6 +22,11 @@
  */
 
 import type { ReactNode } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { ByCountry, type Structure } from "@/components/by-country";
+import { DivisionLine, type Point } from "@/components/division-line";
+import { SplitBar } from "@/components/split-bar";
 import {
   Accordion,
   AccordionContent,
@@ -42,6 +47,12 @@ export interface StoryRowView {
   polities: number;
   division: number;
   counts: { actor: string; named: number; evaluable: number; miss: boolean }[];
+  /** The band's leading actor, drawn as a split. */
+  lead: { actor: string; named: number; evaluable: number };
+  languages: { shown: { name: string; sources: number }[]; more: number };
+  series: Point[];
+  structure: Structure | null;
+  leadActor: string;
   reading: { before: string; balanced: string | null; split: string | null };
   bandNote: string | null;
   note: { collapsed: string; unresolved: string; links: string };
@@ -72,13 +83,29 @@ export function StoryRows({
         {rows.map((row) => (
           <AccordionItem value={row.id} key={row.id} className="row">
             <AccordionTrigger className="row-trigger">
-              <span className="grid">
+              <span className="row-grid">
                 <span className="title">
                   {row.headline}
                   {row.language ? <i className="lang">{row.language}</i> : null}
+                  {/* Which languages the story is told in. The tag above labels only
+                      the one headline shown, and only when it is not English, so a
+                      story carried by 72 Russian and 53 Ukrainian outlets showed
+                      nothing at all. This is the fact that was missing. */}
                   <small>
-                    {row.sources} sources · {row.polities} polities · division{" "}
-                    {row.division.toFixed(3)}
+                    {/* Repeated from the columns on purpose, and hidden by CSS at the
+                        width where the columns collapse. One of the two is always
+                        redundant; which one depends on the viewport. */}
+                    <span className="title-counts">
+                      {row.sources} sources · {row.polities} polities ·{" "}
+                    </span>
+                    told in{" "}
+                    {row.languages.shown.map((l, i) => (
+                      <span key={l.name}>
+                        {i > 0 ? ", " : ""}
+                        {l.name} <span className="lang-n">{l.sources}</span>
+                      </span>
+                    ))}
+                    {row.languages.more ? ` and ${row.languages.more} more` : ""}
                   </small>
                 </span>
                 <span className="cell num" data-l="sources">
@@ -87,13 +114,29 @@ export function StoryRows({
                 <span className="cell num" data-l="polities">
                   {row.polities}
                 </span>
-                <span className="actors">
-                  {row.counts.map((c, i) => (
-                    <span key={c.actor} className={c.miss ? "miss" : undefined}>
-                      {i > 0 ? " · " : ""}
-                      <b>{c.actor}</b> {c.named}/{c.evaluable}
+                <span className="actors" data-l="named by">
+                  <SplitBar
+                    named={row.lead.named}
+                    evaluable={row.lead.evaluable}
+                    actor={row.lead.actor}
+                    division={row.division}
+                  />
+                  <DivisionLine points={row.series} label={row.headline} />
+                  {row.counts.length > 1 ? (
+                    <span className="actors-rest">
+                      {row.counts
+                        .filter((c) => c.actor !== row.lead.actor)
+                        .map((c) => (
+                          <Badge
+                            key={c.actor}
+                            variant="outline"
+                            className={c.miss ? "miss" : undefined}
+                          >
+                            {c.actor} {c.named}/{c.evaluable}
+                          </Badge>
+                        ))}
                     </span>
-                  ))}
+                  ) : null}
                 </span>
               </span>
             </AccordionTrigger>
@@ -111,6 +154,10 @@ export function StoryRows({
               </p>
 
               {row.bandNote ? <p className="read sub">{row.bandNote}</p> : null}
+
+            {row.structure ? (
+              <ByCountry structure={row.structure} actor={row.leadActor} />
+            ) : null}
 
               {evidence[row.id] ? (
                 <Collapsible>

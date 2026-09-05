@@ -1,6 +1,6 @@
 """The capture: what is kept, and what is not kept twice."""
 
-from tensionr.stories.run import _capture
+from tensionr.stories.run import _capture, _feature
 
 RECORDS = [
     {
@@ -183,3 +183,71 @@ def test_a_story_with_no_band_is_not_in_the_index():
     plain = _story("c", 0.5)
     plain["band"] = []
     assert _index("20260804T000000Z", [plain])["stories"] == []
+
+
+class TestSeriesAndSelectionAreDifferentWindows:
+    """A featured story's published line may reach further back than the selection does.
+
+    These are two claims with two spans: the selection says "the most divided stories of
+    today", the series says "here is this story's life". Loading a week of history to
+    draw the second must not let a five-day-old peak decide the first.
+    """
+
+    @staticmethod
+    def _history():
+        # 30 hours apart: outside the 24-hour selection window, inside the 7-day series.
+        return [
+            {
+                "run": "20260901T000000Z",
+                "stories": [{"id": "a", "division": 0.99, "sources": 10}],
+            },
+            {
+                "run": "20260902T060000Z",
+                "stories": [{"id": "a", "division": 0.10, "sources": 12}],
+            },
+        ]
+
+    def test_a_peak_outside_the_span_does_not_decide_what_is_featured(self):
+        stories = [
+            {"id": "a", "band": ["x"], "figures": [{"actor": "x", "division": 0.10}]}
+        ]
+        _feature(stories, self._history(), count=1)
+        # 0.99 is older than SPAN_HOURS, so the story is ranked on what it is now.
+        assert stories[0]["span_division"] == 0.1
+
+    def test_the_same_run_still_appears_in_the_series(self):
+        stories = [
+            {"id": "a", "band": ["x"], "figures": [{"actor": "x", "division": 0.10}]}
+        ]
+        _feature(stories, self._history(), count=1)
+        assert [p["division"] for p in stories[0]["series"]] == [0.99, 0.10]
+
+    def test_a_run_that_did_not_carry_the_story_contributes_no_point(self):
+        # Absence and a division of zero are different claims. A line that dropped to
+        # the floor whenever a story was not carried would invent a fall that never
+        # happened.
+        history = self._history()
+        history.insert(1, {"run": "20260901T120000Z", "stories": []})
+        stories = [
+            {"id": "a", "band": ["x"], "figures": [{"actor": "x", "division": 0.10}]}
+        ]
+        _feature(stories, history, count=1)
+        assert len(stories[0]["series"]) == 2
+
+    def test_only_featured_stories_carry_a_series(self):
+        history = [
+            {
+                "run": "20260902T060000Z",
+                "stories": [
+                    {"id": "a", "division": 0.90, "sources": 10},
+                    {"id": "b", "division": 0.10, "sources": 10},
+                ],
+            }
+        ]
+        stories = [
+            {"id": "a", "band": ["x"], "figures": [{"actor": "x", "division": 0.90}]},
+            {"id": "b", "band": ["x"], "figures": [{"actor": "x", "division": 0.10}]},
+        ]
+        _feature(stories, history, count=1)
+        assert "series" in stories[0]
+        assert "series" not in stories[1]

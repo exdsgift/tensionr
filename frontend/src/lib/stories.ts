@@ -58,6 +58,25 @@ export interface Story {
   /** Set by the engine when it can see a day of history. */
   featured?: boolean;
   span_division?: number;
+  /**
+   * This story's division over the runs that carried it, oldest first, on featured
+   * stories only. A run that did not carry the story contributes no point rather than
+   * a zero, so the axis is runs-that-carried-it and not time.
+   */
+  series?: { run: string; division: number; sources: number | null }[];
+  /**
+   * Whether the naming split aligns with the country of publication. Absent when the
+   * question cannot be asked: one country, or unanimity among the rows that carry a
+   * country. Both are outcomes rather than failures.
+   */
+  structure?: {
+    sources: number;
+    polities: number;
+    p: number;
+    floor: number;
+    powered: boolean;
+    by_polity: { polity: string; named: number; evaluable: number; thin: boolean }[];
+  };
 }
 
 export interface Report {

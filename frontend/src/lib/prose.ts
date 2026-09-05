@@ -93,6 +93,39 @@ export function splitSentence(story: Story, labels: Labels): string | null {
   );
 }
 
+/**
+ * Which languages a story is being told in, most-carried first.
+ *
+ * This is not what the language tag beside a headline says. That one labels the single
+ * headline the page chose to print, and only when it is not English, so a story carried
+ * by 72 Russian and 53 Ukrainian outlets showed no tag at all because the representative
+ * headline happened to be English. Which languages a story is told in is a different
+ * fact, it was not on the page anywhere, and on a site about who tells things
+ * differently it is worth more than the tag.
+ *
+ * Counted over distinct publishers rather than raw rows: the engine has already
+ * collapsed syndication in `evidence`, so each row is one voice.
+ */
+export function storyLanguages(
+  story: Story,
+  limit = 4,
+): { shown: { name: string; sources: number }[]; more: number } {
+  const counts = new Map<string, number>();
+  for (const row of story.evidence) {
+    if (!row.language) continue;
+    counts.set(row.language, (counts.get(row.language) ?? 0) + 1);
+  }
+  const ordered = [...counts]
+    .map(([name, sources]) => ({ name: titleCase(name), sources }))
+    .sort((a, b) => b.sources - a.sources || a.name.localeCompare(b.name));
+  return { shown: ordered.slice(0, limit), more: Math.max(0, ordered.length - limit) };
+}
+
+/** GDELT names languages in capitals, and sometimes not. "SPANISH" -> "Spanish". */
+function titleCase(name: string): string {
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+}
+
 /** The per-actor counts shown on a row. `miss` marks a rate a reader should notice. */
 export function rowCounts(
   story: Story,
@@ -154,7 +187,7 @@ export function evidenceNote(story: Story): {
       `${story.collapsed} reprint(s) that shared a headline word for word.`,
     unresolved: figure.unresolved
       ? `${figure.unresolved} row(s) are –, not evaluable: no alias exists in that ` +
-        `script, and that must never be read as an omission — omission is the signal.`
+        `script, and that must never be read as an omission. Omission is the signal.`
       : `No row is –: an alias exists in every script present.`,
     links:
       `Each publisher links to the article at the address GDELT recorded; the page ` +
@@ -228,21 +261,7 @@ export function hook(
     say:
       `${hero.sources} publishers in ${hero.polities.length} polities carried this ` +
       `story. ${figure.named} named ${actor} and ${figure.evaluable - figure.named} ` +
-      `did not — the widest split this run measured.`,
-  };
-}
-
-/** The map's caption. It names the states actually drawn, and nothing else. */
-export function legend(
-  hero: Story | null,
-  plotted: number,
-  labels: Labels,
-): { named: string; silent: string; plotted: string } | null {
-  if (!hero) return null;
-  return {
-    named: `named ${actorName(hero.band[0], labels)}`,
-    silent: "carried it, did not",
-    plotted: `${plotted} of ${hero.polities.length} plotted`,
+      `did not. That is the widest split this run measured.`,
   };
 }
 
@@ -265,7 +284,7 @@ export function selectionNote(report: Report, featured: number): string {
   let text =
     `The ${featured} most divided stories of the last ${span.span_hours} hours, ` +
     `ranked by the widest division each reached over that span rather than by this ` +
-    `window alone — ${span.candidates} candidates across ${span.runs_in_span} runs.`;
+    `window alone, over ${span.candidates} candidates across ${span.runs_in_span} runs.`;
   if (span.gone_from_the_window) {
     text +=
       ` ${span.gone_from_the_window} of them are no longer carried by the current ` +
@@ -290,8 +309,8 @@ export function neverReached(report: Report): string {
   if (!kept || !total) return "";
   const dropped = total - kept;
   let text =
-    `${thousands(dropped)} of those articles never reached a story at all — ` +
-    `${Math.round((100 * dropped) / total)}% — because they joined no theme, or ` +
+    `${thousands(dropped)} of those articles never reached a story at all, ` +
+    `${Math.round((100 * dropped) / total)}%, because they joined no theme, or ` +
     `joined one too uniform to separate.`;
   if (report.grouping.unsplit_themes) {
     text +=

@@ -12,6 +12,7 @@
 import { BrailleMap } from "@/components/braille-map";
 import { EvidenceTable } from "@/components/evidence-table";
 import { InfoPopover } from "@/components/info-popover";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AggregateStrip,
   Hook,
@@ -19,6 +20,7 @@ import {
   TopBar,
 } from "@/components/page-parts";
 import { StoryRows, type StoryRowView } from "@/components/story-rows";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { capNote, fitEvidence } from "@/lib/fit";
 import { panel } from "@/lib/map";
 import {
@@ -27,16 +29,17 @@ import {
   footer,
   foreignLanguage,
   hook,
-  legend,
   percent,
   readingSentence,
   rowCounts,
   runStamp,
   selectionNote,
   sincePrevious,
+  storyLanguages,
   thousands,
 } from "@/lib/prose";
 import {
+  actorName,
   banded,
   FEATURED,
   lead,
@@ -57,12 +60,10 @@ export default function Ledger() {
   const featured = rows.slice(0, FEATURED);
   const report = run.report;
 
-  const widePanel = hero
-    ? panel(hero, coordinates, wide)
-    : { markers: [], plotted: 0 };
-  const narrowPanel = hero
-    ? panel(hero, coordinates, narrow)
-    : { markers: [], plotted: 0 };
+  const heroActor = hero ? actorName(hero.band[0], labels) : "";
+  const empty = { markers: [], plotted: 0, carried: 0 };
+  const widePanel = hero ? panel(hero, coordinates, wide, heroActor) : empty;
+  const narrowPanel = hero ? panel(hero, coordinates, narrow, heroActor) : empty;
 
   const views: StoryRowView[] = featured.map((story) => ({
     id: story.id,
@@ -72,6 +73,18 @@ export default function Ledger() {
     polities: story.polities.length,
     division: lead(story).division,
     counts: rowCounts(story, labels),
+    lead: (() => {
+      const f = lead(story);
+      return {
+        actor: actorName(story.band[0], labels),
+        named: f.named,
+        evaluable: f.evaluable,
+      };
+    })(),
+    languages: storyLanguages(story),
+    series: story.series ?? [],
+    structure: story.structure ?? null,
+    leadActor: actorName(story.band[0], labels),
     reading: readingSentence(story, labels),
     bandNote: bandNote(story),
     note: evidenceNote(story),
@@ -103,13 +116,17 @@ export default function Ledger() {
 
   return (
     <>
-      <TopBar when={runStamp(run)} />
+      <a className="skip" href="#stories">
+        Skip to the stories
+      </a>
+      <TopBar when={runStamp(run)}>
+        <ThemeToggle />
+      </TopBar>
 
-      <div className="wrap">
+      <main className="wrap">
         <section className="hook">
           <Hook
             hook={hook(hero, report, labels)}
-            counts={hero ? rowCounts(hero, labels) : []}
             polities={hero ? hero.polities.length : 0}
           />
           <BrailleMap
@@ -117,19 +134,41 @@ export default function Ledger() {
             narrow={narrow}
             wideMarkers={widePanel.markers}
             narrowMarkers={narrowPanel.markers}
-            legend={legend(hero, widePanel.plotted, labels)}
+            legend={
+              hero
+                ? {
+                    actor: heroActor,
+                    plotted: widePanel.plotted,
+                    carried: widePanel.carried,
+                    // Placed sources, which is what the map could ever draw: the
+                    // rest of the story has no country and never reaches it.
+                    sources: hero.evidence.filter((r) => r.polity).length,
+                  }
+                : null
+            }
           />
         </section>
 
         <AggregateStrip tiles={tiles} />
 
-        <section className="rows">
+        <section className="rows" id="stories">
           <h2>Stories</h2>
+          {/* The mechanism, in the reader's words, before the first row. Without it
+              the page shows a story about a rescue in Nepal beside a figure about the
+              People's Republic of China and never says what joins them. The word
+              "actor" appeared nowhere on this page until now. */}
+          <p className="how">
+            Every story here is measured on one <b>actor</b>: a person, a place or an
+            organisation that some sources name and others leave out. The bar shows how
+            many named it. Its mark is the halfway point, which is the most divided a
+            story can be, so <b>a bar that stops near the mark is a story its sources
+            tell differently</b>.
+          </p>
           <p className="span">
             {selectionNote(report, Math.min(FEATURED, rows.length))}
           </p>
 
-          <div className="grid colhead">
+          <div className="row-grid colhead">
             <span>
               Story
               <InfoPopover
@@ -173,24 +212,24 @@ export default function Ledger() {
                   The state a publisher&rsquo;s domain could be placed in.
                   Placement is incomplete and the rate is published above; a
                   domain that could not be placed is counted, never dropped, and
-                  shows as <em>&mdash;</em> in the evidence.
+                  shows as <em>&mdash;</em> in the evidence table.
                 </p>
               </InfoPopover>
             </span>
             <span>
-              Named by
+              How divided
               <InfoPopover
                 id="p-named"
-                label="What named by means"
-                title="What &ldquo;named by&rdquo; means"
+                label="How the division is measured"
+                title="How the division is measured"
               >
                 <p>
                   How many evaluable sources used a name for this actor, over
-                  how many could have. <em>Evaluable</em> excludes rows where no
-                  alias exists in that script &mdash; shown as <em>&ndash;</em>{" "}
-                  &mdash; because silence there is the tool&rsquo;s, not the
-                  publisher&rsquo;s. Omission is the signal, so it must never be
-                  confused with an absent alias.
+                  how many could have. <em>Evaluable</em> excludes rows shown as{" "}
+                  <em>&ndash;</em>, where no alias exists in that script, because
+                  silence there is the tool&rsquo;s and not the publisher&rsquo;s.
+                  Omission is the signal, so it must never be confused with an absent
+                  alias.
                 </p>
               </InfoPopover>
             </span>
@@ -203,15 +242,19 @@ export default function Ledger() {
               capNote={capNote(fitted.dropped)}
             />
           ) : (
-            <p className="read">
-              No story in this window cleared both floors, so there is no row to
-              show. The window itself is described below.
-            </p>
+            <Alert>
+              <AlertTitle>No row to show, and that is a result</AlertTitle>
+              <AlertDescription>
+                No story in this window cleared both floors. The window itself is
+                described below: a figure under the floor would be a number about the
+                sample rather than about the world.
+              </AlertDescription>
+            </Alert>
           )}
         </section>
 
         <SiteFooter text={footer(report)} />
-      </div>
+      </main>
     </>
   );
 }
