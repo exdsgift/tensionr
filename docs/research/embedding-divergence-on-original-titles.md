@@ -355,3 +355,53 @@ axis is fitted to noise with a political name attached to it.
    is a data-semantics decision, not a cleanup.
 3. Only then revisit an axis, and only with the positive control repeated on a story
    that is verified to be one story.
+
+---
+
+## Addendum: the owner pushed back, and the pushback was right
+
+The verdict above was written as though the method had failed. Challenged on it, the
+obvious control was run and it changes the reading.
+
+Restrict the Falklands story to the outlets that actually name the islands, in any
+language, and repeat the positive control on that subset alone:
+
+| | the cluster as grouped | only rows naming the islands |
+| --- | ---: | ---: |
+| outlets | 164 | 62 |
+| variance on the first component | 15.1% | **25.1%** |
+| separates Argentina | AUC 0.477 | **AUC 0.646** |
+| p | 0.694 | **0.058** |
+
+From nothing at all to nearly significant, purely by removing intruders. **The method
+was not the failure; the grouping was.** The conclusion in part two, that a political
+direction is not there, is too strong: what was shown is that it cannot be found through
+a cluster that is two thirds a different story.
+
+Two things stop this being a result.
+
+**p = 0.058 is not significant**, and AUC 0.646 is weak separation, on 62 outlets of
+which 20 are Argentine.
+
+**The extremes still separate sub-events, not framings.** One end is *Argentina opens
+sanctions against 45 entities*; the other is *Milei invokes Trump to assert sovereignty*
+and *the UK replies to Milei*. Those are two different pieces of news inside one story,
+not two ways of telling one piece.
+
+That second point is structural rather than fixable by better clustering, and this
+project has already measured it: on a hand-built gold set, precision was **0.86 at story
+granularity and 0.23 at event granularity**, because headlines do not carry enough
+information to separate the sub-events of a running story. So a clean story still
+contains several events, and a principal component will find those before it finds
+framing.
+
+**Revised verdict.** Two doors in sequence, and only the first has been reached:
+
+1. Fix what a story contains. Measured to matter: 0.477 to 0.646 on the control, and it
+   is required anyway because contamination corrupts a published denominator.
+2. Separate framing from sub-event. This is the real door, and the gold-set figure above
+   is the reason to expect it to be hard.
+
+Option (b), an external table of outlet leanings, remains premature for the same reason
+as before, and now for a sharper one: it would be fitted to an axis that is currently
+dominated by which sub-event an outlet chose to cover.
