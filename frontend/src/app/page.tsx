@@ -86,6 +86,8 @@ export default function Ledger() {
     })(),
     languages: storyLanguages(story),
     series: story.series ?? [],
+    structure: story.structure ?? null,
+    leadActor: actorName(story.band[0], labels),
     reading: readingSentence(story, labels),
     bandNote: bandNote(story),
     note: evidenceNote(story),

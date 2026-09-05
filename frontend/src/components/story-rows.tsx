@@ -24,6 +24,7 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { ByCountry, type Structure } from "@/components/by-country";
 import { DivisionLine, type Point } from "@/components/division-line";
 import { SplitBar } from "@/components/split-bar";
 import {
@@ -50,6 +51,8 @@ export interface StoryRowView {
   lead: { actor: string; named: number; evaluable: number };
   languages: { shown: { name: string; sources: number }[]; more: number };
   series: Point[];
+  structure: Structure | null;
+  leadActor: string;
   reading: { before: string; balanced: string | null; split: string | null };
   bandNote: string | null;
   note: { collapsed: string; unresolved: string; links: string };
@@ -151,6 +154,10 @@ export function StoryRows({
               </p>
 
               {row.bandNote ? <p className="read sub">{row.bandNote}</p> : null}
+
+            {row.structure ? (
+              <ByCountry structure={row.structure} actor={row.leadActor} />
+            ) : null}
 
               {evidence[row.id] ? (
                 <Collapsible>

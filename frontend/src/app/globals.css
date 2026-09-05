@@ -531,6 +531,56 @@
   .read { font-size: .92rem; max-width: 76ch; margin-top: .5rem }
   .read.sub { color: var(--muted-foreground); font-size: .82rem }
 
+  /* Whether the split runs along the country of publication. Sits above the evidence
+     because it is the claim the evidence supports, and reads as prose with a table
+     under it rather than as a statistics panel. */
+  .bycountry {
+    margin-top: 1.25rem; padding: 1rem 1.1rem;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--muted);
+  }
+  .bycountry h3 {
+    margin: 0; font-size: .82rem; font-weight: 600;
+    display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  }
+  .bycountry-say {
+    margin: .5rem 0 0; font-size: .85rem; line-height: 1.55; max-width: 74ch;
+    color: var(--foreground);
+  }
+  .bycountry-scroll {
+    margin-top: .9rem; max-height: 22rem; overflow: auto;
+    overscroll-behavior: contain;
+  }
+  table.bycountry-table { font-size: .78rem; table-layout: auto; min-width: 0 }
+  table.bycountry-table th, table.bycountry-table td {
+    padding: .3rem .6rem .3rem 0; vertical-align: middle;
+  }
+  table.bycountry-table thead th {
+    position: sticky; top: 0; background: var(--muted);
+    box-shadow: inset 0 -1px 0 var(--border);
+  }
+  .bycountry-name { white-space: nowrap }
+  .bycountry-n { white-space: nowrap; font-variant-numeric: tabular-nums }
+  .bycountry-n b { font-weight: 600 }
+  .bycountry-barhead { width: 100% }
+  /* A bar per country, so the shape of the split is visible before any number is
+     read. Same reading as the split bar above: filled to the naming rate. */
+  .bycountry-bar {
+    display: inline-block; vertical-align: middle;
+    width: min(12rem, 40vw); height: 5px; border-radius: 999px;
+    background: var(--background); overflow: hidden;
+  }
+  .bycountry-bar i { display: block; height: 100%; background: var(--foreground) }
+  .bycountry-pct {
+    display: inline-block; margin-left: .5rem; min-width: 3ch;
+    font-variant-numeric: tabular-nums; color: var(--muted-foreground);
+  }
+  .bycountry-thin {
+    margin: .75rem 0 0; font-size: .74rem; line-height: 1.55;
+    color: var(--muted-foreground); max-width: 74ch;
+  }
+  .bycountry-thin b { color: var(--foreground); font-weight: 600 }
+
   .ev-toggle {
     margin-top: 1rem; font-size: .72rem; letter-spacing: .1em;
     text-transform: uppercase; color: var(--muted-foreground);
