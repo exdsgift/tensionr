@@ -1,0 +1,339 @@
+/**
+ * The edge cases, carried over from `tests/test_ledger.py` when the page was
+ * translated from Python.
+ *
+ * These are not tests of markup. They are what the deleted suite actually defended:
+ * that a window where nothing cleared the floors reads as an outcome rather than a
+ * broken build, that an unresolved mark is never confused with an omission, that an
+ * unplaced polity is stated rather than blank, and that a band of more than one actor
+ * says its order is not a claim.
+ *
+ * Assertions on tag counts and CSS classes were not carried over. They described markup
+ * that no longer exists, and re-creating them would pin this page's structure to the
+ * shape of the one it replaced.
+ */
+
+import { describe, expect, it } from "vitest";
+import {
+  bandNote,
+  evidenceNote,
+  footer,
+  foreignLanguage,
+  hook,
+  neverReached,
+  parseStamp,
+  percent,
+  readingSentence,
+  runStamp,
+  selectionNote,
+  series,
+  sincePrevious,
+  splitSentence,
+  thousands,
+} from "./prose";
+import type { Report, Run, Story } from "./stories";
+
+const REPORT: Report = {
+  window: { slots: 48, articles: 143152 },
+  grouping: {
+    themes: 1258,
+    stories: 1267,
+    articles_in_stories: 17928,
+    unsplit_themes: 361,
+  },
+  polities: { domains: 10839, rate: 0.3592 },
+  floors: { evaluable: 30, polities: 2 },
+  previous_run: "20260904T223145Z",
+  published: { stories: 1267, with_a_band: 17 },
+  selection: {
+    span_hours: 24,
+    runs_in_span: 4,
+    candidates: 71,
+    gone_from_the_window: 54,
+    widest_gone: 0.9991,
+  },
+};
+
+function story(over: Partial<Story> = {}): Story {
+  return {
+    id: "s-1",
+    headline: "A headline",
+    headline_language: null,
+    band: ["hormuz"],
+    sources: 12,
+    collapsed: 3,
+    polities: ["Spain", "Peru"],
+    figures: [
+      {
+        actor: "hormuz",
+        named: 7,
+        evaluable: 12,
+        unresolved: 0,
+        division: 0.918,
+        balanced_rate: 0.61,
+      },
+    ],
+    evidence: [],
+    ...over,
+  };
+}
+
+describe("an empty window", () => {
+  it("reads as an outcome, not as a failure, and names the run's own floors", () => {
+    const h = hook(null, REPORT, {});
+    expect(h.kind).toBe("empty");
+    if (h.kind !== "empty") throw new Error("unreachable");
+    expect(h.lede).toBe("Nothing cleared the floors in this window");
+    // The floors come from the report, so the page states what the run applied
+    // rather than a copy of its own.
+    expect(h.say).toContain("30 evaluable sources across 2 polities");
+    expect(h.say).toContain("a number about the sample, not about the world");
+  });
+
+  it("falls back to naming the floors abstractly when the run did not record them", () => {
+    const h = hook(null, { ...REPORT, floors: undefined }, {});
+    if (h.kind !== "empty") throw new Error("unreachable");
+    expect(h.say).toContain("this project's floors");
+    // It must not invent numbers it was not given.
+    expect(h.say).not.toMatch(/\d+ evaluable sources across/);
+  });
+});
+
+describe("an unresolved mark", () => {
+  it("is never described as an omission", () => {
+    const note = evidenceNote(
+      story({
+        figures: [
+          {
+            actor: "hormuz",
+            named: 7,
+            evaluable: 12,
+            unresolved: 4,
+            division: 0.9,
+            balanced_rate: null,
+          },
+        ],
+      }),
+    );
+    expect(note.unresolved).toContain("4 row(s) are –");
+    expect(note.unresolved).toContain("not evaluable");
+    expect(note.unresolved).toContain("omission is the signal");
+  });
+
+  it("says so plainly when there is none", () => {
+    expect(evidenceNote(story()).unresolved).toBe(
+      "No row is –: an alias exists in every script present.",
+    );
+  });
+});
+
+describe("the split sentence", () => {
+  const rows = (marks: [string | null, string][]) =>
+    marks.map(([polity, mark], i) => ({
+      domain: `d${i}.example`,
+      polity,
+      title: "t",
+      marks: { hormuz: mark as never },
+    }));
+
+  it("is withheld unless there is both a unanimous for and a unanimous against", () => {
+    // Everyone named it: true, but not a split, and saying it would imply one.
+    expect(
+      splitSentence(
+        story({
+          evidence: rows([
+            ["Spain", "present"],
+            ["Peru", "present"],
+          ]),
+        }),
+        {},
+      ),
+    ).toBeNull();
+  });
+
+  it("names both sides when there is one", () => {
+    const s = splitSentence(
+      story({
+        evidence: rows([
+          ["Spain", "present"],
+          ["Peru", "absent"],
+        ]),
+      }),
+      {},
+    );
+    expect(s).toBe("Every source in Spain named Hormuz; none of those in Peru did.");
+  });
+
+  it("ignores unresolved rows rather than counting them as silence", () => {
+    // Peru's only row cannot be evaluated, so Peru is not a polity that stayed
+    // silent — it is a polity nothing can be said about.
+    expect(
+      splitSentence(
+        story({
+          evidence: rows([
+            ["Spain", "present"],
+            ["Peru", "unresolved"],
+          ]),
+        }),
+        {},
+      ),
+    ).toBeNull();
+  });
+
+  it("ignores rows with no polity", () => {
+    expect(
+      splitSentence(
+        story({
+          evidence: rows([
+            ["Spain", "present"],
+            [null, "absent"],
+          ]),
+        }),
+        {},
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("a band of more than one actor", () => {
+  it("says the order inside it is not a claim", () => {
+    const note = bandNote(story({ band: ["hormuz", "iran"] }));
+    expect(note).toContain("2 actors lead together");
+    expect(note).toContain("the band is the claim and the order inside it is not");
+  });
+
+  it("says nothing when one actor leads alone", () => {
+    expect(bandNote(story())).toBeNull();
+  });
+});
+
+describe("the reading sentence", () => {
+  it("carries the balanced rate as its own clause when the run produced one", () => {
+    const r = readingSentence(story(), {});
+    expect(r.before).toBe(
+      "12 publishers across 2 polities carried this. 7 of 12 named Hormuz",
+    );
+    expect(r.balanced).toContain("61% once every language counts equally");
+  });
+
+  it("omits the clause entirely when the run could not weight languages", () => {
+    const r = readingSentence(
+      story({
+        figures: [
+          {
+            actor: "hormuz",
+            named: 7,
+            evaluable: 12,
+            unresolved: 0,
+            division: 0.9,
+            balanced_rate: null,
+          },
+        ],
+      }),
+      {},
+    );
+    // Not "0%", and not "unknown" — the clause is a claim, so its absence is the
+    // honest form.
+    expect(r.balanced).toBeNull();
+  });
+});
+
+describe("headline language", () => {
+  it("labels anything that is not English, including a language we cannot read", () => {
+    expect(foreignLanguage(story({ headline_language: "SPANISH" }))).toBe("Spanish");
+    expect(foreignLanguage(story({ headline_language: "TAGALOG" }))).toBe("Tagalog");
+  });
+
+  it("leaves English and unlabelled headlines alone", () => {
+    expect(foreignLanguage(story({ headline_language: "ENGLISH" }))).toBeNull();
+    expect(foreignLanguage(story({ headline_language: null }))).toBeNull();
+  });
+});
+
+describe("the selection note", () => {
+  it("says which span it selected over, and what fell out of the window", () => {
+    const note = selectionNote(REPORT, 5);
+    expect(note).toContain("the last 24 hours");
+    expect(note).toContain("71 candidates across 4 runs");
+    expect(note).toContain("54 of them are no longer carried");
+    expect(note).toContain("division of 0.9991");
+  });
+
+  it("claims only this window when there is no history to select over", () => {
+    const note = selectionNote({ ...REPORT, selection: undefined }, 5);
+    expect(note).toContain("in this window");
+    expect(note).not.toContain("hours");
+  });
+});
+
+describe("what never reached a story", () => {
+  it("is published rather than absorbed", () => {
+    const text = neverReached(REPORT);
+    expect(text).toContain("125,224 of those articles never reached a story");
+    expect(text).toContain("87%");
+    expect(text).toContain("361 themes were dropped whole");
+  });
+
+  it("says nothing rather than guessing when the run did not record it", () => {
+    expect(
+      neverReached({
+        ...REPORT,
+        grouping: { ...REPORT.grouping, articles_in_stories: undefined },
+      }),
+    ).toBe("");
+  });
+});
+
+describe("cadence", () => {
+  const run = (over: Partial<Run["report"]> = {}): Run => ({
+    run: "20260905T044830Z",
+    stories: [],
+    report: { ...REPORT, ...over },
+  });
+
+  it("reports the delivered gap, not a promised schedule", () => {
+    expect(sincePrevious(run())).toBe("6 h 17 min");
+  });
+
+  it("says so on a first run instead of inventing a gap", () => {
+    expect(sincePrevious(run({ previous_run: null }))).toBe("first run");
+  });
+
+  it("never says 'hourly'", () => {
+    // The schedule asks for a cadence GitHub does not deliver; the page must not
+    // repeat the cron line as if it were a fact.
+    expect(footer(REPORT)).not.toContain("hourly");
+    expect(sincePrevious(run())).not.toContain("hourly");
+  });
+
+  it("stamps the run in UTC", () => {
+    expect(runStamp(run())).toBe("5 Sep · 04:48 UTC");
+    expect(parseStamp("20260905T044830Z").toISOString()).toBe(
+      "2026-09-05T04:48:30.000Z",
+    );
+  });
+});
+
+describe("the footer", () => {
+  it("states the corpus before the sample", () => {
+    const text = footer(REPORT);
+    expect(text).toContain("143,152 articles from 10,839 domains");
+    expect(text).toContain("over the last 12 hours");
+    expect(text).toContain("17 cleared both floors");
+    expect(text).toContain("36% of domains could be placed");
+    expect(text).toContain("counted rather than dropped");
+  });
+});
+
+describe("formatting", () => {
+  it("groups thousands and rounds percentages the way the page reads them", () => {
+    expect(thousands(143152)).toBe("143,152");
+    expect(percent(0.3592)).toBe("36%");
+  });
+
+  it("joins a series without an Oxford comma, matching the published page", () => {
+    expect(series(["Spain"])).toBe("Spain");
+    expect(series(["Spain", "Peru"])).toBe("Spain and Peru");
+    expect(series(["Spain", "Peru", "Chile"])).toBe("Spain, Peru and Chile");
+  });
+});

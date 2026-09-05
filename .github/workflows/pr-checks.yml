@@ -116,10 +116,29 @@ jobs:
         run: npm run lint
         working-directory: frontend
 
+      - name: Unit tests
+        run: npm test
+        working-directory: frontend
+
       # Builds at the site root rather than at a base path. What this proves is that
       # the tree compiles and exports; the base path is supplied per deployment by
       # assemble-site.sh and cannot be checked here, because a pull request does not
       # know which previews will exist when it is published.
+      - name: Fetch the run the page describes
+        run: |
+          # The pipeline's output is on its own ref, not in this one. Without it the
+          # build has reference tables and no stories, which is a different page and
+          # would let a regression through unmeasured.
+          git fetch --depth 1 origin data
+          git show origin/data:data/stories.json > data/stories.json
+
       - name: Build the static export
         run: npm run build
+        working-directory: frontend
+
+      # The check that makes the component choice hold. It strips <script> blocks
+      # first: Next serialises the whole tree into the RSC payload, so a naive grep
+      # for the page's text passes even when the page is empty without JavaScript.
+      - name: The exported HTML carries the page
+        run: npm run check:markup
         working-directory: frontend
