@@ -142,6 +142,17 @@ export default function Ledger() {
 
         <section className="rows" id="stories">
           <h2>Stories</h2>
+          {/* The mechanism, in the reader's words, before the first row. Without it
+              the page shows a story about a rescue in Nepal beside a figure about the
+              People's Republic of China and never says what joins them. The word
+              "actor" appeared nowhere on this page until now. */}
+          <p className="how">
+            Every story here is measured on one <b>actor</b>: a person, a place or an
+            organisation that some sources name and others leave out. The bar shows how
+            many named it. Its mark is the halfway point, which is the most divided a
+            story can be, so <b>a bar that stops near the mark is a story its sources
+            tell differently</b>.
+          </p>
           <p className="span">
             {selectionNote(report, Math.min(FEATURED, rows.length))}
           </p>
@@ -195,11 +206,11 @@ export default function Ledger() {
               </InfoPopover>
             </span>
             <span>
-              Named by
+              How divided
               <InfoPopover
                 id="p-named"
-                label="What named by means"
-                title="What &ldquo;named by&rdquo; means"
+                label="How the division is measured"
+                title="How the division is measured"
               >
                 <p>
                   How many evaluable sources used a name for this actor, over

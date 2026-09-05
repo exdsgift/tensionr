@@ -415,7 +415,13 @@
     font-size: .66rem; letter-spacing: .18em; text-transform: uppercase;
     border-bottom: 1px solid var(--border); padding-bottom: .5rem;
   }
-  .rows > .span { font-size: .85rem; color: var(--muted-foreground); margin-top: .75rem; max-width: 76ch }
+  /* The one paragraph a first-time reader has to get through, so it is set at reading
+     size and in the page's own colour rather than in the grey the notes use. */
+  .rows > .how {
+    font-size: .95rem; margin-top: 1rem; max-width: 62ch; line-height: 1.6;
+  }
+  .rows > .how b { font-weight: 600 }
+  .rows > .span { font-size: .82rem; color: var(--muted-foreground); margin-top: .75rem; max-width: 76ch }
 
   /* Not `.grid`. Tailwind owns that name and emits `.grid{display:grid}` into
      @layer utilities, which outranks @layer components - so `.colhead{display:flex}`
@@ -486,6 +492,8 @@
   .split-rest { opacity: .85 }
   .split-div { display: block; margin-top: .15rem; font-size: .72rem }
   .split-max { opacity: .7 }
+  .split-actor { color: var(--foreground) }
+  .split-even { display: block; margin-top: .15rem; font-size: .74rem; opacity: .85 }
 
   .split-hero { margin-top: 1rem; max-width: 26rem }
   .split-hero .split-bar { height: 10px }
@@ -573,8 +581,17 @@
   .info-pop {
     background: var(--popover); color: var(--popover-foreground);
     border: 1px solid var(--border); border-radius: var(--radius-lg);
-    padding: 1.25rem; max-width: min(48ch, 92vw);
-    font-size: .83rem; line-height: 1.65;
+    padding: 1.25rem;
+    /* Both bounds. Without a width the popover took its content's max-content size and
+       the text ran off the edge; without a max it would fill the viewport on desktop. */
+    width: min(46ch, calc(100vw - 2rem)); max-width: none;
+    /* A popover renders in the top layer but INHERITS from its DOM parent, and these
+       live inside `.colhead > span`, which is uppercase, letter-spaced and nowrap for
+       the column labels. That is why the explanations were shouting and clipped mid-
+       word. Inheritance has to be undone explicitly; the top layer does not do it. */
+    text-transform: none; letter-spacing: normal; white-space: normal;
+    text-align: left; font-weight: 400;
+    font-size: .85rem; line-height: 1.65;
     /* Where anchor positioning is unsupported the popover centres in the
        viewport, which is the browser's own default and remains usable. */
     position-area: bottom span-right;
@@ -582,14 +599,14 @@
   }
   .info-pop::backdrop { background: color-mix(in oklab, var(--background) 70%, transparent) }
   .info-pop h3 {
-    font-size: .66rem; letter-spacing: .14em; text-transform: uppercase;
-    margin: 0 0 .75rem;
+    font-size: .95rem; font-weight: 600; letter-spacing: normal;
+    text-transform: none; margin: 0 0 .5rem; color: var(--foreground);
   }
   .info-pop p { margin: 0 0 .75rem }
   .info-pop em { font-style: normal; font-weight: 600 }
   .info-pop .close {
-    font-size: .64rem; letter-spacing: .12em; text-transform: uppercase;
-    background: transparent; border: 1px solid var(--border);
+    font-size: .72rem; letter-spacing: normal; text-transform: none;
+    background: transparent; border: 1px solid var(--control-border);
     border-radius: var(--radius-sm); color: var(--muted-foreground);
     padding: .3rem .6rem; cursor: pointer; font-family: inherit;
   }

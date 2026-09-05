@@ -24,6 +24,7 @@ export function SplitBar({
   evaluable,
   actor,
   division,
+  evenSplit,
   className,
 }: {
   named: number;
@@ -31,6 +32,8 @@ export function SplitBar({
   actor: string;
   /** The ranking key, in bits. Shown beside its own picture so it can be read. */
   division?: number;
+  /** Restate the midpoint in sources. Used where there is room to teach the reading. */
+  evenSplit?: boolean;
   className?: string;
 }) {
   if (!evaluable) return null;
@@ -47,8 +50,17 @@ export function SplitBar({
         <span className="split-mid" />
       </div>
       <p className="split-say">
-        <b>{named}</b> of <b>{evaluable}</b> named {actor}
+        <b>{named}</b> of <b>{evaluable}</b> sources named <b className="split-actor">{actor}</b>
         <span className="split-rest">, {evaluable - named} did not</span>
+        {evenSplit ? (
+          // The mark on the bar, restated in the units the reader is already holding.
+          // "Halfway is the maximum" is the one thing that makes the picture readable,
+          // and saying it in bits does not carry it.
+          <span className="split-even">
+            an even split ({Math.round(evaluable / 2)} of {evaluable}) is the most
+            divided a story can be
+          </span>
+        ) : null}
         {division !== undefined ? (
           // The number the page ranks on, kept but given its ceiling. On its own,
           // "0.998" tells a reader nothing; "0.998 of a possible 1" at least says
