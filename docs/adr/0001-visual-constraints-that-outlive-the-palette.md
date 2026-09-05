@@ -36,7 +36,25 @@ meter fills at **1.72:1 and 2.83:1** — while its body text was mostly AAA. The
 element was the least accessible one. All three of tensionr's retired themes shared the same
 defect, so this was already a thing to fix rather than a thing to copy.
 
-A component library's defaults do not discharge this. Check the values.
+A component library's defaults do not discharge this. Check the values — measured on
+shadcn/ui's stock palette, against the page's own background:
+
+| | light | dark |
+| --- | ---: | ---: |
+| focus ring (`--ring`, stock) | **2.58:1** | 4.18:1 |
+| control borders (`--border`, stock) | **1.26:1** | **1.26:1** |
+| decorative rules (`--border`, stock) | 1.26:1 | 1.26:1 |
+
+The first two rows fail and are fixed by `--ring` and a separate `--control-border`
+token; the third is left at the stock value under the exemption above. A focus indicator
+below 3:1 is a keyboard-accessibility defect rather than a style choice, and it is the
+one an author is least likely to notice, because an author navigating with a pointer
+never sees it.
+
+Measure by painting the colour onto a canvas and reading the pixel back. Browsers now
+return `lab()` and `oklch()` from `getComputedStyle`, and parsing the first three numbers
+out of those as if they were RGB yields confident, wrong figures — it reported black text
+on white at 1.54:1 while this page was being built.
 
 ### 2. Colour is never the only encoding
 

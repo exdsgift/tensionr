@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "check:markup": "node scripts/check-markup.mjs"
+    "check:markup": "node scripts/check-markup.mjs",
+    "check:weight": "node scripts/check-weight.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

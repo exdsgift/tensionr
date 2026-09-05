@@ -2,7 +2,16 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark is either asked for explicitly (`.dark` on an ancestor) or inherited from the
+   operating system. Both, because the page has to be readable with scripting off and a
+   class-toggling script cannot run then — and `.light` stays available as an explicit
+   opt-out for a future toggle. */
+@custom-variant dark {
+  &:is(.dark *) { @slot }
+  @media (prefers-color-scheme: dark) {
+    &:not(.light *) { @slot }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -69,7 +78,15 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* shadcn's stock ring is 2.58:1 against white — a focus indicator below 3:1
+     is a keyboard-accessibility defect, not a style choice. Measured, not
+     guessed; see globals.test.ts and ADR 0001 §1. */
+  --ring: oklch(0.58 0 0);
+  /* Borders that identify a control (the info buttons, the evidence toggle,
+     the focusable table scroller). WCAG 1.4.11 requires 3:1 for these;
+     `--border` stays at shadcn's stock value for decorative hairlines,
+     which the criterion exempts. */
+  --control-border: oklch(0.58 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -105,6 +122,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  --control-border: oklch(0.52 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -120,6 +138,46 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* The same values the `.dark` class sets, applied when the operating system asks
+   for dark and nothing has explicitly asked for light. Kept in step with the block
+   above by `globals.test.ts`, which fails if the two ever diverge. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --control-border: oklch(0.52 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -129,6 +187,9 @@
   }
   html {
     @apply font-sans;
+    /* So scrollbars and the canvas behind the page follow the same preference the
+       tokens above do, rather than staying light under a dark page. */
+    color-scheme: light dark;
   }
 }
 /* ---------------------------------------------------------------------------
@@ -360,7 +421,7 @@
   .ev-toggle {
     margin-top: 1rem; font-size: .72rem; letter-spacing: .1em;
     text-transform: uppercase; color: var(--muted-foreground);
-    background: transparent; border: 1px solid var(--border);
+    background: transparent; border: 1px solid var(--control-border);
     border-radius: var(--radius-sm); padding: .4rem .7rem; cursor: pointer;
   }
   .ev-toggle:hover { color: var(--foreground); border-color: var(--ring) }
@@ -371,7 +432,7 @@
      two nowrap columns 375 of 620px and wrapped headlines to five lines. */
   .ev-scroll {
     margin-top: .75rem; overscroll-behavior-x: contain;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
+    border: 1px solid var(--control-border); border-radius: var(--radius-md);
   }
   .ev-scroll:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
   table.src { table-layout: fixed; min-width: 620px; font-size: .8rem }
@@ -392,7 +453,7 @@
   /* The `i` button and the native popover it opens. */
   .i {
     font: inherit; font-size: .58rem; line-height: 1; background: transparent;
-    border: 1px solid var(--border); border-radius: 50%;
+    border: 1px solid var(--control-border); border-radius: 50%;
     width: 1.35em; height: 1.35em; padding: 0; cursor: pointer;
     margin-left: .5em; flex: none; display: grid; place-items: center;
     color: var(--muted-foreground);

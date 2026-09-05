@@ -142,3 +142,9 @@ jobs:
       - name: The exported HTML carries the page
         run: npm run check:markup
         working-directory: frontend
+
+      # Two budgets, and they mean different things: the content half is ours, the
+      # total is mostly what Next costs. See docs/adr/0002.
+      - name: The page is within its weight budget
+        run: npm run check:weight
+        working-directory: frontend
