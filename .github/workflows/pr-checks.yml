@@ -1,13 +1,19 @@
 name: PR Checks
 
-# The gate that makes `master` protectable: every pull request runs the test
-# suite and ruff. Nothing here touches the network beyond the package index -
-# the data pipeline is deliberately not run on pull requests (see #6). It makes
-# live calls to 23 RSS feeds, GDELT and HuggingFace; the tests run against fixed
-# fixtures instead.
+# The gate that makes `master` protectable: every pull request runs the Python test
+# suite, ruff, and the frontend build. Nothing here touches the network beyond the
+# package indexes - the data pipeline is deliberately not run on pull requests (see
+# #6). It makes live calls to GDELT, Wikidata and HuggingFace; the tests run against
+# fixed fixtures instead.
 #
-# No type checker: explicitly deferred on #6.
-# Nothing for the JS side: that is #14's decision.
+# The Python project lives in `backend/` since #81, so every step that runs uv needs a
+# working directory. The frontend gets a build check rather than a test suite: there is
+# nothing to test until #82 puts a page there, but a build that does not compile must
+# not reach `master`, because `assemble-site.sh` would then refuse to publish and the
+# site would freeze.
+#
+# No type checker on the Python side: explicitly deferred on #6. TypeScript is checked
+# by `next build`, which fails on a type error.
 
 on:
   pull_request:
@@ -36,14 +42,16 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
           python-version: "3.12"
 
       - name: Install dependencies
         run: uv sync --frozen
+        working-directory: backend
 
       - name: Run tests
         run: uv run pytest -v
+        working-directory: backend
 
   publish:
     name: publish.sh
@@ -69,16 +77,49 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
           python-version: "3.12"
 
       - name: Install dependencies
         run: uv sync --frozen
+        working-directory: backend
 
       # ruff is pinned in the `dev` dependency group and resolved through
       # uv.lock, so the rule set cannot drift under CI when a new ruff ships.
       - name: Lint
         run: uv run ruff check --output-format=github .
+        working-directory: backend
 
       - name: Check formatting
         run: uv run ruff format --check --diff .
+        working-directory: backend
+
+  frontend:
+    name: next build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Lint
+        run: npm run lint
+        working-directory: frontend
+
+      # Builds at the site root rather than at a base path. What this proves is that
+      # the tree compiles and exports; the base path is supplied per deployment by
+      # assemble-site.sh and cannot be checked here, because a pull request does not
+      # know which previews will exist when it is published.
+      - name: Build the static export
+        run: npm run build
+        working-directory: frontend

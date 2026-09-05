@@ -10,9 +10,12 @@ the same planet does.
 import json
 from pathlib import Path
 
-from tensionr.ledger import cell
+from tensionr.map import cell
 
-DATA = Path(__file__).resolve().parent.parent / "data"
+# `data/` is the contract between the engine and the frontend, so it stays at the
+# repository root rather than inside `backend/` (#81). Two parents up from this file,
+# not one.
+DATA = Path(__file__).resolve().parents[2] / "data"
 
 COASTLINE = json.loads((DATA / "map" / "coastline.json").read_text("utf-8"))
 NARROW = json.loads((DATA / "map" / "coastline-narrow.json").read_text("utf-8"))

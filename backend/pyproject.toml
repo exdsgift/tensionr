@@ -1,29 +1,25 @@
 [project]
 name = "tensionr"
 version = "1.0.0"
-description = "tensionr static data pipeline: fetch, score and publish global-intelligence JSON"
+description = "tensionr story engine: cluster the day's news and measure how differently its sources name the same actors"
 requires-python = ">=3.12"
+# Three, and the engine imports nothing else that it did not write itself. The v1
+# pipeline needed feedparser, pandas, scikit-learn, yfinance and spaCy (plus click,
+# and a pinned language-model wheel); retiring it in #80 left every one of them
+# unused. Checked by grepping the surviving tree for third-party imports rather
+# than by reasoning about what should still be needed - re-run that grep before
+# adding anything back.
 dependencies = [
     "requests>=2.32",
-    "feedparser>=6.0",
-    "pandas>=2.2",
     "numpy>=2.0",
-    "scikit-learn>=1.5",
-    "spacy>=3.8,<3.9",
-    # spaCy's CLI imports click at import time but recent typer releases no
-    # longer pull it in; without this the bare `import spacy` crashes.
-    "click>=8",
-    "yfinance>=0.2.50",
     "python-dotenv>=1.0",
-    # spaCy model pinned as a wheel so neither CI nor runtime needs `spacy download`
-    "xx-ent-wiki-sm @ https://github.com/explosion/spacy-models/releases/download/xx_ent_wiki_sm-3.8.0/xx_ent_wiki_sm-3.8.0-py3-none-any.whl",
 ]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.16,<0.17"]
 
 [project.scripts]
-tensionr = "tensionr.pipeline:main"
+tensionr = "tensionr.stories.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.6"]
@@ -67,15 +63,14 @@ ignore = [
 ]
 
 # Rules that are worth adopting but do not pass today, recorded here instead of
-# being silently dropped. Adopting them is a code change, not a CI change:
-#   DTZ005/006/007 (6 hits)  naive datetimes in pipeline.py and analytics.py.
-#                            Fixing these changes the timestamps written into
-#                            published data - a data-semantics decision, not a
-#                            lint cleanup. Belongs with #10/#11.
-#   BLE001 (1 hit)           blind `except Exception` in fetchers/markets.py.
-#   ARG (11 hits)            unused arguments, several in test doubles.
-#   B905 (2 hits)            zip() without explicit strict=.
-#   SIM105, N806, RUF046     one hit each.
+# being silently dropped. Adopting them is a code change, not a CI change.
+#
+# The list below was measured against the pre-#80 tree, and most of its hits were
+# in modules that no longer exist - DTZ in pipeline.py and analytics.py, BLE001 in
+# fetchers/markets.py. Re-measure before treating any count here as current:
+#   ARG      unused arguments, several in test doubles.
+#   B905     zip() without explicit strict=.
+#   SIM105, N806, RUF046
 
 [tool.ruff.lint.per-file-ignores]
 # Tests may shadow builtins in fixtures and assert on magic values.

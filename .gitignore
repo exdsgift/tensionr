@@ -1,4 +1,4 @@
-# Python
+# Python (the engine lives in backend/)
 __pycache__/
 *.py[cod]
 *$py.class
@@ -15,9 +15,21 @@ env/
 .DS_Store
 graphify-out/
 server.log
+
+# Node (the frontend lives in frontend/)
+node_modules/
+.next/
+frontend/out/
+*.tsbuildinfo
+.npm/
+
 # Pipeline output. It is published to the `data` branch and the accumulated
 # record to `history`; on master it would only put automated commits back on
 # a ref that has to stay protectable (#6, #10).
 /data/*.json
 /data/archive/
 /out/
+
+# Locally assembled sites: tools/serve-site.sh writes _site/, and so does a local
+# run of .github/scripts/assemble-site.sh.
+/_site/
