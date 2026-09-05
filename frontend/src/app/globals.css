@@ -2,12 +2,24 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark is either asked for explicitly (`.dark` on an ancestor) or inherited from the
+   operating system. Both, because the page has to be readable with scripting off and a
+   class-toggling script cannot run then — and `.light` stays available as an explicit
+   opt-out for a future toggle. */
+@custom-variant dark {
+  &:is(.dark *) { @slot }
+  @media (prefers-color-scheme: dark) {
+    &:not(.light *) { @slot }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  /* `shadcn init` emits `--font-sans: var(--font-sans)`, which is self-referential
+     and resolves to nothing, so `@apply font-sans` silently fell back to the
+     browser's default serif. Point it at the face layout.tsx actually loads. */
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -66,7 +78,15 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* shadcn's stock ring is 2.58:1 against white — a focus indicator below 3:1
+     is a keyboard-accessibility defect, not a style choice. Measured, not
+     guessed; see globals.test.ts and ADR 0001 §1. */
+  --ring: oklch(0.58 0 0);
+  /* Borders that identify a control (the info buttons, the evidence toggle,
+     the focusable table scroller). WCAG 1.4.11 requires 3:1 for these;
+     `--border` stays at shadcn's stock value for decorative hairlines,
+     which the criterion exempts. */
+  --control-border: oklch(0.58 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -102,6 +122,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  --control-border: oklch(0.52 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -117,6 +138,46 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* The same values the `.dark` class sets, applied when the operating system asks
+   for dark and nothing has explicitly asked for light. Kept in step with the block
+   above by `globals.test.ts`, which fails if the two ever diverge. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --control-border: oklch(0.52 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -126,5 +187,346 @@
   }
   html {
     @apply font-sans;
+    /* So scrollbars and the canvas behind the page follow the same preference the
+       tokens above do, rather than staying light under a dark page. */
+    color-scheme: light dark;
   }
+}
+/* ---------------------------------------------------------------------------
+   The Ledger's own layout.
+
+   Colours come from the shadcn tokens above and nothing here invents one. What
+   is here is the structure the page needs and a component library has no opinion
+   about: a two-column hero, a braille map, a six-column evidence table that has
+   to stay a table on a phone.
+
+   The constraints this file must not break are in docs/adr/0001. The ones that
+   bite here: no font-size on body, the evidence table scrolls inside a labelled
+   region with fixed layout, the measuring probe is clipped, and motion respects
+   prefers-reduced-motion.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  /* One grid track list, defined once. Two definitions drift, and the column
+     heads stop lining up with the rows they name. */
+  :root {
+    --cols: minmax(0, 1fr) 6rem 7.5rem minmax(0, 19rem);
+    --barh: 44px;
+  }
+
+  .vh {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .num { font-variant-numeric: tabular-nums }
+  .dim { color: var(--muted-foreground) }
+
+  /* Marks are a glyph *and* a colour, never a colour alone (ADR 0001 §2). */
+  .mark-on { color: var(--primary) }
+  .mark-off { color: var(--muted-foreground) }
+  .mark-ne { color: var(--muted-foreground); opacity: .65 }
+
+  .bar {
+    position: sticky; top: 0; z-index: 30;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar .in {
+    max-width: 1200px; margin-inline: auto; padding: .75rem 1.5rem;
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: baseline;
+  }
+  .bar strong { font-size: .76rem; letter-spacing: .16em; text-transform: uppercase }
+  .bar .sub, .bar .when { font-size: .72rem; color: var(--muted-foreground) }
+  .bar .when { margin-left: auto; font-variant-numeric: tabular-nums }
+
+  .wrap { max-width: 1200px; margin-inline: auto; padding: 2rem 1.5rem 4rem }
+
+  /* Hero */
+  .hook {
+    display: grid; gap: 2rem 2.5rem; align-items: center;
+    grid-template-columns: minmax(26ch, 34ch) minmax(0, 1fr);
+  }
+  .lede {
+    display: block; font-size: .64rem; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--muted-foreground);
+  }
+  .fig { margin-top: .75rem }
+  /* The figure is a fraction, and the denominator is deliberately quieter but
+     present: it is the sample the number rests on. */
+  .fig b {
+    display: block; font-weight: 400; font-size: clamp(3rem, 6vw, 4.4rem);
+    line-height: .9; letter-spacing: -.035em; font-variant-numeric: tabular-nums;
+  }
+  .fig b i {
+    font-style: normal; font-size: .38em; letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+  .fig .num.na { color: var(--muted-foreground) }
+  .fig .unit {
+    display: block; margin-top: .5rem; font-size: .66rem; letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .say { font-size: .98rem; max-width: 38ch; margin-top: 1rem }
+  .say em { font-style: normal; font-weight: 500 }
+  .from {
+    margin-top: 1rem; padding-top: .75rem; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: .5rem 1.5rem;
+    font-size: .75rem; color: var(--muted-foreground);
+  }
+  .from b { font-weight: 500; color: var(--foreground) }
+  /* A rate below 0.4 is the thing the page exists to show, so it is marked —
+     and marked with weight as well as colour. */
+  .from .miss b, .actors .miss b { color: var(--destructive); font-weight: 600 }
+
+  /* The map is two maps. 76 characters of braille are ~52em wide, so filling a
+     358px column with them asks for 6.9px type, at which each dot is 0.83px of
+     ink; 38 characters fill the same column at the 11px the desktop uses. Which
+     one shows is a media query, not a script, so the choice survives with
+     scripting off — and the switch sits where the wide map stops reaching 11px
+     (76 x .6836em x 11px = 571px of block, so 603px of viewport). */
+  .globe { position: relative; width: 100%; max-width: 44rem; margin-inline: auto }
+  .earth { position: relative }
+  .earth.narrow { display: none }
+  @media (max-width: 620px) {
+    .earth.wide { display: none }
+    .earth.narrow { display: block }
+  }
+  /* 10px is the no-script size: the widest braille advance measured in any
+     fallback face is .7324em (DejaVu Sans), and 38 x .7324 x 10 = 279px fits a
+     320px viewport. The script raises it to what the real face allows. */
+  .earth pre {
+    margin: 0 auto; font-family: var(--font-mono); font-size: 10px;
+    line-height: 1em; letter-spacing: 0; white-space: pre; width: max-content;
+    /* Not var(--border): at ~1.1:1 the coastline was invisible, and it is the
+       only picture on the page. Muted foreground is the quietest token that
+       still reads as an image rather than as a smudge. */
+    color: var(--muted-foreground);
+  }
+  .earth .layer { position: absolute; inset: 0 }
+
+  /* Clipped, not merely hidden. The probe carries 100 characters at 100px, so
+     left in the flow it is ~6,836px wide and, absolutely positioned with no
+     clipping ancestor, it made the published page scroll sideways by 6,532px at
+     a 320px viewport. visibility:hidden does not remove a box from layout. */
+  #probebox { position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: hidden }
+  #probe {
+    position: absolute; top: 0; left: 0; white-space: pre;
+    font-family: var(--font-mono); letter-spacing: 0;
+  }
+
+  .blip { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center }
+  .blip .dot {
+    width: calc(var(--cw, 6px) * .9); height: calc(var(--cw, 6px) * .9);
+    border-radius: 50%; background: var(--primary); position: relative; z-index: 2;
+  }
+  .blip.off .dot { background: transparent; box-shadow: inset 0 0 0 1px var(--muted-foreground) }
+  .blip .r {
+    position: absolute; width: calc(var(--cw, 6px) * 1.6); height: calc(var(--cw, 6px) * 1.6);
+    border-radius: 50%; border: 1px solid var(--primary); opacity: 0;
+    animation: sonar 4.2s ease-out infinite;
+  }
+  .blip.off .r { border-color: var(--muted-foreground); animation-duration: 6.6s }
+  @keyframes sonar {
+    0% { transform: scale(.3); opacity: .9 }
+    65% { opacity: .14 }
+    100% { transform: scale(9); opacity: 0 }
+  }
+  /* display:none until wanted rather than transparent: an opacity:0 box still
+     occupies layout, and 31 of them on a 286px map is another way to push the
+     page sideways. `.flip` turns the ones in the right half inward. */
+  .blip::after {
+    content: attr(data-n); position: absolute; left: calc(var(--cw, 6px) * 2);
+    top: 50%; transform: translateY(-50%); display: none; white-space: nowrap;
+    font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--popover-foreground); background: var(--popover);
+    border: 1px solid var(--border); padding: .1em .4em; z-index: 4;
+  }
+  .blip.flip::after { left: auto; right: calc(var(--cw, 6px) * 2) }
+  .blip:hover::after, .blip:focus::after { display: block }
+  .blip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+
+  .globe .cap {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1.5rem;
+    margin-top: 1rem; font-size: .62rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted-foreground); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blip .r { animation: none; opacity: .28; transform: scale(2) }
+  }
+
+  /* Aggregate strip */
+  .agg {
+    margin-top: 2.5rem; border-block: 1px solid var(--border);
+    display: flex; flex-wrap: wrap;
+  }
+  .agg > div { padding: 1rem 1.5rem 1rem 0; flex: 1 1 15ch; min-width: 14ch }
+  .agg .lab {
+    display: block; font-size: .62rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted-foreground);
+  }
+  .agg .v { display: block; margin-top: 3px; font-size: .98rem; font-variant-numeric: tabular-nums }
+
+  /* Stories */
+  .rows { margin-top: 2rem }
+  .rows > h2 {
+    font-size: .66rem; letter-spacing: .18em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border); padding-bottom: .5rem;
+  }
+  .rows > .span { font-size: .85rem; color: var(--muted-foreground); margin-top: .75rem; max-width: 76ch }
+
+  .grid {
+    display: grid; grid-template-columns: var(--cols); gap: .5rem 1rem;
+    align-items: baseline; width: 100%;
+  }
+  .colhead {
+    position: sticky; top: var(--barh); z-index: 10; background: var(--background);
+    padding: 1rem 0 .5rem; border-bottom: 1px solid var(--border);
+  }
+  .colhead > span {
+    display: flex; align-items: center; white-space: nowrap;
+    font-size: .62rem; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .row-trigger { width: 100%; text-align: left }
+  .title { font-size: .92rem; font-weight: 500 }
+  .title small {
+    display: block; margin-top: 4px; font-size: .72rem; font-weight: 400;
+    color: var(--muted-foreground); font-variant-numeric: tabular-nums;
+  }
+  /* A headline the page could not get in English is shown as the publisher
+     wrote it, with the language named. It is a quotation, not the page's voice. */
+  .lang {
+    font-style: normal; font-size: .62rem; letter-spacing: .1em;
+    text-transform: uppercase; border: 1px solid currentColor; padding: 0 .28em;
+    border-radius: 2px; vertical-align: .1em; margin-inline-start: .4em;
+    white-space: nowrap; color: var(--muted-foreground);
+  }
+  .cell { font-size: .84rem; font-variant-numeric: tabular-nums }
+  .actors { font-size: .76rem; line-height: 1.55 }
+  .actors b { font-weight: 500 }
+
+  .read { font-size: .92rem; max-width: 76ch; margin-top: .5rem }
+  .read.sub { color: var(--muted-foreground); font-size: .82rem }
+
+  .ev-toggle {
+    margin-top: 1rem; font-size: .72rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted-foreground);
+    background: transparent; border: 1px solid var(--control-border);
+    border-radius: var(--radius-sm); padding: .4rem .7rem; cursor: pointer;
+  }
+  .ev-toggle:hover { color: var(--foreground); border-color: var(--ring) }
+  .ev-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+
+  /* The evidence table keeps its columns and scrolls sideways inside its own
+     box. Fixed layout with declared widths, because automatic layout gave the
+     two nowrap columns 375 of 620px and wrapped headlines to five lines. */
+  .ev-scroll {
+    margin-top: .75rem; overscroll-behavior-x: contain;
+    border: 1px solid var(--control-border); border-radius: var(--radius-md);
+  }
+  .ev-scroll:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+  table.src { table-layout: fixed; min-width: 620px; font-size: .8rem }
+  table.src th, table.src td { padding: .45rem .6rem; vertical-align: top }
+  table.src .who, table.src .pol { white-space: nowrap }
+  table.src .who { width: 13rem }
+  table.src .pol { width: 9rem }
+  table.src .m { width: 5rem; text-align: center }
+  table.src .hl { color: var(--muted-foreground) }
+  .src-link { text-decoration: underline; text-underline-offset: 2px }
+  .src-link:hover { color: var(--foreground) }
+
+  .ev-note {
+    padding: .75rem 1rem; font-size: .74rem; line-height: 1.6;
+    color: var(--muted-foreground); max-width: 90ch;
+  }
+
+  /* The `i` button and the native popover it opens. */
+  .i {
+    font: inherit; font-size: .58rem; line-height: 1; background: transparent;
+    border: 1px solid var(--control-border); border-radius: 50%;
+    width: 1.35em; height: 1.35em; padding: 0; cursor: pointer;
+    margin-left: .5em; flex: none; display: grid; place-items: center;
+    color: var(--muted-foreground);
+  }
+  .i:hover { background: var(--foreground); color: var(--background); border-color: var(--foreground) }
+  .i:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+
+  .info-pop {
+    background: var(--popover); color: var(--popover-foreground);
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.25rem; max-width: min(48ch, 92vw);
+    font-size: .83rem; line-height: 1.65;
+    /* Where anchor positioning is unsupported the popover centres in the
+       viewport, which is the browser's own default and remains usable. */
+    position-area: bottom span-right;
+    margin: .35rem 0 0;
+  }
+  .info-pop::backdrop { background: color-mix(in oklab, var(--background) 70%, transparent) }
+  .info-pop h3 {
+    font-size: .66rem; letter-spacing: .14em; text-transform: uppercase;
+    margin: 0 0 .75rem;
+  }
+  .info-pop p { margin: 0 0 .75rem }
+  .info-pop em { font-style: normal; font-weight: 600 }
+  .info-pop .close {
+    font-size: .64rem; letter-spacing: .12em; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--muted-foreground);
+    padding: .3rem .6rem; cursor: pointer; font-family: inherit;
+  }
+
+  .foot-rule { margin-top: 3rem }
+  .foot { margin-top: 1.5rem; border: none; background: transparent }
+  .foot p {
+    font-size: .78rem; line-height: 1.7; color: var(--muted-foreground);
+    max-width: 88ch;
+  }
+  .foot p + p { margin-top: .75rem }
+  .foot a { text-decoration: underline; text-underline-offset: 2px }
+
+  /* --- Responsive ------------------------------------------------------- */
+
+  @media (max-width: 980px) {
+    .hook { grid-template-columns: minmax(0, 1fr) }
+    .say { max-width: none }
+  }
+
+  /* One track, and every cell labels itself from the attribute the row carries.
+     Collapsing a four-column grid without this leaves bare numbers with nothing
+     naming them, because the column heads are what named them. */
+  @media (max-width: 760px) {
+    :root { --cols: minmax(0, 1fr) }
+    .colhead {
+      display: flex; flex-wrap: wrap; gap: .35rem .75rem;
+    }
+    .colhead > span:not(:last-child)::after { content: "·"; margin-left: .75rem }
+    .row .cell::before {
+      content: attr(data-l) " ";
+      text-transform: uppercase; letter-spacing: .1em; font-size: .62rem;
+      color: var(--muted-foreground);
+    }
+    .agg > div { flex: 1 1 45% }
+    .wrap { padding: 1.5rem 1rem 3rem }
+    .bar .in { padding: .625rem 1rem }
+  }
+}
+
+/* The map's <pre> needs a monospace with a predictable advance, and the figures
+   and tables want tabular numerals. That is the platform's own monospace stack:
+   Geist Mono would have been ~26 KB of webfont for a face the braille glyphs do
+   not come from anyway — no monospace on any platform covers U+28xx, so those
+   always arrive from a fallback and are measured at runtime regardless. */
+:root {
+  --font-geist-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
 }
