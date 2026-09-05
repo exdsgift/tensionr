@@ -64,16 +64,24 @@ jobs:
       # append-only ref. Fetched here rather than in the engine, which does not speak
       # git — the same shape as the state fetch above. A missing index is not an error:
       # the engine then selects over this window alone, which is what it did before.
-      - name: Fetch the last day's indexes
+      - name: Fetch the recent indexes
         run: |
+          # Two spans, one fetch. The engine features the widest divisions of the last
+          # 24 hours and draws each featured story's line over the last seven days, and
+          # it separates the two itself (run.py: SPAN_HOURS against SERIES_HOURS). What
+          # is fetched here is the wider of the two; handing over a week does not widen
+          # the selection.
+          #
+          # An index is ~280 KB, so eight days is a few MB against the ~15 MB capture
+          # this same job already publishes.
           mkdir -p history
-          git fetch --quiet --no-tags --depth=50 origin history || {
+          git fetch --quiet --no-tags --depth=100 origin history || {
             echo "no history ref yet - selecting over this window alone"; exit 0; }
-          # every index.json under the two UTC dates the last 24 hours can touch
-          for day in "$(date -u -d yesterday +%Y/%m/%d)" "$(date -u +%Y/%m/%d)"; do
+          for offset in 8 7 6 5 4 3 2 1 0; do
+            day="$(date -u -d "$offset days ago" +%Y/%m/%d)"
             git ls-tree -r --name-only FETCH_HEAD -- "history/$day" 2>/dev/null \
               | grep '/index.json$' || true
-          done > wanted.txt
+          done | sort -u > wanted.txt
           count=0
           while read -r path; do
             [ -n "$path" ] || continue

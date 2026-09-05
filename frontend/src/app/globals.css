@@ -506,6 +506,24 @@
   .actors-rest .badge, .actors-rest [data-slot="badge"] { font-size: .68rem }
 
   .lang-n { color: var(--muted-foreground); font-variant-numeric: tabular-nums }
+
+  /* The line of a story's division across the runs that carried it. */
+  .line { margin-top: .5rem }
+  .line-svg { display: block; width: 132px; height: 30px; overflow: visible }
+  .line-path { stroke: var(--foreground); stroke-width: 1.4; stroke-linejoin: round }
+  .line-mid { stroke: var(--control-border); stroke-width: 1 }
+  .line-now { fill: var(--foreground) }
+  .line-say {
+    margin: .25rem 0 0; font-size: .72rem; color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+  .line-say b { color: var(--foreground); font-weight: 600 }
+  .line-move { display: block; opacity: .9 }
+  /* Most stories have no line. Saying so is a fact; drawing a single dot would imply
+     a history the story does not have. */
+  .line-none {
+    margin: .5rem 0 0; font-size: .72rem; color: var(--muted-foreground); opacity: .8;
+  }
   /* The columns carry these at this width; below 760px they are gone and this line
      is the only place the counts appear. */
   .title-counts { display: none }

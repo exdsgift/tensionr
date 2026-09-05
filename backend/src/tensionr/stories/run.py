@@ -30,6 +30,16 @@ STATE, STORIES, RECORD, CAPTURE, INDEX = (
 # rather than whichever twelve hours the last run happened to cover.
 SPAN_HOURS = 24
 
+# How far back a featured story's published series may reach. Longer than SPAN_HOURS on
+# purpose: the selection is a claim about today and must not change, while the series is
+# a picture of the story's life and is thin at six points. A run outside the selection
+# window contributes to the line and never to the ranking.
+SERIES_HOURS = 168
+
+# Points per series. At one run every four hours a week is about 42, and the cap is a
+# guard against a burst of runs rather than a display choice.
+SERIES_CAP = 60
+
 
 def _capture(records: list[dict[str, Any]], already: set[str]) -> list[dict[str, Any]]:
     """The irrecoverable minimum: what GDELT will not give back if it drops it.
@@ -122,6 +132,52 @@ def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
     return {"run": stamp, "stories": rows}
 
 
+def _stamp_before(history: list[dict[str, Any]], hours: int) -> str | None:
+    """The run stamp `hours` before the newest run in `history`, as a comparable string.
+
+    Compared as text rather than parsed: the stamps are fixed-width UTC, so string order
+    is time order, and this runs once per feature pass.
+    """
+    stamps = sorted(h["run"] for h in history if h.get("run"))
+    if not stamps:
+        return None
+    newest = dt.datetime.strptime(stamps[-1], "%Y%m%dT%H%M%SZ")
+    return (newest - dt.timedelta(hours=hours)).strftime("%Y%m%dT%H%M%SZ")
+
+
+def _series(
+    history: list[dict[str, Any]], ids: set[str]
+) -> dict[str, list[dict[str, Any]]]:
+    """Each featured story's division over the runs that carried it.
+
+    This is the third pillar of the v2 map - deviations over time in the same measure -
+    and it needs no new data: the engine has kept story identity between runs since #10,
+    and every run has published its own index since #66. The line was there all along
+    and nothing read it.
+
+    A run where the story was absent contributes no point rather than a zero. Absence
+    and a division of zero are different claims, and a line that dips to the floor when
+    a story simply was not carried would invent a story about the world.
+    """
+    cutoff = _stamp_before(history, SERIES_HOURS)
+    out: dict[str, list[dict[str, Any]]] = {}
+    for past in sorted(history, key=lambda h: h.get("run", "")):
+        stamp = past.get("run")
+        if not stamp or (cutoff and stamp < cutoff):
+            continue
+        for row in past.get("stories", []):
+            if row["id"] not in ids or row.get("division") is None:
+                continue
+            out.setdefault(row["id"], []).append(
+                {
+                    "run": stamp,
+                    "division": row["division"],
+                    "sources": row.get("sources"),
+                }
+            )
+    return {k: v[-SERIES_CAP:] for k, v in out.items()}
+
+
 def _feature(
     stories: list[dict[str, Any]],
     history: list[dict[str, Any]],
@@ -141,8 +197,14 @@ def _feature(
     story nobody is covering any more is arguably not one of today's five, and until the
     number exists this is a guess either way (#66).
     """
+    # The selection window and the series window are different spans, so they are
+    # separated here rather than in the caller. Whoever loads history may hand over a
+    # week of it; only the last SPAN_HOURS may decide what is featured.
+    cutoff = _stamp_before(history, SPAN_HOURS)
     peak: dict[str, float] = {}
     for past in history:
+        if cutoff and past.get("run", "") < cutoff:
+            continue
         for row in past.get("stories", []):
             division = row.get("division")
             if division is None:
@@ -158,8 +220,13 @@ def _feature(
         story["span_division"] = round(max(now, peak.get(story["id"], 0.0)), 4)
 
     ranked = sorted(live.values(), key=lambda s: -s["span_division"])
+    series = _series(history, {s["id"] for s in ranked[:count]})
     for story in ranked[:count]:
         story["featured"] = True
+        # Only for the stories written up. Every banded story would multiply the
+        # payload for lines nobody is shown.
+        if story["id"] in series:
+            story["series"] = series[story["id"]]
 
     absent = sorted(peak.items(), key=lambda kv: -kv[1])
     absent = [(i, d) for i, d in absent if i not in live]

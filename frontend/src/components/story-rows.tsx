@@ -24,6 +24,7 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { DivisionLine, type Point } from "@/components/division-line";
 import { SplitBar } from "@/components/split-bar";
 import {
   Accordion,
@@ -48,6 +49,7 @@ export interface StoryRowView {
   /** The band's leading actor, drawn as a split. */
   lead: { actor: string; named: number; evaluable: number };
   languages: { shown: { name: string; sources: number }[]; more: number };
+  series: Point[];
   reading: { before: string; balanced: string | null; split: string | null };
   bandNote: string | null;
   note: { collapsed: string; unresolved: string; links: string };
@@ -116,6 +118,7 @@ export function StoryRows({
                     actor={row.lead.actor}
                     division={row.division}
                   />
+                  <DivisionLine points={row.series} label={row.headline} />
                   {row.counts.length > 1 ? (
                     <span className="actors-rest">
                       {row.counts

@@ -58,6 +58,12 @@ export interface Story {
   /** Set by the engine when it can see a day of history. */
   featured?: boolean;
   span_division?: number;
+  /**
+   * This story's division over the runs that carried it, oldest first, on featured
+   * stories only. A run that did not carry the story contributes no point rather than
+   * a zero, so the axis is runs-that-carried-it and not time.
+   */
+  series?: { run: string; division: number; sources: number | null }[];
 }
 
 export interface Report {
