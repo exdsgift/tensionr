@@ -9,6 +9,7 @@
 
 import type { ReactNode } from "react";
 
+import { SplitBar } from "@/components/split-bar";
 import { Separator } from "@/components/ui/separator";
 import type { Hook } from "@/lib/prose";
 
@@ -79,6 +80,14 @@ export function Hook({
         </b>
         <span className="unit">{hook.unit}</span>
       </div>
+      {/* The same bar the rows use, so the reading is taught once at the top and
+          recognised below rather than explained twice. */}
+      <SplitBar
+        named={hook.named}
+        evaluable={hook.evaluable}
+        actor={hook.unit.replace(/^sources named /, "")}
+        className="split-hero"
+      />
       <p className="say">{hook.say}</p>
       <div className="from">
         <span>

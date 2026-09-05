@@ -93,6 +93,39 @@ export function splitSentence(story: Story, labels: Labels): string | null {
   );
 }
 
+/**
+ * Which languages a story is being told in, most-carried first.
+ *
+ * This is not what the language tag beside a headline says. That one labels the single
+ * headline the page chose to print, and only when it is not English, so a story carried
+ * by 72 Russian and 53 Ukrainian outlets showed no tag at all because the representative
+ * headline happened to be English. Which languages a story is told in is a different
+ * fact, it was not on the page anywhere, and on a site about who tells things
+ * differently it is worth more than the tag.
+ *
+ * Counted over distinct publishers rather than raw rows: the engine has already
+ * collapsed syndication in `evidence`, so each row is one voice.
+ */
+export function storyLanguages(
+  story: Story,
+  limit = 4,
+): { shown: { name: string; sources: number }[]; more: number } {
+  const counts = new Map<string, number>();
+  for (const row of story.evidence) {
+    if (!row.language) continue;
+    counts.set(row.language, (counts.get(row.language) ?? 0) + 1);
+  }
+  const ordered = [...counts]
+    .map(([name, sources]) => ({ name: titleCase(name), sources }))
+    .sort((a, b) => b.sources - a.sources || a.name.localeCompare(b.name));
+  return { shown: ordered.slice(0, limit), more: Math.max(0, ordered.length - limit) };
+}
+
+/** GDELT names languages in capitals, and sometimes not. "SPANISH" -> "Spanish". */
+function titleCase(name: string): string {
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+}
+
 /** The per-actor counts shown on a row. `miss` marks a rate a reader should notice. */
 export function rowCounts(
   story: Story,

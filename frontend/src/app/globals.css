@@ -454,6 +454,54 @@
   .actors { font-size: .76rem; line-height: 1.55 }
   .actors b { font-weight: 500 }
 
+  /* The split, drawn. The bar is filled to the naming rate and marked at the half,
+     because the half is where division peaks: a bar stopping near the mark is a
+     divided story, a bar at either extreme is an agreed one. That reading needs no
+     legend, which is the entire reason it exists - `division 0.998` in grey type
+     could not be read by anyone who did not already know the scale. */
+  .split { display: flex; flex-direction: column; gap: .3rem }
+  .split-bar {
+    position: relative; height: 6px; width: 100%;
+    background: var(--muted); border-radius: 999px; overflow: hidden;
+  }
+  .split-bar i {
+    display: block; height: 100%; background: var(--foreground);
+    border-radius: 999px;
+  }
+  /* Under 40% of sources used the name at all: the thing this page exists to show. */
+  .split-bar i[data-sparse] { background: var(--muted-foreground) }
+  /* The half, which is where division peaks. Everything on this page is ranked by
+     distance from this mark, so it has to be visible without competing with the fill. */
+  .split-mid {
+    position: absolute; top: -3px; bottom: -3px; left: 50%;
+    width: 2px; margin-left: -1px;
+    background: var(--background);
+    box-shadow: 0 0 0 1px var(--control-border);
+  }
+  .split-say {
+    font-size: .76rem; color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums; margin: 0;
+  }
+  .split-say b { color: var(--foreground); font-weight: 600 }
+  .split-rest { opacity: .85 }
+  .split-div { display: block; margin-top: .15rem; font-size: .72rem }
+  .split-max { opacity: .7 }
+
+  .split-hero { margin-top: 1rem; max-width: 26rem }
+  .split-hero .split-bar { height: 10px }
+  .split-hero .split-say { font-size: .85rem }
+
+  .actors-rest {
+    display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .45rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .actors-rest .badge, .actors-rest [data-slot="badge"] { font-size: .68rem }
+
+  .lang-n { color: var(--muted-foreground); font-variant-numeric: tabular-nums }
+  /* The columns carry these at this width; below 760px they are gone and this line
+     is the only place the counts appear. */
+  .title-counts { display: none }
+
   .read { font-size: .92rem; max-width: 76ch; margin-top: .5rem }
   .read.sub { color: var(--muted-foreground); font-size: .82rem }
 
@@ -576,6 +624,7 @@
        printed both counts twice in a row, three lines apart. What is kept is the one
        thing that line does not carry. */
     .row .cell { display: none }
+    .title-counts { display: inline }
     .row .actors::before {
       display: block;
       content: attr(data-l);

@@ -12,6 +12,7 @@
 import { BrailleMap } from "@/components/braille-map";
 import { EvidenceTable } from "@/components/evidence-table";
 import { InfoPopover } from "@/components/info-popover";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AggregateStrip,
   Hook,
@@ -35,9 +36,11 @@ import {
   runStamp,
   selectionNote,
   sincePrevious,
+  storyLanguages,
   thousands,
 } from "@/lib/prose";
 import {
+  actorName,
   banded,
   FEATURED,
   lead,
@@ -73,6 +76,15 @@ export default function Ledger() {
     polities: story.polities.length,
     division: lead(story).division,
     counts: rowCounts(story, labels),
+    lead: (() => {
+      const f = lead(story);
+      return {
+        actor: actorName(story.band[0], labels),
+        named: f.named,
+        evaluable: f.evaluable,
+      };
+    })(),
+    languages: storyLanguages(story),
     reading: readingSentence(story, labels),
     bandNote: bandNote(story),
     note: evidenceNote(story),
@@ -208,10 +220,14 @@ export default function Ledger() {
               capNote={capNote(fitted.dropped)}
             />
           ) : (
-            <p className="read">
-              No story in this window cleared both floors, so there is no row to
-              show. The window itself is described below.
-            </p>
+            <Alert>
+              <AlertTitle>No row to show, and that is a result</AlertTitle>
+              <AlertDescription>
+                No story in this window cleared both floors. The window itself is
+                described below: a figure under the floor would be a number about the
+                sample rather than about the world.
+              </AlertDescription>
+            </Alert>
           )}
         </section>
 
