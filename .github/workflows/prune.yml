@@ -1,0 +1,92 @@
+name: Prune captures
+
+# Keeps the capture archive to a rolling window and reclaims the space.
+#
+# Separate from the engine on purpose. The engine appends and never deletes, which is
+# the guarantee publish.sh's `history` mode is built around; the one job that destroys
+# data does nothing else, runs once a day, and defaults to telling you what it would do.
+#
+# Why this exists at all: `capture.json` is ~8 MB per run and nothing automatic reads
+# it. Left alone the history ref reached 2.9 GB in a month, growing 85 MB a day, against
+# GitHub's 1 GB recommendation. `index.json` and `record.json` are 60x cheaper and are
+# what the site's per-story time series is drawn from, so they are never pruned.
+#
+# The prune is a parentless force-push: removing a path from a child commit shrinks the
+# tree and reclaims nothing, because the blobs stay reachable from the parents. That
+# makes it irreversible, which is why `apply` is a manual input and defaults to false.
+
+on:
+  schedule:
+    # After the day's runs, and offset from both stories.yml (:30 past every 4th hour)
+    # and the Pages rebuilds it triggers, so a prune and a publish are unlikely to race
+    # for the ref. If they do, --force-with-lease turns the loss into a skipped prune
+    # rather than a lost run.
+    - cron: '15 5 * * *'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Actually rewrite the ref. Unchecked reports and changes nothing."
+        type: boolean
+        default: false
+      window_days:
+        description: "Days of captures to keep"
+        type: string
+        default: "20"
+
+concurrency:
+  group: prune-captures
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  prune:
+    name: Prune
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # The script fetches the history ref itself; this checkout is only for the
+          # script. Shallow is fine and keeps the job from cloning a 1 GB repository.
+          fetch-depth: 1
+
+      - name: Report what would be removed
+        env:
+          WINDOW_DAYS: ${{ inputs.window_days || '20' }}
+        run: .github/scripts/prune-captures.sh | tee /tmp/prune.log
+
+      # The scheduled run only reports. A destructive operation on a schedule, with
+      # nobody reading the output, is how an archive disappears quietly - and the whole
+      # point of the window is that somebody chose it. Applying is a deliberate act
+      # until the reports have been boring for a while.
+      - name: Apply
+        if: inputs.apply == true
+        env:
+          WINDOW_DAYS: ${{ inputs.window_days || '20' }}
+        run: .github/scripts/prune-captures.sh --apply
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Capture prune"
+            echo
+            echo '```'
+            cat /tmp/prune.log 2>/dev/null || echo "(the report step did not run)"
+            echo '```'
+            if [[ "${{ inputs.apply }}" == "true" ]]; then
+              echo
+              echo "**Applied.** The dropped objects are unreachable; GitHub collects"
+              echo "them on its own schedule, so the repository shrinks later rather"
+              echo "than immediately."
+            else
+              echo
+              echo "Report only. Run this workflow with **apply** checked to rewrite"
+              echo "the ref. That is irreversible."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
