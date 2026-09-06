@@ -9,15 +9,30 @@ name: Story engine
 # directory per run, because they are the only outputs time cannot rebuild: GDELT drops
 # what it does not keep, so an hour not captured is gone.
 #
-# Every four hours at half past. The offset is a leftover: it used to keep this clear of
-# the v1 synchroniser, which no longer exists, and it is kept only because changing the
-# cadence would change what `previous_run` means across the accumulated history. The
-# window is sized against the delivered gaps, not the asked ones.
+# Every four hours, at seven minutes past rather than half past.
+#
+# The minute is not decoration and the old comment here was wrong about why it was
+# kept. Measured over 57 delivered runs and 13.5 days, GitHub honours about 70% of
+# what this cron asks for, every run arrives 13 to 225 minutes late, and the slots do
+# not fail evenly:
+#
+#     00:30   3 runs        12:30  10 runs
+#     04:30  12 runs        16:30  12 runs
+#     08:30   6 runs        20:30  14 runs
+#
+# A four-hourly cron on the half hour is a popular thing to ask for, and GitHub's own
+# guidance is to avoid high-load times. Moving off it is a cheap experiment and is
+# labelled as one: it may do nothing, and only weeks of runs will say.
+#
+# What is NOT left to the experiment is the data. A gap wider than the window loses
+# GDELT permanently, so the window is sized against the worst delivered gap rather
+# than against the asked cadence - see WINDOW_SLOTS, which this measurement moved from
+# 12 hours to 16 after finding two gaps had already breached it.
 # `master` is never written to by either.
 
 on:
   schedule:
-    - cron: '30 */4 * * *'
+    - cron: '7 */4 * * *'
   workflow_dispatch:
 
 concurrency:

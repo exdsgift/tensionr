@@ -25,16 +25,29 @@ HEARTBEAT_MINUTES = 15
 PUBLISH_LAG_MINUTES = 25
 EMBEDDING_DIM = 512
 
-# Twelve hours. Not a tuning parameter, and not a freshness setting: it is sized so
+# Sixteen hours. Not a tuning parameter and not a freshness setting: it is sized so
 # consecutive windows still overlap when GitHub skips a run. Story identity is a URL
-# join between runs (#10), and the capture is the one store time cannot rebuild (#12),
-# so a gap wider than the window loses articles permanently.
+# join between runs (#10) and the capture is the one store time cannot rebuild (#12),
+# so a gap wider than the window loses articles permanently and silently.
 #
-# Measured on this repository: the schedule is asked for every 4 hours and GitHub
-# delivers 37-44% of what is asked, with observed gaps to 3h55 at hourly. At a
-# 4-hourly cadence a single missed run is an 8-hour gap, which a 6-hour window would
-# not cover. Twelve hours covers two consecutive misses.
-WINDOW_SLOTS = 48
+# This was twelve hours, on the stated grounds that twelve covers two consecutive
+# misses. Measured against 56 real gaps between delivered runs, that was not true:
+#
+#     window    gaps covered      worst uncovered
+#     12 h      54 of 56  96.4%   13.12 h, losing 1.12 h of GDELT
+#     14 h      56 of 56   100%
+#     16 h      56 of 56   100%
+#
+# Two gaps had already breached it, on 2026-08-27 and 2026-08-28, and 1.5 hours of
+# the corpus is gone for good. Fourteen hours clears the worst gap ever observed by
+# four minutes, which is not a margin; sixteen clears it by about 20%, which on an
+# extreme drawn from 56 samples is the least that can be called one.
+#
+# The cost is real and was checked rather than waved through: the edge list grows with
+# the square of the window, so 16 hours is about 1.85x the pairs of 12. At 128,189
+# articles the engine peaks at 807 MB against the runner's 16 GB, so the room exists -
+# it did not before the run that halved this file's memory.
+WINDOW_SLOTS = 64
 
 # Clustering. Thresholds are chosen per window rather than fixed: the percolation
 # point was measured at 0.70, 0.75 and 0.76 in three separate windows, so a
