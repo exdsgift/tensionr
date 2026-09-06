@@ -34,6 +34,7 @@ import {
   percent,
   readingSentence,
   rowCounts,
+  runIso,
   runStamp,
   selectionNote,
   sincePrevious,
@@ -137,7 +138,7 @@ export default function Ledger() {
       <a className="skip" href="#stories">
         Skip to the stories
       </a>
-      <TopBar when={runStamp(run)}>
+      <TopBar when={runStamp(run)} iso={runIso(run)}>
         <ThemeToggle />
       </TopBar>
 

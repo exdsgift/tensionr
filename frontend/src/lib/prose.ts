@@ -354,6 +354,11 @@ export function parseStamp(stamp: string): Date {
   );
 }
 
+/** The run's instant as an ISO 8601 string, for `<time datetime>` and for scripting. */
+export function runIso(run: Run): string {
+  return parseStamp(run.run).toISOString();
+}
+
 /** "5 Sep · 04:48 UTC" — the run this page describes. */
 export function runStamp(run: Run): string {
   const t = parseStamp(run.run);
