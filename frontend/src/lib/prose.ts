@@ -251,9 +251,17 @@ export function hook(
   }
   const figure = lead(hero);
   const actor = actorName(hero.band[0], labels);
+  // The lede has to follow the ranking, or it states something the order contradicts.
+  // The page no longer leads with the widest split; it leads with the widest split the
+  // country test could speak to, and on most runs that is not the same story. Saying
+  // "sharpest disagreement" above a story ranked below a wider one would be false in
+  // the plainest way a page can be false.
+  const split = hero.structure && hero.structure.p <= 0.05;
   return {
     kind: "figure",
-    lede: "Sharpest disagreement in this window",
+    lede: split
+      ? "Widest split that follows a country line"
+      : "Widest split in this window",
     named: figure.named,
     evaluable: figure.evaluable,
     unit: `sources named ${actor}`,
@@ -264,8 +272,12 @@ export function hook(
     say:
       `${report.published.with_a_band} of ` +
       `${thousands(report.published.stories)} stories in this window had enough ` +
-      `evaluable sources, in enough countries, to carry a figure at all. This is the ` +
-      `most divided of them.`,
+      `evaluable sources, in enough countries, to carry a figure at all. ` +
+      (split
+        ? `This is the most divided of those whose split follows where their sources ` +
+          `publish.`
+        : `None of them could be shown to split along a country line, so this is ` +
+          `simply the most divided.`),
   };
 }
 
@@ -279,16 +291,30 @@ export function hook(
  */
 export function selectionNote(report: Report, featured: number): string {
   const span = report.selection;
+  const shown = span?.shown ?? 0;
+  // The same claim in both branches, because both branches describe the same order.
+  // This one used to say "the N most divided stories", which the ranking stopped being
+  // true of: a story shown to split along a country line now outranks a wider one that
+  // no test could speak to.
+  const rule = shown
+    ? `The ${shown} whose split was shown to follow a country line come first, then ` +
+      `those the test could not speak to; each group is ordered by how divided it is.`
+    : `None could be shown to split along a country line, so they are ordered by how ` +
+      `divided they are.`;
   if (!span?.runs_in_span) {
     return (
-      `The ${featured} most divided stories in this window, written up. The rest ` +
-      `cleared the floors and are listed below them.`
+      `${featured} stories from this window, written up. ${rule} The rest cleared ` +
+      `the floors and are listed below them.`
     );
   }
+  // What the ordering actually is, said once, because it is not the obvious one and a
+  // reader who assumes "most divided first" will find the third row wider than the
+  // second and conclude the page is broken.
   let text =
-    `The ${featured} most divided stories of the last ${span.span_hours} hours, ` +
-    `ranked by the widest division each reached over that span rather than by this ` +
-    `window alone, over ${span.candidates} candidates across ${span.runs_in_span} runs.`;
+    `${featured} stories of the last ${span.span_hours} hours, over ` +
+    `${span.candidates} candidates across ${span.runs_in_span} runs. ${rule} ` +
+    `An even split is the widest a story can be, so a story can be very divided and ` +
+    `divided by nothing in particular.`;
   if (span.gone_from_the_window) {
     text +=
       ` ${span.gone_from_the_window} of them are no longer carried by the current ` +
