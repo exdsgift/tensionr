@@ -151,6 +151,7 @@ export function Hook({
         evaluable={hook.evaluable}
         actor={hook.unit.replace(/^sources named /, "")}
         evenSplit
+        restate={false}
         className="split-hero"
       />
       <p className="say">{hook.say}</p>
