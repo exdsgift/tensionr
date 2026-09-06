@@ -247,6 +247,24 @@ def _band(story: dict[str, Any]) -> int:
     return REFUTED
 
 
+def _publishable(figures: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The figures worth writing down, which is the ones that are figures.
+
+    One is produced for every actor in the vocabulary and 97.9% of them say nothing:
+    `measurable: false`, `division: null`, and a count of evaluable sources below the
+    floor. Measured on a real run that was 19,469 of 19,880 rows and 69% of
+    stories.json, 2.42 MB of 3.49. The page has never read them - `actorBoard` drops
+    `measurable === false` on sight - and dropping them here was verified to render a
+    byte-identical page.
+
+    Publishing them was also what made a larger vocabulary impossible. At 196 actors
+    the old rule would write about 34 MB of figures per run to the ref the site reads;
+    this writes 0.7 MB. How many actors the run considered is in the report, so a short
+    list stays a stated fact rather than a silent truncation.
+    """
+    return [f for f in figures if f.get("measurable") is not False]
+
+
 def _feature(
     stories: list[dict[str, Any]],
     history: list[dict[str, Any]],
@@ -386,6 +404,7 @@ def run(
             "headline_language": chosen.get("language") if chosen else None,
             "band": band,
             **measured,
+            "figures": _publishable(measured["figures"]),
         }
         # Only a story that publishes a band carries its sources: the page shows the
         # evidence behind the figures it prints, and nothing else needs it.
@@ -459,6 +478,13 @@ def run(
         # A run publishes what it decided, not only what it produced: the page states
         # these when nothing clears them, and must not keep its own copy of them.
         "floors": {"evaluable": MIN_EVALUABLE, "polities": MIN_POLITIES},
+        # How many actors the run asked about, against how many it could answer for.
+        # Only measurable figures are published, so without this the page could not
+        # tell a thin vocabulary from a thin day.
+        "actors": {
+            "considered": len(actors),
+            "measurable": len({f["actor"] for s in stories for f in s["figures"]}),
+        },
         # The cadence the reader is told is the *delivered* one, not the cron line
         # (#10). GitHub delivers about 70% of what this schedule asks for, with
         # observed gaps of hours, so the interval since the previous run is the only

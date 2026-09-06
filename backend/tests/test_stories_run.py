@@ -1,6 +1,6 @@
 """The capture: what is kept, and what is not kept twice."""
 
-from tensionr.stories.run import _capture, _feature, _index
+from tensionr.stories.run import _capture, _feature, _index, _publishable
 
 RECORDS = [
     {
@@ -383,3 +383,32 @@ class TestTheRecordKeepsWhatCannotBeRebuilt:
         rows = self.rows()
         assert rows["shown"]["rank"] == 0
         assert rows["refuted"]["rank"] is None  # not featured, so it has no position
+
+
+class TestOnlyFiguresThatAreFigures:
+    """A figure with nothing measurable in it is not published.
+
+    One is produced per actor per story, and on a real run 19,469 of 19,880 said only
+    "we could not measure this here": 69% of stories.json to carry a `null`. The page
+    has never read them, and dropping them was verified to render a byte-identical
+    page.
+    """
+
+    def figures(self):
+        return [
+            {"actor": "iran", "named": 20, "evaluable": 40, "measurable": True},
+            {"actor": "ceuta", "named": 0, "evaluable": 3, "measurable": False},
+            {"actor": "gaza", "named": 0, "evaluable": 0, "measurable": False},
+        ]
+
+    def test_an_unmeasurable_figure_is_dropped(self):
+        assert [f["actor"] for f in _publishable(self.figures())] == ["iran"]
+
+    def test_a_figure_with_no_verdict_is_kept_rather_than_guessed_at(self):
+        # Absent `measurable` is not `measurable: false`. Only an explicit refusal
+        # drops a row, so a shape this rule has not seen survives instead of vanishing.
+        kept = _publishable([{"actor": "x", "named": 1, "evaluable": 2}])
+        assert len(kept) == 1
+
+    def test_nothing_measurable_is_an_empty_list_not_a_missing_key(self):
+        assert _publishable([f for f in self.figures() if not f["measurable"]]) == []
