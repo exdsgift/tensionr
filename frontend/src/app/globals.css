@@ -283,7 +283,18 @@
   .theme-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
 
 
-  .wrap { max-width: 1200px; margin-inline: auto; padding: 2rem 1.5rem 4rem }
+  /* `min(1200px, 100%)` rather than `1200px`, and the second half is the load-bearing
+     one. `body` is a column flex container, so `main` is a flex item whose width is
+     resolved against its own content rather than clamped to the viewport, and the
+     widest thing in the page is a 630px evidence table inside a story panel. At a
+     360px viewport that made `main` 488px wide, so the document scrolled sideways and
+     the phone answered by zooming the whole page out, which is what a reader sees as
+     "the country card will not fit". Measured before and after at 360, 390 and 414:
+     488/500/510 down to exactly the viewport, with the ninth inner scroller finally
+     doing its job instead of pushing the page. `overflow-x: clip` on the body also
+     makes the number look right and is wrong: the page stops scrolling but the table
+     that was too wide becomes unreachable rather than scrollable. */
+  .wrap { max-width: min(1200px, 100%); margin-inline: auto; padding: 2rem 1.5rem 4rem }
 
   /* Hero */
   .hook {
