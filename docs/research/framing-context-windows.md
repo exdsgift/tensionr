@@ -20,6 +20,14 @@ top of it.
   0.0005, tie tolerance 1e-12, exactly as `backend/src/tensionr/stories/structure.py`
 - Nothing outside `docs/research/` was changed; the scripts were throwaway, under `/tmp`
 
+> **This document has been replicated and the finding did not hold.** The replication is
+> [`framing-context-windows-replication.md`](framing-context-windows-replication.md),
+> pre-registered and run on 2026-09-03, an independent day. Of the four cells section 4
+> reports as surviving, **0 of 4** reached p <= 0.05 again with the same controls, and
+> **1 of 35** of the distinctive tokens in section 7 came back where 1.18 were expected by
+> chance. Read section 8 below with that in front of it. Sections 2 to 7 stand as
+> measurement; section 8's signal does not.
+
 ---
 
 ## 0. Verdict first
@@ -464,6 +472,16 @@ countries rather than a set, because pseudo-F over 5 groups says "somebody diffe
 page needs to say who. If it does not replicate, this is a day spent, and the headline mark
 remains the only measurement.
 
+**It did not replicate.** Run on 2026-09-03 as
+[`framing-context-windows-replication.md`](framing-context-windows-replication.md)
+describes: 0 of these 4 cells at p <= 0.05 with the same controls, 1 of 35 section-7 tokens
+back against 1.18 expected by chance, and the one adequately powered cell (`iran` ES, power
+0.94) at p = 0.079. The condition that failed is the third one above, that the cell has to
+be one event: the only cell on that day to produce a large control-surviving statistic
+separated on `jaishankar, visit, minister` against `german, germany, invasion`, which is
+two stories in one cluster. So this was a day spent, and the headline mark remains the only
+measurement.
+
 Do **not** reach for embeddings first. A bag of words found the effect, found the language
 artefact, found the length artefact and found the heterogeneous cluster. A sentence encoder
 would have found all four too and made none of them visible.
@@ -474,7 +492,11 @@ would have found all four too and made none of them visible.
 
 - **Whether it replicates.** Everything here is one run and one 38-hour window. Four
   significant cells out of ten is a result, not a finding, until a second window agrees.
-  This is the single largest gap and section 8 exists because of it.
+  This is the single largest gap and section 8 exists because of it. **Answered: it does
+  not.** See [`framing-context-windows-replication.md`](framing-context-windows-replication.md).
+  That document also records a defect in this one that only a reimplementation could
+  find: the near-duplicate rule here says "one of each pair" is dropped without saying
+  which, and the choice moves two of the four surviving p-values across 0.05.
 
 - **How much of the variation country explains.** Only the permutation rank of pseudo-F is
   reported. Its value at n around 50 over 4 or 5 groups is dominated by the table's shape,
