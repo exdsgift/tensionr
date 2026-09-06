@@ -347,7 +347,7 @@ config, no bundler, no test runner. The 9 `.js` files are loaded as plain `<scri
 One workflow file: `.github/workflows/update_data.yml`, 46 lines. Actions used:
 `actions/checkout@v4`, `astral-sh/setup-uv@v5`, `stefanzweifel/git-auto-commit-action@v5` — all
 major-tag pinned, none SHA-pinned. All three emit the Node 20 deprecation warning and are forced to
-Node 24 via `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+Node 24, which every action in use now runs on natively (the `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` bridge was removed once they were bumped).
 
 ## 5. Line counts and file inventory
 

@@ -1,4 +1,4 @@
-name: Pages
+name: Publish the site
 
 # Publishes the site through GitHub Actions instead of letting Pages serve
 # whatever happens to sit on `master` (#6, decision 1 and 3):
@@ -70,12 +70,10 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
-    name: Assemble site
+    name: Site · assemble
     runs-on: ubuntu-latest
     # Two guards.
     #
@@ -103,7 +101,7 @@ jobs:
       site_base_url: ${{ steps.pages_state.outputs.html_url }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # assemble-site.sh builds each tree's frontend, so this job needs a Node
       # toolchain even though it never runs npm itself. The cache is keyed on this
@@ -111,9 +109,9 @@ jobs:
       # branches nearly always share dependencies with master, so the cache hits, and
       # a branch that genuinely changes them just installs from the registry.
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -178,7 +176,7 @@ jobs:
         run: .github/scripts/assemble-site.sh _site
 
       - name: Upload the Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
@@ -235,7 +233,7 @@ jobs:
             >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
-    name: Deploy to Pages
+    name: Site · deploy to Pages
     needs: build
     # Two guards, both deliberate:
     #  - `workflow` build type: the very first run of this workflow happens while
@@ -261,4 +259,4 @@ jobs:
     steps:
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

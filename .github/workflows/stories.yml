@@ -1,4 +1,4 @@
-name: Story Engine
+name: Story engine
 
 # The v2 engine: one window of GDELT document embeddings, clustered into themes and
 # then stories, reconciled against the previous run by URL overlap, and measured.
@@ -9,8 +9,10 @@ name: Story Engine
 # directory per run, because they are the only outputs time cannot rebuild: GDELT drops
 # what it does not keep, so an hour not captured is gone.
 #
-# Every four hours, offset half an hour from the v1 synchroniser so the two rarely
-# publish at once. The window is sized against the delivered gaps, not the asked ones.
+# Every four hours at half past. The offset is a leftover: it used to keep this clear of
+# the v1 synchroniser, which no longer exists, and it is kept only because changing the
+# cadence would change what `previous_run` means across the accumulated history. The
+# window is sized against the delivered gaps, not the asked ones.
 # `master` is never written to by either.
 
 on:
@@ -22,11 +24,10 @@ concurrency:
   group: story-engine
   cancel-in-progress: false
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   run:
+    name: Engine · fetch, group, publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -34,10 +35,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
           cache-dependency-glob: "backend/uv.lock"
