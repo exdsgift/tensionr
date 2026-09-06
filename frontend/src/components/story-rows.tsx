@@ -22,6 +22,7 @@
  */
 
 import type { ReactNode } from "react";
+import { withBase } from "@/lib/base-path";
 
 import { Badge } from "@/components/ui/badge";
 import { ByCountry, type Structure } from "@/components/by-country";
@@ -184,7 +185,7 @@ export function StoryRows({
                 <p className="ev-note">
                   The {row.sources} sources behind this row are not on this
                   page: it would have gone past its weight budget. They are in{" "}
-                  <a href="data/stories.json">data/stories.json</a>, one row per
+                  <a href={withBase("data/stories.json")}>data/stories.json</a>, one row per
                   publisher, the same rows the figures were computed from.
                 </p>
               )}
