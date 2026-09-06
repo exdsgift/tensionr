@@ -135,7 +135,14 @@ export function RightNow({
             )}{" "}
             A source that covered three stories is counted three times, because the
             question is how much of the coverage named an actor rather than how many
-            outlets did.
+            outlets did.{" "}
+            <a
+              className="rn-propose"
+              href="https://github.com/exdsgift/tensionr/issues/new?template=propose-an-actor.yml"
+            >
+              Propose an actor
+            </a>
+            .
           </p>
         </CardContent>
       </Card>
