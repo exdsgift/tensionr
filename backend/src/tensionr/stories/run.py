@@ -671,8 +671,12 @@ def run(
     )
     drawn = latent.project([grouped["stories"][at[s["id"]]] for s in shown], vectors)
     if drawn is not None:
-        for story, series in zip(shown, drawn.pop("stories"), strict=True):
-            story["latent"] = series
+        # Not `series`: that is the path of the rolling series file, a parameter of
+        # this function, and a loop variable of the same name here left it bound to a
+        # dict when the write block reached `Path(series)`. The run died on the first
+        # production dispatch after the series landed, with everything else finished.
+        for story, plotted in zip(shown, drawn.pop("stories"), strict=True):
+            story["latent"] = plotted
     del vectors
 
     report = {
