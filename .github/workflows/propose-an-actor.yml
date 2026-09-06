@@ -1,0 +1,42 @@
+name: Propose an actor
+
+# Replies to an actor proposal with what its Wikidata id actually resolves to and whether
+# the vocabulary's rules admit it. It never edits the vocabulary: 34 of 65 hand-written
+# ids once looked right and pointed at the wrong entity, and the check that catches that
+# is a person reading the label and description, which this puts in front of them.
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check:
+    name: Vocabulary · check the proposed id
+    if: contains(github.event.issue.labels.*.name, 'actor-proposal')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          cache-dependency-glob: "backend/uv.lock"
+          python-version: "3.12"
+      - run: uv sync --frozen
+        working-directory: backend
+      - name: Check the id and reply
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ github.event.issue.body }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          qid="$(printf '%s' "$BODY" | grep -oE 'Q[0-9]+' | head -1 || true)"
+          if [ -z "$qid" ]; then
+            gh issue comment "$NUMBER" --body "No Wikidata id (a \`Q\` followed by digits) found in the proposal. Edit the issue to add one and this check runs again."
+            exit 0
+          fi
+          uv run --project backend python tools/check_actor.py "$qid" > reply.md || true
+          gh issue comment "$NUMBER" --body-file reply.md

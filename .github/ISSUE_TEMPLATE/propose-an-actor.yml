@@ -1,0 +1,35 @@
+name: Propose an actor
+description: Ask the engine to measure how outlets name someone or something it does not yet follow.
+title: "Actor: <name>"
+labels: ["actor-proposal", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The vocabulary is built from Wikidata ids that a person has checked. This form asks
+        for the id and the reason, and a workflow replies with what the id actually resolves
+        to and whether it passes the rules the vocabulary uses. A maintainer then decides.
+
+        Find the id on wikidata.org: it is the `Q` number in the page URL.
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: As you would expect a headline to write it.
+      placeholder: Jared Kushner
+    validations:
+      required: true
+  - type: input
+    id: qid
+    attributes:
+      label: Wikidata id
+      placeholder: Q13628723
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this actor
+      description: Where you have seen outlets in different countries name it differently, if you have.
+    validations:
+      required: false

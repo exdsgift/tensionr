@@ -729,6 +729,8 @@
   .line-rebuilt { stroke: var(--control-border); stroke-width: 1; stroke-dasharray: 1 2 }
   .series-back { display: inline-block; margin-top: var(--s6); font-size: .8rem }
   /* Rows on the home that now lead somewhere. */
+  .rn-propose { text-decoration: underline; text-decoration-color: var(--control-border);
+    text-underline-offset: .15em; color: inherit }
   .rn-actor a, .bycountry-name a { color: inherit; text-decoration: underline;
     text-decoration-color: var(--control-border); text-underline-offset: .15em }
 
