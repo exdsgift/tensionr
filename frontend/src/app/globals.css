@@ -270,7 +270,16 @@
     font-weight: 600; margin: 0; display: flex; flex-wrap: wrap;
     align-items: baseline; gap: .5rem 1.25rem;
   }
-  .bar .when { margin-left: auto; font-variant-numeric: tabular-nums }
+  /* The stamp says what it is now. The label is not hidden on narrow screens, though
+     the first draft did hide it: measured at 320, 360, 390 and 414 the whole line is
+     236px and the bar simply wraps it onto its own row, so there was nothing to save,
+     and `display: none` would have taken the label out of the accessibility tree as
+     well, which is the one place a bare timestamp is least explicable. */
+  .bar .when {
+    margin: 0 0 0 auto; font-variant-numeric: tabular-nums;
+    display: flex; align-items: baseline; gap: .3em; white-space: nowrap;
+  }
+  .bar .when-label, .bar .when-ago { opacity: .8 }
 
   .theme-toggle {
     display: inline-grid; place-items: center;

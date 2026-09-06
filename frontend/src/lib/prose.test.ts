@@ -24,6 +24,7 @@ import {
   parseStamp,
   percent,
   readingSentence,
+  runIso,
   runStamp,
   selectionNote,
   series,
@@ -366,5 +367,21 @@ describe("formatting", () => {
     expect(series(["Spain"])).toBe("Spain");
     expect(series(["Spain", "Peru"])).toBe("Spain and Peru");
     expect(series(["Spain", "Peru", "Chile"])).toBe("Spain, Peru and Chile");
+  });
+});
+
+describe("runIso", () => {
+  it("gives the run's instant as a machine-readable stamp", () => {
+    expect(runIso({ run: "20260905T171807Z" } as Run)).toBe(
+      "2026-09-05T17:18:07.000Z",
+    );
+  });
+
+  it("agrees with the stamp the bar prints", () => {
+    const run = { run: "20260905T044830Z" } as Run;
+    // Same instant, two renderings: one for a reader, one for a machine and for the
+    // script that turns it into an age in the reader's own clock.
+    expect(runStamp(run)).toBe("5 Sep · 04:48 UTC");
+    expect(runIso(run)).toBe("2026-09-05T04:48:30.000Z");
   });
 });
