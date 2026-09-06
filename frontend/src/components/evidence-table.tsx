@@ -85,6 +85,10 @@ export function EvidenceTable({
   const captionId = `ev-cap-${story.id}`;
   const caption = `${story.evidence.length} sources, and who each one named`;
 
+  // Only once the engine has kept the spelling: older evidence has no column rather
+  // than a column of dashes.
+  const hasSpelling = story.evidence.some((r) => r.wrote !== undefined);
+
   return (
     <Table
       className="src"
@@ -109,6 +113,7 @@ export function EvidenceTable({
               {actorName(actor, labels)}
             </TableHead>
           ))}
+          {hasSpelling ? <TableHead scope="col">As written</TableHead> : null}
           <TableHead scope="col">Headline</TableHead>
         </TableRow>
       </TableHeader>
@@ -133,6 +138,11 @@ export function EvidenceTable({
                 </TableCell>
               );
             })}
+            {hasSpelling ? (
+              <TableCell className="wrote" dir="auto">
+                {row.wrote?.[story.band[0]] ?? "—"}
+              </TableCell>
+            ) : null}
             {/* dir=auto so a right-to-left headline reads in its own direction. */}
             <TableCell className="hl" dir="auto">
               {row.title.slice(0, 160)}

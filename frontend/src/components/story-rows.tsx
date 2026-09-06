@@ -25,6 +25,7 @@ import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { ByCountry, type Structure } from "@/components/by-country";
+import type { SpellingGroup } from "@/lib/prose";
 import { DivisionLine, type Point } from "@/components/division-line";
 import { SplitBar } from "@/components/split-bar";
 import {
@@ -52,6 +53,8 @@ export interface StoryRowView {
   languages: { shown: { name: string; sources: number }[]; more: number };
   series: Point[];
   structure: Structure | null;
+  /** Which spellings of the lead actor were used, when more than one was. */
+  spellings: SpellingGroup[] | null;
   leadActor: string;
   reading: { before: string; balanced: string | null; split: string | null };
   bandNote: string | null;
@@ -156,7 +159,11 @@ export function StoryRows({
               {row.bandNote ? <p className="read sub">{row.bandNote}</p> : null}
 
             {row.structure ? (
-              <ByCountry structure={row.structure} actor={row.leadActor} />
+              <ByCountry
+                structure={row.structure}
+                actor={row.leadActor}
+                spellings={row.spellings}
+              />
             ) : null}
 
               {evidence[row.id] ? (

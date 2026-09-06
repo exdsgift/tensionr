@@ -502,3 +502,57 @@ export function actorBoard(
     .sort((a, b) => b.named - a.named || a.actor.localeCompare(b.actor))
     .slice(0, limit);
 }
+
+
+/**
+ * Which spellings of the lead actor competed within one language.
+ *
+ * The alias table folds spellings together so the count can be one count, and that
+ * erases a second thing a headline decides. On this corpus it was in plain sight: the
+ * term `kyiv` arrived on 317 domains and `kiev` on 175, both one actor.
+ *
+ * WITHIN A LANGUAGE, OR IT IS TRANSLATION
+ *
+ * The first draft pooled spellings across languages and reported that Spanish sources
+ * wrote Ucrania and Greek ones Ουκρανία. That is not a choice anyone made; it is the
+ * language the outlet publishes in, and the replication of the framing experiment
+ * found exactly this confound eating a result whole. So spellings are compared only
+ * against other spellings in the same language, and a language where every source
+ * spelled the name the same way says nothing here, because it is not a finding either.
+ */
+export function spellings(story: Story): SpellingGroup[] | null {
+  const actor = story.band[0];
+  if (!story.evidence.some((r) => r.wrote !== undefined)) return null;
+  const fold = (t: string) =>
+    t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const byLanguage = new Map<string, Map<string, { label: string; sources: number; countries: Set<string> }>>();
+  for (const row of story.evidence) {
+    const used = row.wrote?.[actor];
+    if (!used) continue;
+    const language = titleCase(row.language ?? "unknown");
+    const forms = byLanguage.get(language) ?? new Map();
+    byLanguage.set(language, forms);
+    const key = fold(used);
+    const cell = forms.get(key) ?? { label: used, sources: 0, countries: new Set<string>() };
+    cell.sources += 1;
+    if (row.polity) cell.countries.add(row.polity);
+    forms.set(key, cell);
+  }
+  const groups: SpellingGroup[] = [];
+  for (const [language, forms] of byLanguage) {
+    if (forms.size < 2) continue;
+    groups.push({
+      language,
+      forms: [...forms.values()]
+        .map((c) => ({ spelling: c.label, sources: c.sources, countries: c.countries.size }))
+        .sort((a, b) => b.sources - a.sources),
+    });
+  }
+  groups.sort((a, b) => b.forms.reduce((n, f) => n + f.sources, 0) - a.forms.reduce((n, f) => n + f.sources, 0));
+  return groups.length ? groups : null;
+}
+
+export interface SpellingGroup {
+  language: string;
+  forms: { spelling: string; sources: number; countries: number }[];
+}

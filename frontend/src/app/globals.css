@@ -767,6 +767,12 @@
     margin: .5rem 0 0; font-size: .85rem; line-height: 1.55; max-width: 74ch;
     color: var(--foreground);
   }
+  .bycountry-spell {
+    margin: .5rem 0 0; font-size: .8rem; line-height: 1.55; max-width: 74ch;
+    color: var(--muted-foreground);
+  }
+  .bycountry-spell b { color: var(--foreground); font-weight: 600 }
+  .ev-table .wrote, td.wrote { white-space: nowrap; color: var(--muted-foreground) }
   .bycountry-scroll {
     margin-top: .9rem; max-height: 22rem; overflow: auto;
     overscroll-behavior: contain;
