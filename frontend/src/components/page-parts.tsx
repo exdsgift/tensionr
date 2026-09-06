@@ -79,7 +79,7 @@ export function TopBar({
  * into a node React leaves alone so a late arrival cannot trip hydration.
  *
  * Deliberately coarse. The engine is scheduled every four hours and delivers roughly
- * 40% of what it asks for, so minutes are noise: "3 h ago" is the honest resolution,
+ * 70% of what it asks for, so minutes are noise: "3 h ago" is the honest resolution,
  * and anything under an hour is "just now" rather than a spuriously precise count.
  */
 const AGE = `(function () {
