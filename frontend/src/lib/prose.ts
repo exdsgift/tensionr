@@ -178,20 +178,19 @@ export function readingSentence(
 export function evidenceNote(story: Story): {
   collapsed: string;
   unresolved: string;
-  links: string;
 } {
   const figure = lead(story);
   return {
     collapsed:
       `Every publisher in the story, one row each, after collapsing ` +
       `${story.collapsed} reprint(s) that shared a headline word for word.`,
+    // The long form only where it applies. With five stories on a page, a sentence
+    // that does not depend on the story is printed five times, and the warning that
+    // matters gets read as boilerplate along with it.
     unresolved: figure.unresolved
       ? `${figure.unresolved} row(s) are –, not evaluable: no alias exists in that ` +
         `script, and that must never be read as an omission. Omission is the signal.`
-      : `No row is –: an alias exists in every script present.`,
-    links:
-      `Each publisher links to the article at the address GDELT recorded; the page ` +
-      `does not check that the address still answers.`,
+      : `No unevaluable rows here.`,
   };
 }
 
@@ -258,10 +257,15 @@ export function hook(
     named: figure.named,
     evaluable: figure.evaluable,
     unit: `sources named ${actor}`,
+    // About the window, not about the story. This used to read "N publishers in M
+    // polities carried this story, X named the actor and Y did not" - which is, word
+    // for word, what the first row below says about the same story, four hundred
+    // pixels further down. The hero's job is to place that story among the others.
     say:
-      `${hero.sources} publishers in ${hero.polities.length} polities carried this ` +
-      `story. ${figure.named} named ${actor} and ${figure.evaluable - figure.named} ` +
-      `did not. That is the widest split this run measured.`,
+      `${report.published.with_a_band} of ` +
+      `${thousands(report.published.stories)} stories in this window had enough ` +
+      `evaluable sources, in enough countries, to carry a figure at all. This is the ` +
+      `most divided of them.`,
   };
 }
 
@@ -360,22 +364,96 @@ export function runStamp(run: Run): string {
 }
 
 /**
- * The footer: the window, the grouping, and what could not be placed.
+ * The method, and only the method.
  *
- * One paragraph, and it is the page's methods section. It states the corpus before the
- * sample, so the five stories above are read as a selection rather than as the world.
+ * This paragraph used to restate the run: articles, domains, hours, themes, stories,
+ * how many cleared the floors, the placement rate. Every one of those numbers is now in
+ * "What it took to look", labelled, where a reader can actually find them - so saying
+ * them again here was the third telling of the same figures on one page.
+ *
+ * What survives is what no card says: how a story keeps its identity, what was done to
+ * syndication before anything was counted, what was thrown away at the grouping stage,
+ * and how the map is drawn. Those are claims about the procedure rather than about this
+ * window, which is why they belong at the bottom and why they do not change run to run.
  */
 export function footer(report: Report): string {
-  const hours = Math.round((report.window.slots * 15) / 60);
+  const dropped = report.grouping.unsplit_themes;
   return (
-    `${thousands(report.window.articles)} articles from ` +
-    `${thousands(report.polities.domains)} domains over the last ${hours} hours, ` +
-    `grouped into ${report.grouping.themes} themes and ${report.grouping.stories} ` +
-    `stories, of which ${report.published.with_a_band} cleared both floors. ` +
-    `${neverReached(report)} ${percent(report.polities.rate)} of domains could be ` +
-    `placed in a polity, and the rest are counted rather than dropped. Stories keep ` +
-    `their identity between runs by sharing article URLs, so a story that grows stays ` +
-    `the same story. Coastlines are Natural Earth 110m, rendered in braille at two ` +
-    `dots per column and four per row.`
+    `Sources are counted once each: reprints that shared a headline word for word were ` +
+    `collapsed before anything was measured, so a wire story carried by six outlets is ` +
+    `one voice rather than six. ` +
+    (dropped
+      ? `${dropped} themes were dropped whole for being near-duplicates at every ` +
+        `resolution. `
+      : "") +
+    `Stories keep their identity between runs by sharing article URLs, so a story that ` +
+    `grows stays the same story. Every publisher links to the article at the address ` +
+    `GDELT recorded, and this page does not check that the address still answers. ` +
+    `Coastlines are Natural Earth 110m, rendered in braille at two dots per column and ` +
+    `four per row.`
   );
+}
+
+/**
+ * Who the window is about: the actors, ranked by how many sources named them.
+ *
+ * A leaderboard of the most-used *words* was tried first and does not work on this
+ * corpus, which is why this counts actors instead. Measured on a real capture, the
+ * fifteen commonest words are `de, in, to, la, en, the, of, for, el, and, un, on, 2026,
+ * after, di` - articles and prepositions in five languages. Ranking instead by how
+ * unusual a word is now against a baseline surfaces `mendl, hodu, erni, backblocks,
+ * q2fy27, izdajice`: proper nouns from one source and content-farm noise. Counting
+ * distinct outlets rather than articles improves it - `tankers` at 237 outlets,
+ * `warships` at 133 - but still admits `clad`, `marred` and `sitters`, which are
+ * journalistic register rather than news.
+ *
+ * Actors avoid all of that because they are *resolved*, not matched on the surface: the
+ * engine reads them through an alias table whose Wikidata ids were checked by hand, so
+ * `Иран`, `إيران` and `Iran` are one row. The list is short - fourteen actors were
+ * measurable in the run this was built against - and that is a real property of the
+ * vocabulary rather than a display choice, so the section says how many there were.
+ *
+ * `evaluable` is summed across stories, so a source that covered three stories is
+ * counted three times. That is the right denominator for "how much of the window's
+ * coverage named this actor" and the wrong one for "how many outlets named it"; the
+ * label says the first.
+ */
+export function actorBoard(
+  run: Run,
+  labels: Record<string, string>,
+  limit = 15,
+): {
+  actor: string;
+  named: number;
+  evaluable: number;
+  stories: number;
+  peak: number;
+}[] {
+  const totals = new Map<
+    string,
+    { named: number; evaluable: number; stories: number; peak: number }
+  >();
+  for (const story of run.stories) {
+    for (const figure of story.figures) {
+      // An unmeasurable figure has no denominator worth adding: below the floors the
+      // engine publishes the counts but not the rate, and summing them here would
+      // rebuild the aggregate it declined to compute.
+      if (figure.measurable === false) continue;
+      const row = totals.get(figure.actor) ?? {
+        named: 0,
+        evaluable: 0,
+        stories: 0,
+        peak: 0,
+      };
+      row.named += figure.named;
+      row.evaluable += figure.evaluable;
+      row.stories += 1;
+      row.peak = Math.max(row.peak, figure.division ?? 0);
+      totals.set(figure.actor, row);
+    }
+  }
+  return [...totals]
+    .map(([actor, row]) => ({ actor: actorName(actor, labels), ...row }))
+    .sort((a, b) => b.named - a.named || a.actor.localeCompare(b.actor))
+    .slice(0, limit);
 }

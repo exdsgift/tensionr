@@ -150,10 +150,9 @@ export function ByCountry({
 
       {thin.length ? (
         <p className="bycountry-thin">
-          {thin.length} further {thin.length === 1 ? "country" : "countries"} had fewer
-          than {MIN_SOURCES} sources each and are summed rather than listed:{" "}
-          <b>{thinNamed}</b> of <b>{thinTotal}</b> named {actor}. With one or two
-          sources a rate is only ever 0, 50 or 100 per cent.
+          {thin.length} further {thin.length === 1 ? "country" : "countries"} with
+          fewer than {MIN_SOURCES} sources each, summed rather than listed:{" "}
+          <b>{thinNamed}</b> of <b>{thinTotal}</b> named {actor}.
         </p>
       ) : null}
     </section>

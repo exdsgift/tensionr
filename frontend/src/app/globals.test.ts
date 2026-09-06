@@ -86,3 +86,33 @@ describe("the reader's own settings", () => {
     expect(CSS).toContain("@media (prefers-reduced-motion: reduce)");
   });
 });
+
+/**
+ * `body` is a column flex container, which makes `main` a flex item whose width
+ * resolves against its own content rather than against the viewport. The widest thing
+ * in the page is a 630px evidence table inside a story panel, so at a 360px viewport
+ * `main` came out 488px wide, the document scrolled sideways, and the phone answered
+ * by zooming the whole page out. A reader sees that as a card refusing to fit.
+ *
+ * Measured with a real browser at 320, 360, 390 and 414 before this cap existed:
+ * documents of 320/488/500/510 against viewports of the same widths, and one of the
+ * nine inner scrollers idle because it was pushing the page instead of scrolling. With
+ * the cap, every document equals its viewport and all nine scroll.
+ *
+ * A bare `1200px` cannot express this: it is a cap on the desktop side only and says
+ * nothing about the case where the content is wider than the screen.
+ */
+describe("the page cannot be wider than the screen", () => {
+  const wrap = blockAfter(".wrap {");
+
+  it("caps main against the viewport as well as at 1200px", () => {
+    expect(wrap).toMatch(/max-width:\s*min\(1200px,\s*100%\)/);
+  });
+
+  it("does not reach for overflow clipping on the document instead", () => {
+    // `overflow-x: clip` on html or body makes the number look right and hides the
+    // table that was too wide rather than letting it scroll. Measured: the page fits,
+    // and one scroller stops working.
+    expect(CSS).not.toMatch(/\b(html|body)[^{]*\{[^}]*overflow-x:\s*(clip|hidden)/);
+  });
+});

@@ -283,7 +283,18 @@
   .theme-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
 
 
-  .wrap { max-width: 1200px; margin-inline: auto; padding: 2rem 1.5rem 4rem }
+  /* `min(1200px, 100%)` rather than `1200px`, and the second half is the load-bearing
+     one. `body` is a column flex container, so `main` is a flex item whose width is
+     resolved against its own content rather than clamped to the viewport, and the
+     widest thing in the page is a 630px evidence table inside a story panel. At a
+     360px viewport that made `main` 488px wide, so the document scrolled sideways and
+     the phone answered by zooming the whole page out, which is what a reader sees as
+     "the country card will not fit". Measured before and after at 360, 390 and 414:
+     488/500/510 down to exactly the viewport, with the ninth inner scroller finally
+     doing its job instead of pushing the page. `overflow-x: clip` on the body also
+     makes the number look right and is wrong: the page stops scrolling but the table
+     that was too wide becomes unreachable rather than scrollable. */
+  .wrap { max-width: min(1200px, 100%); margin-inline: auto; padding: 2rem 1.5rem 4rem }
 
   /* Hero */
   .hook {
@@ -548,6 +559,83 @@
 
   .lang-n { color: var(--muted-foreground); font-variant-numeric: tabular-nums }
 
+  /* The five featured stories on the plane the engine grouped them in.
+
+     NOT DRAWN FROM --chart-1..5. That ramp is identical in both themes here (0.87
+     down to 0.269 at zero chroma), which measured against the plot background gives
+     1.36:1 for chart-1 in the light theme and 1.94, 1.45 and 1.00 for chart-3, -4 and
+     -5 in the dark one: chart-5 is exactly --muted, so it is not low contrast, it is
+     invisible. Five data series cannot come from it. WCAG 1.4.11 wants 3:1 for a
+     graphical object needed to understand the content, and a dot on this figure is
+     one.
+
+     The ramp is therefore --foreground at five opacities, which inverts with the
+     theme by construction. Measured over the plot background: 18.15, 12.58, 7.33,
+     4.30 and 3.11 in light, and 14.48, 10.83, 7.82, 5.41 and 4.12 in dark. Tone is
+     the secondary cue in any case; the numbered tag at each group's centre is the
+     primary one, because colour alone would fail WCAG 1.4.1 in any palette. */
+  .lm-card { margin-top: 1.25rem }
+  .lm-sub {
+    margin: .35rem 0 0; font-size: .78rem; line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+  .lm-figure { margin: 0 }
+  .lm-svg {
+    display: block; width: 100%; max-width: 21rem; margin: 0 auto;
+    aspect-ratio: 1 / 1; height: auto;
+    background: var(--muted); border-radius: var(--radius);
+  }
+  .lm-dots { stroke: var(--foreground); stroke-linecap: round }
+  /* Scoped to the figure. The same class names sit on the key's swatches, where a
+     blanket opacity would fade the group's number along with its ring and leave the
+     fifth one below the contrast the number is there to guarantee. */
+  .lm-svg .lm-t1 { opacity: 1 }
+  .lm-svg .lm-t2 { opacity: .85 }
+  .lm-svg .lm-t3 { opacity: .70 }
+  .lm-svg .lm-t4 { opacity: .55 }
+  .lm-svg .lm-t5 { opacity: .45 }
+  .lm-tag circle { fill: var(--background); stroke: var(--foreground); stroke-width: 1.2 }
+  .lm-tag text {
+    fill: var(--foreground); font-size: .68rem; font-weight: 600;
+    text-anchor: middle; font-variant-numeric: tabular-nums;
+  }
+  .lm-caption {
+    margin: .6rem 0 0; font-size: .72rem; line-height: 1.55;
+    color: var(--muted-foreground);
+  }
+  .lm-caption b { color: var(--foreground); font-weight: 600 }
+
+  .lm-key { list-style: none; margin: .9rem 0 0; padding: 0; display: grid; gap: .45rem }
+  .lm-key li {
+    display: grid; grid-template-columns: 1.4rem 1fr auto; gap: .55rem;
+    align-items: center; font-size: .76rem;
+  }
+  /* The swatch repeats both cues: the number, and the tone as a filled ring. The
+     ring is the dot's own opacity so the key cannot drift from the figure. */
+  .lm-swatch {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.4rem; height: 1.4rem; border-radius: 999px;
+    border: 2px solid var(--foreground); background: var(--muted);
+    color: var(--foreground); font-size: .66rem; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Mixed against --muted, which is the figure's own background, so the ring is the
+     colour the dots actually render as rather than an approximation of it. The
+     number keeps full contrast because only the border is mixed. */
+  .lm-swatch.lm-t2 { border-color: color-mix(in oklab, var(--foreground) 85%, var(--muted)) }
+  .lm-swatch.lm-t3 { border-color: color-mix(in oklab, var(--foreground) 70%, var(--muted)) }
+  .lm-swatch.lm-t4 { border-color: color-mix(in oklab, var(--foreground) 55%, var(--muted)) }
+  .lm-swatch.lm-t5 { border-color: color-mix(in oklab, var(--foreground) 45%, var(--muted)) }
+  .lm-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.4 }
+  .lm-n {
+    color: var(--muted-foreground); font-size: .7rem; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .lm-note {
+    margin: .7rem 0 0; font-size: .72rem; line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+
   /* The line of a story's division across the runs that carried it. */
   .line { margin-top: .5rem }
   .line-svg { display: block; width: 132px; height: 30px; overflow: visible }
@@ -720,7 +808,67 @@
     padding: .3rem .6rem; cursor: pointer; font-family: inherit;
   }
 
-  .foot-rule { margin-top: 3rem }
+  /* After the stories, before the methods paragraph. Two cards side by side where
+     there is room, stacked where there is not - the leaderboard is a list and the run
+     facts are a grid, and forcing them into one shape would serve neither. */
+  .rightnow {
+    margin-top: var(--s7);
+    display: grid; gap: var(--s5);
+    /* The leaderboard is five columns wide and the facts are a single stack, so the
+       split is not even. At 1.15/1 the last two columns were clipped and the header
+       read "Storie". */
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  @media (max-width: 900px) { .rightnow { grid-template-columns: minmax(0, 1fr) } }
+
+  .rn-card { background: var(--card) }
+  .rn-card [data-slot="card-title"] { font-size: .95rem }
+  .rn-sub {
+    margin: var(--s2) 0 0; font-size: .78rem; line-height: 1.55;
+    color: var(--muted-foreground); max-width: 60ch;
+  }
+  .rn-scroll { max-height: 26rem; overflow: auto; overscroll-behavior: contain }
+  table.rn-table { font-size: .78rem; table-layout: auto; min-width: 0 }
+  table.rn-table th, table.rn-table td { padding: .32rem .55rem .32rem 0 }
+  table.rn-table th:last-child, table.rn-table td:last-child { padding-right: 0 }
+  table.rn-table thead th {
+    position: sticky; top: 0; background: var(--card);
+    box-shadow: inset 0 -1px 0 var(--border); white-space: nowrap;
+  }
+  .rn-actor { white-space: nowrap; font-weight: 500 }
+  .rn-n { white-space: nowrap; font-variant-numeric: tabular-nums }
+  .rn-n b { font-weight: 600 }
+  .rn-barhead { width: 100% }
+  .rn-bar {
+    display: inline-block; vertical-align: middle;
+    width: min(5rem, 12vw); height: 5px; border-radius: 999px;
+    background: var(--muted); overflow: hidden;
+  }
+  .rn-bar i { display: block; height: 100%; background: var(--foreground) }
+  .rn-pct {
+    display: inline-block; margin-left: .5rem; min-width: 3.5ch;
+    font-variant-numeric: tabular-nums; color: var(--muted-foreground);
+  }
+  .rn-note {
+    margin: var(--s4) 0 0; font-size: .73rem; line-height: 1.6;
+    color: var(--muted-foreground); max-width: 68ch;
+  }
+  .rn-note b { color: var(--foreground); font-weight: 600 }
+
+  .rn-facts { margin: 0; display: grid; gap: var(--s4) }
+  .rn-facts > div { display: grid; gap: 2px }
+  .rn-facts dt {
+    font-size: .64rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .rn-facts dd {
+    margin: 0; font-size: 1.05rem; font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .rn-facts p { margin: 0; font-size: .72rem; color: var(--muted-foreground) }
+
+  .foot-rule { margin-top: var(--s7) }
   .foot { margin-top: 1.5rem; border: none; background: transparent; padding: 0 }
   .foot p {
     font-size: .78rem; line-height: 1.7; color: var(--muted-foreground);

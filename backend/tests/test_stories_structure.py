@@ -117,3 +117,32 @@ class TestWhatIsPublished:
         assert result["sources"] == 60
         assert result["polities"] == 10
         assert result["powered"] is True
+
+
+class TestPermutationsThatTieTheObservedTable:
+    """A permutation reproducing the observed table ties it, and must be counted.
+
+    On a small table most permutations do exactly that: measured on 24 sources across
+    4 polities, 128 of 2,000. In exact arithmetic their statistic equals the observed
+    one; in floating point it equals it to within an ulp, and a bare `>=` then assigns
+    them by the rounding of a summation order. That moved a published p from 0.6962 to
+    0.6602 when the statistic was rewritten, which is why the comparison carries a
+    tolerance rather than being exact.
+    """
+
+    def test_a_p_value_does_not_move_when_the_rows_are_merely_reordered(self):
+        # Reordering rows changes the summation order and nothing else. The answer to
+        # "does the split follow the polity" cannot depend on which row came first.
+        spec = [("A", 1), ("A", 0), ("B", 1), ("B", 0), ("C", 1), ("C", 0)] * 4
+        first = structure(rows(spec), "x", rounds=ROUNDS)
+        second = structure(rows(spec[::-1]), "x", rounds=ROUNDS)
+        assert first["p"] == second["p"]
+        assert first["sources"] == second["sources"] == len(spec)
+
+    def test_the_tolerance_is_below_the_granularity_of_the_statistic(self):
+        # Two tables that genuinely differ must still be told apart, so the tolerance
+        # has to be far smaller than the smallest real step between two tables.
+        even = [("A", 1), ("A", 0), ("B", 1), ("B", 0)] * 6
+        split = [("A", 1)] * 12 + [("B", 0)] * 12
+        assert structure(rows(even), "x", rounds=ROUNDS)["p"] > 0.2
+        assert structure(rows(split), "x", rounds=ROUNDS)["p"] <= 0.01

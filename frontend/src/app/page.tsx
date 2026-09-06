@@ -14,16 +14,18 @@ import { EvidenceTable } from "@/components/evidence-table";
 import { InfoPopover } from "@/components/info-popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  AggregateStrip,
   Hook,
   SiteFooter,
   TopBar,
 } from "@/components/page-parts";
+import { LatentMap, type LatentStory } from "@/components/latent-map";
+import { RightNow } from "@/components/right-now";
 import { StoryRows, type StoryRowView } from "@/components/story-rows";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { capNote, fitEvidence } from "@/lib/fit";
 import { panel } from "@/lib/map";
 import {
+  actorBoard,
   bandNote,
   evidenceNote,
   footer,
@@ -65,6 +67,23 @@ export default function Ledger() {
   const widePanel = hero ? panel(hero, coordinates, wide, heroActor) : empty;
   const narrowPanel = hero ? panel(hero, coordinates, narrow, heroActor) : empty;
 
+  // Where the five sit relative to one another in the embedding space that grouped
+  // them. Each story carries its own series, so this does not depend on the page and
+  // the engine agreeing about order. Absent when the engine judged the projection
+  // would not have been honest about adjacency, which is a refusal rather than a gap.
+  const latent = report.latent ?? null;
+  const latentStories: LatentStory[] = featured
+    .map((story, index) => ({ story, rank: index + 1 }))
+    .filter(({ story }) => story.latent)
+    .map(({ story, rank }) => ({
+      rank,
+      headline: story.headline.slice(0, 110),
+      actor: actorName(story.band[0], labels),
+      points: story.latent!.points,
+      shown: story.latent!.shown,
+      articles: story.latent!.articles,
+    }));
+
   const views: StoryRowView[] = featured.map((story) => ({
     id: story.id,
     headline: story.headline.slice(0, 150),
@@ -103,16 +122,15 @@ export default function Ledger() {
       ]),
   );
 
-  const tiles = [
-    {
-      label: "Stories with a band",
-      value: `${report.published.with_a_band} of ${report.published.stories}`,
-    },
-    { label: "Articles in window", value: thousands(report.window.articles) },
-    { label: "Sources placed", value: percent(report.polities.rate) },
-    { label: "Window", value: `${report.window.slots} × 15 min` },
-    { label: "Since previous run", value: sincePrevious(run) },
-  ];
+  const board = actorBoard(run, labels);
+  // How many the run could measure at all, so a short board reads as a fact about the
+  // actor table rather than as a truncation.
+  const measurableActors = new Set(
+    run.stories.flatMap((s) =>
+      s.figures.filter((f) => f.measurable !== false).map((f) => f.actor),
+    ),
+  ).size;
+
 
   return (
     <>
@@ -149,8 +167,6 @@ export default function Ledger() {
           />
         </section>
 
-        <AggregateStrip tiles={tiles} />
-
         <section className="rows" id="stories">
           <h2>Stories</h2>
           {/* The mechanism, in the reader's words, before the first row. Without it
@@ -159,10 +175,9 @@ export default function Ledger() {
               "actor" appeared nowhere on this page until now. */}
           <p className="how">
             Every story here is measured on one <b>actor</b>: a person, a place or an
-            organisation that some sources name and others leave out. The bar shows how
-            many named it. Its mark is the halfway point, which is the most divided a
-            story can be, so <b>a bar that stops near the mark is a story its sources
-            tell differently</b>.
+            organisation that some sources name and others leave out.{" "}
+            <b>The bar shows how many named it</b>, and the mark on it is the even
+            split, which the figure above spells out in sources.
           </p>
           <p className="span">
             {selectionNote(report, Math.min(FEATURED, rows.length))}
@@ -252,6 +267,38 @@ export default function Ledger() {
             </Alert>
           )}
         </section>
+
+        {/* Immediately after the five, because it is about the five and nothing else:
+            the space it draws is the one they were grouped in. */}
+        {latent && latentStories.length >= 2 ? (
+          <LatentMap stories={latentStories} facts={latent} />
+        ) : null}
+
+        {/* After the stories, not before: the five are what the reader came for, and
+            the corpus behind them is what qualifies them. */}
+        <RightNow
+          actors={board}
+          measurable={measurableActors}
+          facts={{
+            articles: thousands(report.window.articles),
+            domains: thousands(report.polities.domains),
+            hours: Math.round((report.window.slots * 15) / 60),
+            themes: report.grouping.themes,
+            stories: report.grouping.stories,
+            withBand: report.published.with_a_band,
+            neverReached: thousands(
+              report.window.articles - (report.grouping.articles_in_stories ?? 0),
+            ),
+            neverReachedPct: Math.round(
+              (100 *
+                (report.window.articles -
+                  (report.grouping.articles_in_stories ?? 0))) /
+                report.window.articles,
+            ),
+            polityRate: percent(report.polities.rate),
+            since: sincePrevious(run),
+          }}
+        />
 
         <SiteFooter text={footer(report)} />
       </main>

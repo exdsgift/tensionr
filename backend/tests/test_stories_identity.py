@@ -100,3 +100,41 @@ def test_containment_not_jaccard_when_a_story_doubles():
     known = {"s-one": urls("a", "b", "c")}
     result = reconcile([urls("a", "b", "c", "d", "e", "f")], known, containment=0.6)
     assert ids(result) == ["s-one"]
+
+
+class TestTheOrderCandidatesArriveIn:
+    """Which id survives a tie is decided by the order the candidates are collected in.
+
+    `reconcile` keeps the largest prior story's id, and `max` returns the first of the
+    equal-largest. Once candidates are found through a url index rather than by
+    scanning the prior stories in order, that order has to be restored deliberately,
+    and nothing else in the output would show it had been lost: the same stories would
+    be matched, just under a different surviving id, which is exactly the kind of
+    change that makes an accumulated history unjoinable.
+    """
+
+    URLS = [f"https://p{i}.test/a" for i in range(4)]
+
+    def test_the_first_of_two_equally_large_priors_keeps_its_id(self):
+        known = {"alpha": list(self.URLS), "beta": list(self.URLS)}
+        out = reconcile([list(self.URLS)], known)
+        assert out["assignments"][0]["id"] == "alpha"
+
+    def test_and_it_is_the_first_by_prior_order_not_by_name(self):
+        known = {"beta": list(self.URLS), "alpha": list(self.URLS)}
+        out = reconcile([list(self.URLS)], known)
+        assert out["assignments"][0]["id"] == "beta"
+
+    def test_a_larger_prior_still_wins_regardless_of_order(self):
+        wider = self.URLS + ["https://p9.test/a", "https://p8.test/a"]
+        known = {"small": list(self.URLS), "large": wider}
+        out = reconcile([list(self.URLS)], known)
+        assert out["assignments"][0]["id"] == "large"
+
+    def test_a_cluster_sharing_no_article_matches_nothing(self):
+        # The index only ever sees stories sharing an article. This is the property
+        # that makes that sound: containment is a positive fraction, so no overlap
+        # cannot reach the threshold however it is set.
+        known = {"alpha": list(self.URLS)}
+        out = reconcile([["https://elsewhere.test/a"]], known)
+        assert out["events"][0]["type"] == "created"
