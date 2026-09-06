@@ -382,7 +382,7 @@ def run(
         # these when nothing clears them, and must not keep its own copy of them.
         "floors": {"evaluable": MIN_EVALUABLE, "polities": MIN_POLITIES},
         # The cadence the reader is told is the *delivered* one, not the cron line
-        # (#10). GitHub delivers roughly 40% of what this schedule asks for, with
+        # (#10). GitHub delivers about 70% of what this schedule asks for, with
         # observed gaps of hours, so the interval since the previous run is the only
         # honest statement of how fresh the page is - and it is measured, per run.
         "previous_run": previous,
