@@ -426,7 +426,14 @@ export function footer(report: Report): string {
 export function actorBoard(
   run: Run,
   labels: Record<string, string>,
-  limit = 15,
+  /**
+   * Ten, not fifteen. The card is a leaderboard rather than a census: past the tenth
+   * row the shares are small and near-identical, so the extra five added length
+   * without adding a reading. The count of actors the run could measure at all is
+   * still printed under the table, so a shorter list is still a stated fact rather
+   * than a silent truncation.
+   */
+  limit = 10,
 ): {
   actor: string;
   named: number;
