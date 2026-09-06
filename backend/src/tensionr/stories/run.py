@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from tensionr.config import MIN_EVALUABLE, MIN_POLITIES
-from tensionr.stories import cluster, identity, languages, measure, window
+from tensionr.stories import cluster, identity, languages, latent, measure, window
 from tensionr.stories.polity import PolityTable
 from tensionr.stories.structure import structure
 from tensionr.stories.wikidata import load as load_aliases
@@ -265,7 +265,13 @@ def run(
     fetched = window.fetch(slots, now=now)
     records = fetched["records"]
     by_url = {r["url"]: r for r in records}
-    grouped = cluster.two_stage(window.vectors(records))
+    # Bound to a name rather than passed anonymously: the featured stories are drawn
+    # in the embedding space they were grouped in, and that cannot be reconstructed
+    # once the matrix is gone. It is 262 MB at a 128,189-article window and the run's
+    # peak falls during clustering, when the edge list is alive alongside it, so
+    # holding it through measurement does not raise the high-water mark.
+    vectors = window.vectors(records)
+    grouped = cluster.two_stage(vectors)
 
     known: dict[str, list[str]] = {}
     captured: set[str] = set()
@@ -334,6 +340,20 @@ def run(
                 logger.warning("unreadable index, skipped: %s", path)
     span = _feature(stories, past, count=featured)
 
+    # Where the five sit relative to one another in the space that grouped them. Only
+    # the five, and only once they are known: see `latent` for why the same picture
+    # drawn over twenty stories would be showing a reader adjacencies that are not
+    # there.
+    at = {story["id"]: i for i, story in enumerate(stories)}
+    shown = sorted(
+        (s for s in stories if s.get("featured")), key=lambda s: -s["span_division"]
+    )
+    drawn = latent.project([grouped["stories"][at[s["id"]]] for s in shown], vectors)
+    if drawn is not None:
+        for story, series in zip(shown, drawn.pop("stories"), strict=True):
+            story["latent"] = series
+    del vectors
+
     report = {
         "run": stamp,
         "window": {
@@ -368,6 +388,9 @@ def run(
         "previous_run": previous,
         "published": {"stories": len(stories), "with_a_band": len(measurable)},
         "selection": span,
+        # None when the projection would not have been honest about adjacency, which
+        # the page states rather than quietly omitting the figure.
+        "latent": drawn,
     }
 
     out.mkdir(parents=True, exist_ok=True)

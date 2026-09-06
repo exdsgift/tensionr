@@ -65,6 +65,12 @@ export interface Story {
    */
   series?: { run: string; division: number; sources: number | null }[];
   /**
+   * Where this story's articles sit on the plane the five featured stories were
+   * projected onto, on featured stories only. `shown` may be fewer than `articles`:
+   * the sampling is even and deterministic, and the page states what it is showing.
+   */
+  latent?: { points: [number, number][]; shown: number; articles: number };
+  /**
    * Whether the naming split aligns with the country of publication. Absent when the
    * question cannot be asked: one country, or unanimity among the rows that carry a
    * country. Both are outcomes rather than failures.
@@ -91,6 +97,19 @@ export interface Report {
   floors?: { evaluable: number; polities: number };
   previous_run: string | null;
   published: { stories: number; with_a_band: number };
+  /**
+   * The projection the featured stories are drawn on. Null when it would not have
+   * been honest about adjacency, which the page says rather than quietly omitting.
+   */
+  latent?: {
+    grid: number;
+    /** Share of the five stories' variance the plane carries. */
+    retained: number;
+    /** Share of plotted points whose nearest neighbour is in the same story. */
+    agreement: number;
+    plotted: number;
+    articles: number;
+  } | null;
   selection?: {
     span_hours: number;
     runs_in_span: number;
