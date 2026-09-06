@@ -1,6 +1,6 @@
 """The capture: what is kept, and what is not kept twice."""
 
-from tensionr.stories.run import _capture, _feature
+from tensionr.stories.run import _capture, _feature, _index
 
 RECORDS = [
     {
@@ -335,3 +335,51 @@ class TestWhatGetsTheTopOfThePage:
         ]
         span = _feature(stories, [], count=3)
         assert (span["shown"], span["untold"], span["refuted"]) == (1, 1, 1)
+
+
+class TestTheRecordKeepsWhatCannotBeRebuilt:
+    """The index stores the country test's verdict, and deliberately not its table.
+
+    `_index`'s rule is that anything derivable from the capture is derived rather than
+    stored twice. That held while the capture was permanent. It is not any more:
+    captures live on a 20-day rolling window, so a verdict that is only derivable
+    expires with the articles it came from.
+
+    This was not hypothetical. Deciding whether ranking on `division` was putting coin
+    flips on the page needed the test across 25 past runs, and answering it meant
+    rejoining every index to its capture and recomputing all 467 verdicts. Three weeks
+    later the question would have had no answer: the inputs gone, the outputs never
+    written down.
+    """
+
+    def rows(self):
+        stories = [
+            _banded("shown", 0.90, p=0.001),
+            _banded("untold", 0.80),
+            _banded("refuted", 0.70, p=0.90),
+        ]
+        _feature(stories, [], count=2)
+        return {r["id"]: r for r in _index("20260906T111742Z", stories)["stories"]}
+
+    def test_the_verdict_survives_the_capture_it_came_from(self):
+        found = self.rows()["shown"]["structure"]
+        assert found == {"p": 0.001, "powered": True, "sources": 60, "polities": 8}
+
+    def test_a_story_the_test_could_not_reach_records_that_as_an_absence(self):
+        # None is the answer, not a missing key: the question was asked and could not
+        # be put. A later reader must be able to tell that from "never tested".
+        assert self.rows()["untold"]["structure"] is None
+
+    def test_a_refuted_story_records_its_refusal_rather_than_dropping_it(self):
+        found = self.rows()["refuted"]["structure"]
+        assert found["p"] == 0.90 and found["powered"] is True
+
+    def test_the_per_polity_table_is_not_stored(self):
+        # It is a presentation of evidence the capture still carries while it lasts,
+        # and it is the only part of the verdict that grows with the story.
+        assert "by_polity" not in self.rows()["shown"]["structure"]
+
+    def test_where_the_run_put_it_is_recorded_too(self):
+        rows = self.rows()
+        assert rows["shown"]["rank"] == 0
+        assert rows["refuted"]["rank"] is None  # not featured, so it has no position
