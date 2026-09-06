@@ -109,7 +109,23 @@ def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
     run: `stories.json` is 2.68 MB against `capture.json`'s 13.7 MB, so publishing it
     would add 20% to the project's largest cost, while this adds about 3%. The evidence
     is not here because a mark is a pure function of title, actor and language, and the
-    capture already holds all three — so it can be rebuilt rather than stored twice (#66).
+    capture already holds all three, so it can be rebuilt rather than stored twice (#66).
+
+    THE VERDICT IS AN EXCEPTION TO THAT RULE, AND HAS TO BE
+
+    "Rebuild it from the capture" held while the capture was permanent. It is not any
+    more: captures now live on a 20-day rolling window, so a verdict that is only
+    derivable expires with the articles it was derived from.
+
+    That was not hypothetical. Asking whether ranking on `division` was putting coin
+    flips on the page needed the country test across 25 past runs, and the only way to
+    answer it was to rejoin every index to its capture and recompute all 467 of them.
+    Three weeks later that question would have had no answer at all, because the inputs
+    would be gone and the outputs were never written down.
+
+    So the verdict is stored and the table it rests on is not. The scalars are what a
+    later question is asked of, and they cost four numbers per banded story; `by_polity`
+    is a presentation of the same evidence the capture still carries while it lasts.
     """
     rows = []
     for story in stories:
@@ -118,6 +134,7 @@ def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
         figure = next(
             (f for f in story["figures"] if f["actor"] == story["band"][0]), None
         )
+        found = story.get("structure")
         rows.append(
             {
                 "id": story["id"],
@@ -127,6 +144,19 @@ def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
                 "division": (figure or {}).get("division"),
                 "sources": story["sources"],
                 "polities": len(story["polities"]),
+                # What the country test could say, and what it was able to say it
+                # about. `division` alone cannot be re-asked later: it peaks where a
+                # coin does, and the ranking is decided on this.
+                "structure": found
+                and {
+                    "p": found["p"],
+                    "powered": found["powered"],
+                    "sources": found["sources"],
+                    "polities": found["polities"],
+                },
+                # Where the run put it. Recomputing this later would need the band rule
+                # of the day, which is exactly the thing a record is for.
+                "rank": story.get("rank"),
                 # already in the evidence since #61, so derived rather than stored twice
                 "urls": [r["url"] for r in story.get("evidence", []) if r.get("url")],
             }
