@@ -538,12 +538,17 @@ export function spellings(story: Story): SpellingGroup[] | null {
     if (row.polity) cell.countries.add(row.polity);
     forms.set(key, cell);
   }
+  // A spelling used by one source is not a competing form, it is usually a headline
+  // GDELT filed under the wrong language: built against a real run, the English group
+  // listed Ucraïna and أوكرانيا at one source each. Two sources is the floor, for the
+  // form and then for the language to have anything left to compare.
   const groups: SpellingGroup[] = [];
   for (const [language, forms] of byLanguage) {
-    if (forms.size < 2) continue;
+    const kept = [...forms.values()].filter((c) => c.sources >= 2);
+    if (kept.length < 2) continue;
     groups.push({
       language,
-      forms: [...forms.values()]
+      forms: kept
         .map((c) => ({ spelling: c.label, sources: c.sources, countries: c.countries.size }))
         .sort((a, b) => b.sources - a.sources),
     });

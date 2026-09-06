@@ -458,6 +458,7 @@ describe("spellings", () => {
       row("ENGLISH", "Kyiv", "United States"),
       row("ENGLISH", "Kyiv", "United Kingdom"),
       row("ENGLISH", "Kiev", "India"),
+      row("ENGLISH", "Kiev", "Pakistan"),
     ]);
     const groups = spellings(s);
     expect(groups?.[0].language).toBe("English");
@@ -469,6 +470,12 @@ describe("spellings", () => {
     // One spelling per language is the language, not a decision. The replication of
     // the framing experiment found exactly this confound eating a result whole.
     const s = storyWith([row("ENGLISH", "Kyiv"), row("SPANISH", "Kiev")]);
+    expect(spellings(s)).toBeNull();
+  });
+
+  it("does not list a spelling one source used", () => {
+    // Usually a headline GDELT filed under the wrong language, not a choice.
+    const s = storyWith([row("ENGLISH", "Kyiv"), row("ENGLISH", "Kyiv"), row("ENGLISH", "Ucraïna")]);
     expect(spellings(s)).toBeNull();
   });
 
