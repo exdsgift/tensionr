@@ -1,25 +1,50 @@
 {
- "_comment": "Actor key -> Wikidata QID. Curated by hand and verified against the label and description recorded beside each id. Never generate these from a search hit without checking: 34 of 65 hand-written ids were wrong in the research for #22, and every one failed silently.",
+ "_comment": "Actor key -> Wikidata QID. Curated by hand and verified against the label and description recorded beside each id. Never generate these from a search hit without checking: 34 of 65 hand-written ids were wrong in the research for #22, and every one failed silently. Since the corpus-derived pass, candidates come from tools/actor_candidates.py and are verified here before landing: of 20 proposed, 19 held and 'roma' was rejected, because Wikidata resolved it to Romania while all 335 headlines carrying it were Italian and about the city or the football club.",
  "actors": {
-  "iran": {
-   "qid": "Q794",
-   "label": "Iran",
-   "description": "country in Western Asia"
+  "afd": {
+   "qid": "Q6721203",
+   "label": "Alternative for Germany",
+   "description": "political party in Germany"
   },
-  "trump": {
-   "qid": "Q22686",
-   "label": "Donald Trump",
-   "description": "American businessman and politician"
+  "argentina": {
+   "qid": "Q414",
+   "label": "Argentina",
+   "description": "country in South America"
   },
-  "hormuz": {
-   "qid": "Q79883",
-   "label": "Strait of Hormuz",
-   "description": "strait in the eastern Persian Gulf"
+  "australia": {
+   "qid": "Q408",
+   "label": "Australia",
+   "description": "country in Oceania"
   },
-  "israel": {
-   "qid": "Q801",
-   "label": "Israel",
-   "description": "country in West Asia"
+  "bolivia": {
+   "qid": "Q750",
+   "label": "Bolivia",
+   "description": "sovereign state in South America"
+  },
+  "canada": {
+   "qid": "Q16",
+   "label": "Canada",
+   "description": "country in North America"
+  },
+  "ceuta": {
+   "qid": "Q5823",
+   "label": "Ceuta",
+   "description": "Spanish autonomous city in northwestern Africa"
+  },
+  "china": {
+   "qid": "Q148",
+   "label": "People's Republic of China",
+   "description": "country in East Asia"
+  },
+  "cuba": {
+   "qid": "Q241",
+   "label": "Cuba",
+   "description": "sovereign state situated on an island in the Caribbean Sea"
+  },
+  "dr-congo": {
+   "qid": "Q974",
+   "label": "Democratic Republic of the Congo",
+   "description": "country in Central Africa"
   },
   "gaza": {
    "qid": "Q39760",
@@ -31,45 +56,115 @@
    "label": "Hamas",
    "description": "Palestinian Islamist political and military organisation"
   },
-  "ceuta": {
-   "qid": "Q5823",
-   "label": "Ceuta",
-   "description": "Spanish autonomous city in northwestern Africa"
+  "hezbollah": {
+   "qid": "Q41053",
+   "label": "Hezbollah",
+   "description": "Iranian-backed Shia Islamist political party and terrorist organization in Lebanon"
   },
-  "spain": {
-   "qid": "Q29",
-   "label": "Spain",
-   "description": "country in southwestern Europe"
+  "hormuz": {
+   "qid": "Q79883",
+   "label": "Strait of Hormuz",
+   "description": "strait in the eastern Persian Gulf"
+  },
+  "india": {
+   "qid": "Q668",
+   "label": "India",
+   "description": "country in South Asia"
+  },
+  "indonesia": {
+   "qid": "Q252",
+   "label": "Indonesia",
+   "description": "island country in Southeast Asia and Oceania"
+  },
+  "iran": {
+   "qid": "Q794",
+   "label": "Iran",
+   "description": "country in Western Asia"
+  },
+  "irgc": {
+   "qid": "Q271110",
+   "label": "Islamic Revolutionary Guard Corps",
+   "description": "Iranian military organisation"
+  },
+  "israel": {
+   "qid": "Q801",
+   "label": "Israel",
+   "description": "country in West Asia"
+  },
+  "italy": {
+   "qid": "Q38",
+   "label": "Italy",
+   "description": "country in southern Europe"
+  },
+  "lebanon": {
+   "qid": "Q822",
+   "label": "Lebanon",
+   "description": "country in West Asia"
   },
   "morocco": {
    "qid": "Q1028",
    "label": "Morocco",
    "description": "sovereign state in North Africa"
   },
-  "ukraine": {
-   "qid": "Q212",
-   "label": "Ukraine",
-   "description": "country in Eastern Europe"
+  "myanmar": {
+   "qid": "Q836",
+   "label": "Myanmar",
+   "description": "country in Southeast Asia"
+  },
+  "nepal": {
+   "qid": "Q837",
+   "label": "Nepal",
+   "description": "country in South Asia"
+  },
+  "pakistan": {
+   "qid": "Q843",
+   "label": "Pakistan",
+   "description": "sovereign state in South Asia"
+  },
+  "portugal": {
+   "qid": "Q45",
+   "label": "Portugal",
+   "description": "country in Southwestern Europe"
   },
   "russia": {
    "qid": "Q159",
    "label": "Russia",
    "description": "country in Eastern Europe and Northern Asia"
   },
-  "china": {
-   "qid": "Q148",
-   "label": "People's Republic of China",
-   "description": "country in East Asia"
+  "spain": {
+   "qid": "Q29",
+   "label": "Spain",
+   "description": "country in southwestern Europe"
+  },
+  "tibet": {
+   "qid": "Q17252",
+   "label": "Tibet",
+   "description": "plateau region in west China"
+  },
+  "trump": {
+   "qid": "Q22686",
+   "label": "Donald Trump",
+   "description": "American businessman and politician"
+  },
+  "ukraine": {
+   "qid": "Q212",
+   "label": "Ukraine",
+   "description": "country in Eastern Europe"
+  },
+  "venezuela": {
+   "qid": "Q717",
+   "label": "Venezuela",
+   "description": "country in South America"
+  },
+  "vietnam": {
+   "qid": "Q881",
+   "label": "Vietnam",
+   "description": "country in Southeast Asia"
   },
   "white-house": {
    "qid": "Q35525",
    "label": "White House",
    "description": "official residence of the President of the United States"
-  },
-  "irgc": {
-   "qid": "Q271110",
-   "label": "Islamic Revolutionary Guard Corps",
-   "description": "Iranian military organisation"
   }
  }
 }

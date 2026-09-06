@@ -1,54 +1,140 @@
 {
  "audit": [
   {
-   "actor": "iran",
-   "aliases": 131,
-   "description": "country in Western Asia",
+   "actor": "afd",
+   "aliases": 62,
+   "description": "political party in Germany",
+   "instance_of": [
+    "Q2023214",
+    "Q7278",
+    "Q105085320"
+   ],
+   "label": "Alternative for Germany",
+   "languages": 43,
+   "qid": "Q6721203"
+  },
+  {
+   "actor": "argentina",
+   "aliases": 126,
+   "description": "country in South America",
    "instance_of": [
     "Q3624078",
     "Q6256",
-    "Q127693126"
+    "Q6266",
+    "Q10551526",
+    "Q140892892"
    ],
-   "label": "Iran",
+   "label": "Argentina",
    "languages": 63,
-   "qid": "Q794"
+   "qid": "Q414"
   },
   {
-   "actor": "trump",
-   "aliases": 143,
-   "description": "American businessman and politician (born 1946), President of the United States (2017–2021; since 2025)",
+   "actor": "australia",
+   "aliases": 133,
+   "description": "country in Oceania",
    "instance_of": [
-    "Q5"
-   ],
-   "label": "Donald Trump",
-   "languages": 44,
-   "qid": "Q22686"
-  },
-  {
-   "actor": "hormuz",
-   "aliases": 135,
-   "description": "strait in the eastern Persian Gulf",
-   "instance_of": [
-    "Q37901"
-   ],
-   "label": "Strait of Hormuz",
-   "languages": 59,
-   "qid": "Q79883"
-  },
-  {
-   "actor": "israel",
-   "aliases": 118,
-   "description": "country in West Asia",
-   "instance_of": [
-    "Q51576574",
-    "Q6256",
-    "Q82794",
+    "Q202686",
+    "Q223832",
     "Q3624078",
+    "Q43702",
+    "Q6256"
+   ],
+   "label": "Australia",
+   "languages": 63,
+   "qid": "Q408"
+  },
+  {
+   "actor": "bolivia",
+   "aliases": 96,
+   "description": "sovereign state in South America",
+   "instance_of": [
+    "Q3624078",
+    "Q123480",
+    "Q6256"
+   ],
+   "label": "Bolivia",
+   "languages": 63,
+   "qid": "Q750"
+  },
+  {
+   "actor": "canada",
+   "aliases": 79,
+   "description": "country in North America",
+   "instance_of": [
+    "Q223832",
+    "Q202686",
+    "Q3624078",
+    "Q6256",
+    "Q43702"
+   ],
+   "label": "Canada",
+   "languages": 63,
+   "qid": "Q16"
+  },
+  {
+   "actor": "ceuta",
+   "aliases": 71,
+   "description": "Spanish autonomous city in northwestern Africa",
+   "instance_of": [
+    "Q16532593",
+    "Q2074737",
+    "Q933394",
+    "Q2264924",
+    "Q26934845",
+    "Q15239622",
+    "Q902814",
+    "Q515"
+   ],
+   "label": "Ceuta",
+   "languages": 59,
+   "qid": "Q5823"
+  },
+  {
+   "actor": "china",
+   "aliases": 184,
+   "description": "country in East Asia",
+   "instance_of": [
+    "Q3624078",
+    "Q842112",
+    "Q859563",
+    "Q1520223",
+    "Q465613",
+    "Q118365",
+    "Q849866",
+    "Q6256",
+    "Q185145",
     "Q10711424"
    ],
-   "label": "Israel",
+   "label": "People's Republic of China",
    "languages": 63,
-   "qid": "Q801"
+   "qid": "Q148"
+  },
+  {
+   "actor": "cuba",
+   "aliases": 92,
+   "description": "sovereign state situated on an island in the Caribbean Sea",
+   "instance_of": [
+    "Q112099",
+    "Q3624078",
+    "Q179164",
+    "Q849866",
+    "Q6256"
+   ],
+   "label": "Cuba",
+   "languages": 63,
+   "qid": "Q241"
+  },
+  {
+   "actor": "dr-congo",
+   "aliases": 141,
+   "description": "country in Central Africa",
+   "instance_of": [
+    "Q3624078",
+    "Q6256"
+   ],
+   "label": "Democratic Republic of the Congo",
+   "languages": 63,
+   "qid": "Q974"
   },
   {
    "actor": "gaza",
@@ -83,22 +169,214 @@
    "qid": "Q38799"
   },
   {
-   "actor": "ceuta",
-   "aliases": 71,
-   "description": "Spanish autonomous city in northwestern Africa",
+   "actor": "hezbollah",
+   "aliases": 203,
+   "description": "Iranian-backed Shia Islamist political party and terrorist organization in Lebanon",
    "instance_of": [
-    "Q16532593",
-    "Q2074737",
-    "Q933394",
-    "Q2264924",
-    "Q26934845",
-    "Q15239622",
-    "Q902814",
-    "Q515"
+    "Q7278",
+    "Q17149090",
+    "Q17127659",
+    "Q7049045",
+    "Q138796"
    ],
-   "label": "Ceuta",
+   "label": "Hezbollah",
    "languages": 59,
-   "qid": "Q5823"
+   "qid": "Q41053"
+  },
+  {
+   "actor": "hormuz",
+   "aliases": 135,
+   "description": "strait in the eastern Persian Gulf",
+   "instance_of": [
+    "Q37901"
+   ],
+   "label": "Strait of Hormuz",
+   "languages": 59,
+   "qid": "Q79883"
+  },
+  {
+   "actor": "india",
+   "aliases": 189,
+   "description": "country in South Asia",
+   "instance_of": [
+    "Q6256",
+    "Q3624078",
+    "Q223832"
+   ],
+   "label": "India",
+   "languages": 63,
+   "qid": "Q668"
+  },
+  {
+   "actor": "indonesia",
+   "aliases": 109,
+   "description": "island country in Southeast Asia and Oceania",
+   "instance_of": [
+    "Q3624078",
+    "Q11815167",
+    "Q1520223",
+    "Q112099",
+    "Q6256",
+    "Q99541706",
+    "Q179164"
+   ],
+   "label": "Indonesia",
+   "languages": 63,
+   "qid": "Q252"
+  },
+  {
+   "actor": "iran",
+   "aliases": 131,
+   "description": "country in Western Asia",
+   "instance_of": [
+    "Q3624078",
+    "Q6256",
+    "Q127693126"
+   ],
+   "label": "Iran",
+   "languages": 63,
+   "qid": "Q794"
+  },
+  {
+   "actor": "irgc",
+   "aliases": 158,
+   "description": "military organization to protect the political system of the Islamic Republic in Iran",
+   "instance_of": [
+    "Q207320",
+    "Q47913",
+    "Q772547",
+    "Q136787658"
+   ],
+   "label": "Islamic Revolutionary Guard Corps",
+   "languages": 53,
+   "qid": "Q271110"
+  },
+  {
+   "actor": "israel",
+   "aliases": 118,
+   "description": "country in West Asia",
+   "instance_of": [
+    "Q51576574",
+    "Q6256",
+    "Q82794",
+    "Q3624078",
+    "Q10711424"
+   ],
+   "label": "Israel",
+   "languages": 63,
+   "qid": "Q801"
+  },
+  {
+   "actor": "italy",
+   "aliases": 124,
+   "description": "country in southern Europe",
+   "instance_of": [
+    "Q6256",
+    "Q3624078",
+    "Q619610",
+    "Q179164",
+    "Q7270",
+    "Q51576574"
+   ],
+   "label": "Italy",
+   "languages": 63,
+   "qid": "Q38"
+  },
+  {
+   "actor": "lebanon",
+   "aliases": 99,
+   "description": "country in West Asia",
+   "instance_of": [
+    "Q3624078",
+    "Q51576574",
+    "Q6256"
+   ],
+   "label": "Lebanon",
+   "languages": 63,
+   "qid": "Q822"
+  },
+  {
+   "actor": "morocco",
+   "aliases": 111,
+   "description": "sovereign state in North Africa",
+   "instance_of": [
+    "Q41614",
+    "Q3624078",
+    "Q51576574",
+    "Q6256"
+   ],
+   "label": "Morocco",
+   "languages": 63,
+   "qid": "Q1028"
+  },
+  {
+   "actor": "myanmar",
+   "aliases": 156,
+   "description": "country in Southeast Asia",
+   "instance_of": [
+    "Q3624078",
+    "Q6256",
+    "Q7270"
+   ],
+   "label": "Myanmar",
+   "languages": 63,
+   "qid": "Q836"
+  },
+  {
+   "actor": "nepal",
+   "aliases": 130,
+   "description": "country in South Asia",
+   "instance_of": [
+    "Q123480",
+    "Q3624078",
+    "Q82794",
+    "Q6256",
+    "Q842112"
+   ],
+   "label": "Nepal",
+   "languages": 63,
+   "qid": "Q837"
+  },
+  {
+   "actor": "pakistan",
+   "aliases": 110,
+   "description": "sovereign state in South Asia",
+   "instance_of": [
+    "Q3624078",
+    "Q6256"
+   ],
+   "label": "Pakistan",
+   "languages": 63,
+   "qid": "Q843"
+  },
+  {
+   "actor": "portugal",
+   "aliases": 107,
+   "description": "country in Southwestern Europe",
+   "instance_of": [
+    "Q3624078",
+    "Q6256",
+    "Q20181813",
+    "Q140892892"
+   ],
+   "label": "Portugal",
+   "languages": 63,
+   "qid": "Q45"
+  },
+  {
+   "actor": "russia",
+   "aliases": 136,
+   "description": "country in Eastern Europe and Northern Asia, the largest in the world by area",
+   "instance_of": [
+    "Q3624078",
+    "Q859563",
+    "Q6256",
+    "Q1323642",
+    "Q127693126"
+   ],
+   "label": "Russia",
+   "languages": 63,
+   "qid": "Q159"
   },
   {
    "actor": "spain",
@@ -116,22 +394,33 @@
    "qid": "Q29"
   },
   {
-   "actor": "morocco",
-   "aliases": 111,
-   "description": "sovereign state in North Africa",
+   "actor": "tibet",
+   "aliases": 90,
+   "description": "plateau region in west China",
    "instance_of": [
-    "Q41614",
-    "Q3624078",
-    "Q51576574",
-    "Q6256"
+    "Q82794",
+    "Q878223",
+    "Q3502482",
+    "Q15239622"
    ],
-   "label": "Morocco",
-   "languages": 63,
-   "qid": "Q1028"
+   "label": "Tibet",
+   "languages": 61,
+   "qid": "Q17252"
+  },
+  {
+   "actor": "trump",
+   "aliases": 127,
+   "description": "45th & 47th President of the United States (2017–2021; 2025–)",
+   "instance_of": [
+    "Q5"
+   ],
+   "label": null,
+   "languages": 39,
+   "qid": "Q22686"
   },
   {
    "actor": "ukraine",
-   "aliases": 91,
+   "aliases": 92,
    "description": "country in Eastern Europe",
    "instance_of": [
     "Q3624078",
@@ -147,39 +436,29 @@
    "qid": "Q212"
   },
   {
-   "actor": "russia",
-   "aliases": 138,
-   "description": "country in Eastern Europe and Northern Asia, the largest in the world by area",
+   "actor": "venezuela",
+   "aliases": 107,
+   "description": "country in South America",
    "instance_of": [
     "Q3624078",
-    "Q859563",
-    "Q6256",
-    "Q1323642",
-    "Q127693126"
+    "Q6256"
    ],
-   "label": "Russia",
+   "label": "Venezuela",
    "languages": 63,
-   "qid": "Q159"
+   "qid": "Q717"
   },
   {
-   "actor": "china",
-   "aliases": 183,
-   "description": "country in East Asia",
+   "actor": "vietnam",
+   "aliases": 128,
+   "description": "country in Southeast Asia",
    "instance_of": [
     "Q3624078",
-    "Q842112",
-    "Q859563",
-    "Q1520223",
-    "Q465613",
-    "Q118365",
     "Q849866",
-    "Q6256",
-    "Q185145",
-    "Q10711424"
+    "Q6256"
    ],
-   "label": "People's Republic of China",
+   "label": "Vietnam",
    "languages": 63,
-   "qid": "Q148"
+   "qid": "Q881"
   },
   {
    "actor": "white-house",
@@ -193,23 +472,1106 @@
    "label": "White House",
    "languages": 60,
    "qid": "Q35525"
-  },
-  {
-   "actor": "irgc",
-   "aliases": 158,
-   "description": "military organization to protect the political system of the Islamic Republic in Iran",
-   "instance_of": [
-    "Q207320",
-    "Q47913",
-    "Q772547"
-   ],
-   "label": "Islamic Revolutionary Guard Corps",
-   "languages": 53,
-   "qid": "Q271110"
   }
  ],
  "missing": [],
  "table": {
+  "afd": {
+   "ar": [
+    "البديل من أجل ألمانيا"
+   ],
+   "az": [
+    "Almaniya üçün Alternativ"
+   ],
+   "bg": [
+    "Алтернатива за Германия"
+   ],
+   "bs": [
+    "Alternativa za Njemačku"
+   ],
+   "ca": [
+    "Alternativa per Alemanya"
+   ],
+   "cs": [
+    "Alternativa pro Německo",
+    "Alternative für Deutschland"
+   ],
+   "da": [
+    "Alternativ for Tyskland"
+   ],
+   "de": [
+    "Alternative für Deutschland"
+   ],
+   "el": [
+    "Εναλλακτική για τη Γερμανία"
+   ],
+   "en": [
+    "Alternative for Germany",
+    "Alternative für Deutschland"
+   ],
+   "es": [
+    "Alternativa para Alemania",
+    "Alternative für Deutschland"
+   ],
+   "et": [
+    "Alternatiiv Saksamaale"
+   ],
+   "fa": [
+    "آلترناتیو برای آلمان"
+   ],
+   "fi": [
+    "Vaihtoehto Saksalle",
+    "Alternative für Deutschland"
+   ],
+   "fr": [
+    "Alternative pour l'Allemagne",
+    "Alternative für Deutschland"
+   ],
+   "he": [
+    "אלטרנטיבה לגרמניה"
+   ],
+   "hr": [
+    "Alternativa za Njemačku"
+   ],
+   "hu": [
+    "Alternatíva Németországért",
+    "Alternatíva Németországnak",
+    "Alternative für Deutschland"
+   ],
+   "hy": [
+    "Այլընտրանք Գերմանիայի համար"
+   ],
+   "id": [
+    "Alternatif untuk Jerman"
+   ],
+   "is": [
+    "Valkostur fyrir Þýskaland"
+   ],
+   "it": [
+    "Alternative für Deutschland",
+    "Alternativa per la Germania"
+   ],
+   "ja": [
+    "ドイツのための選択肢",
+    "アーエフデー"
+   ],
+   "ko": [
+    "독일을 위한 대안"
+   ],
+   "lt": [
+    "Alternatyva Vokietijai"
+   ],
+   "lv": [
+    "Alternatīva Vācijai"
+   ],
+   "mk": [
+    "Алтернатива за Германија"
+   ],
+   "ms": [
+    "Alternatif untuk Jerman"
+   ],
+   "nb": [
+    "Alternativ for Tyskland",
+    "Alternative für Deutschland"
+   ],
+   "nl": [
+    "Alternative für Deutschland"
+   ],
+   "pl": [
+    "Alternatywa dla Niemiec"
+   ],
+   "pt": [
+    "Alternativa para Alemanha",
+    "Alternative für Deutschland"
+   ],
+   "ro": [
+    "Alternativa pentru Germania",
+    "Alternative für Deutschland"
+   ],
+   "ru": [
+    "Альтернатива для Германии"
+   ],
+   "sk": [
+    "Alternatíva pre Nemecko",
+    "Alternative für Deutschland"
+   ],
+   "sl": [
+    "Alternativa za Nemčijo",
+    "Alternative für Deutschland"
+   ],
+   "sr": [
+    "Алтернатива за Немачку"
+   ],
+   "sv": [
+    "Alternativ för Tyskland"
+   ],
+   "th": [
+    "พรรคทางเลือกเพื่อเยอรมนี"
+   ],
+   "tr": [
+    "Almanya için Alternatif"
+   ],
+   "uk": [
+    "Альтернатива для Німеччини"
+   ],
+   "vi": [
+    "Alternative für Deutschland"
+   ],
+   "zh": [
+    "德國另類選擇",
+    "德國另類選擇黨",
+    "德國新選項黨",
+    "另類選擇黨",
+    "选项党",
+    "德国选择党"
+   ]
+  },
+  "argentina": {
+   "ar": [
+    "الأرجنتين",
+    "ارجنتين",
+    "أرجنتين",
+    "الارجنتين",
+    "جمهورية الأرجنتين"
+   ],
+   "az": [
+    "Argentina"
+   ],
+   "bg": [
+    "Аржентина"
+   ],
+   "bn": [
+    "আর্জেন্টিনা",
+    "আর্জেনটিনা"
+   ],
+   "bs": [
+    "Argentina"
+   ],
+   "ca": [
+    "Argentina",
+    "República Argentina"
+   ],
+   "cs": [
+    "Argentina"
+   ],
+   "da": [
+    "Argentina"
+   ],
+   "de": [
+    "Argentinien"
+   ],
+   "el": [
+    "Αργεντινή",
+    "Δημοκρατία της Αργεντινής"
+   ],
+   "en": [
+    "Argentina",
+    "Argentine Republic",
+    "Republic of Argentina",
+    "Republica Argentina"
+   ],
+   "es": [
+    "Argentina",
+    "República Argentina",
+    "Nación Argentina"
+   ],
+   "et": [
+    "Argentina",
+    "Argentina Vabariik"
+   ],
+   "fa": [
+    "آرژانتین",
+    "آرجنتاین"
+   ],
+   "fi": [
+    "Argentiina",
+    "Argentiinan tasavalta"
+   ],
+   "fr": [
+    "Argentine",
+    "Arg.",
+    "République argentine",
+    "la République argentine"
+   ],
+   "gu": [
+    "આર્જેન્ટીના",
+    "આર્જેન્ટીના ગણરાજ્ય"
+   ],
+   "he": [
+    "ארגנטינה"
+   ],
+   "hi": [
+    "अर्जेण्टीना"
+   ],
+   "hr": [
+    "Argentina"
+   ],
+   "hu": [
+    "Argentína",
+    "Argentin Köztársaság"
+   ],
+   "hy": [
+    "Արգենտինա",
+    "Արգենտինայի հանրապետություն"
+   ],
+   "id": [
+    "Argentina",
+    "Republik Argentina"
+   ],
+   "is": [
+    "Argentína"
+   ],
+   "it": [
+    "Argentina"
+   ],
+   "ja": [
+    "アルゼンチン",
+    "アルゼンチン共和国",
+    "レプブリカ・アルヘンティーナ",
+    "アルヘンティーナ",
+    "アージェンタイン・リパブリック",
+    "アージェンティーナ",
+    "アルゼンティン",
+    "亜尓然丁",
+    "亜爾然丁",
+    "阿根廷",
+    "リオ・デ・ラ・プラタ連合州",
+    "アルゼンチン連合",
+    "リオ・デ・ラ・プラタ諸州連合"
+   ],
+   "ka": [
+    "არგენტინა"
+   ],
+   "kk": [
+    "Аргентина"
+   ],
+   "kn": [
+    "ಅರ್ಜೆಂಟೀನ"
+   ],
+   "ko": [
+    "아르헨티나"
+   ],
+   "lt": [
+    "Argentina"
+   ],
+   "lv": [
+    "Argentīna"
+   ],
+   "mk": [
+    "Аргентина"
+   ],
+   "ml": [
+    "അർജന്റീന"
+   ],
+   "mn": [
+    "Аргентин"
+   ],
+   "mr": [
+    "आर्जेन्टिना"
+   ],
+   "ms": [
+    "Argentina",
+    "Republik Argentina"
+   ],
+   "my": [
+    "အာဂျင်တီးနားနိုင်ငံ"
+   ],
+   "nb": [
+    "Argentina",
+    "Republikken Argentina"
+   ],
+   "nl": [
+    "Argentinië",
+    "Argentinie",
+    "Argentijnse Republiek"
+   ],
+   "pa": [
+    "ਅਰਜਨਟੀਨਾ"
+   ],
+   "pl": [
+    "Argentyna"
+   ],
+   "pt": [
+    "Argentina",
+    "República Argentina"
+   ],
+   "ro": [
+    "Argentina",
+    "Republica Argentina",
+    "Țara tangoului",
+    "Țara tango-ului",
+    "Țara Argintului"
+   ],
+   "ru": [
+    "Аргентина",
+    "Аргентинская Республика"
+   ],
+   "si": [
+    "ආජන්ටිනාව"
+   ],
+   "sk": [
+    "Argentína",
+    "Argentínska republika"
+   ],
+   "sl": [
+    "Argentina",
+    "Argentinska republika"
+   ],
+   "so": [
+    "Arjantiina"
+   ],
+   "sq": [
+    "Argjentina"
+   ],
+   "sr": [
+    "Аргентина"
+   ],
+   "sv": [
+    "Argentina",
+    "Republiken Argentina"
+   ],
+   "sw": [
+    "Argentina"
+   ],
+   "ta": [
+    "அர்கெந்தீனா"
+   ],
+   "te": [
+    "అర్జెంటీనా"
+   ],
+   "th": [
+    "ประเทศอาร์เจนตินา",
+    "สาธารณรัฐอาร์เจนตินา",
+    "อาร์เจนตินา"
+   ],
+   "tr": [
+    "Arjantin",
+    "Arjantin Cumhuriyeti"
+   ],
+   "uk": [
+    "Аргентина",
+    "Аргентинська Республіка"
+   ],
+   "ur": [
+    "ارجنٹائن",
+    "ارجنٹینا",
+    "جمہوریہ ارجنٹائن"
+   ],
+   "uz": [
+    "Argentina"
+   ],
+   "vi": [
+    "Argentina",
+    "Á Căn Đình",
+    "Ác-hen-ti-na",
+    "Ác-gien-ti-na",
+    "Cộng hòa Argentina",
+    "Cộng hòa Ác-hen-ti-na",
+    "Cộng hòa Ác-gien-ti-na"
+   ],
+   "zh": [
+    "阿根廷",
+    "阿根廷共和国",
+    "亚根廷",
+    "亜爾然廷",
+    "亜爾然丁"
+   ],
+   "zh-hant": [
+    "阿根廷"
+   ]
+  },
+  "australia": {
+   "ar": [
+    "أستراليا",
+    "أوستراليا",
+    "كومنولث أستراليا",
+    "كومنولث أوستراليا"
+   ],
+   "az": [
+    "Avstraliya"
+   ],
+   "bg": [
+    "Австралия"
+   ],
+   "bn": [
+    "অস্ট্রেলিয়া",
+    "কমনওয়েলথ অব অস্ট্রেলিয়া"
+   ],
+   "bs": [
+    "Australija"
+   ],
+   "ca": [
+    "Austràlia",
+    "Mancomunitat d'Austràlia"
+   ],
+   "cs": [
+    "Austrálie",
+    "Australské společenství",
+    "Australský svaz"
+   ],
+   "da": [
+    "Australien"
+   ],
+   "de": [
+    "Australien",
+    "Commonwealth von Australien"
+   ],
+   "el": [
+    "Αυστραλία"
+   ],
+   "en": [
+    "Australia",
+    "Commonwealth of Australia",
+    "Straya",
+    "Aussieland",
+    "Stralia",
+    "New Holland",
+    "New Hollandia",
+    "Nova Hollandia",
+    "Down Under",
+    "Stria",
+    "The Commonwealth of Australia",
+    "'Straya"
+   ],
+   "es": [
+    "Australia",
+    "Mancomunidad de Australia"
+   ],
+   "et": [
+    "Austraalia",
+    "Austraalia Ühendus"
+   ],
+   "fa": [
+    "استرالیا"
+   ],
+   "fi": [
+    "Australia",
+    "Australian liittovaltio",
+    "Australian yhteisö",
+    "Australian kansainyhteisö"
+   ],
+   "fr": [
+    "Australie",
+    "Commonwealth d'Australie",
+    "Nouvelle-Hollande",
+    "l'Australie"
+   ],
+   "gu": [
+    "ઑસ્ટ્રેલિયા"
+   ],
+   "he": [
+    "אוסטרליה"
+   ],
+   "hi": [
+    "ऑस्ट्रेलिया"
+   ],
+   "hr": [
+    "Australija"
+   ],
+   "hu": [
+    "Ausztrália",
+    "Ausztrál Államszövetség"
+   ],
+   "hy": [
+    "Ավստրալիա"
+   ],
+   "id": [
+    "Australia",
+    "Persemakmuran Australia",
+    "Australi"
+   ],
+   "is": [
+    "Ástralía"
+   ],
+   "it": [
+    "Australia",
+    "Commonwealth dell'Australia"
+   ],
+   "ja": [
+    "オーストラリア",
+    "豪州",
+    "オーストラリア連邦"
+   ],
+   "ka": [
+    "ავსტრალია"
+   ],
+   "kk": [
+    "Аустралия",
+    "Аустралия одағы",
+    "Австралия",
+    "Австралия одағы"
+   ],
+   "kn": [
+    "ಆಸ್ಟ್ರೇಲಿಯ"
+   ],
+   "ko": [
+    "오스트레일리아",
+    "호주"
+   ],
+   "lt": [
+    "Australija"
+   ],
+   "lv": [
+    "Austrālija"
+   ],
+   "mk": [
+    "Австралија"
+   ],
+   "ml": [
+    "ഓസ്ട്രേലിയ"
+   ],
+   "mn": [
+    "Австрали"
+   ],
+   "mr": [
+    "ऑस्ट्रेलिया"
+   ],
+   "ms": [
+    "Australia",
+    "Komanwel Australia"
+   ],
+   "my": [
+    "ဩစတြေးလျနိုင်ငံ"
+   ],
+   "nb": [
+    "Australia"
+   ],
+   "nl": [
+    "Australië",
+    "Gemenebest Australië",
+    "Gemenebest van Australië"
+   ],
+   "pa": [
+    "ਆਸਟ੍ਰੇਲੀਆ"
+   ],
+   "pl": [
+    "Australia"
+   ],
+   "pt": [
+    "Austrália",
+    "Comunidade da Austrália"
+   ],
+   "ro": [
+    "Australia",
+    "Țara de la antipozi",
+    "Uniunea Australiei"
+   ],
+   "ru": [
+    "Австралия",
+    "Австралийский Союз"
+   ],
+   "si": [
+    "ඕස්ට්‍රේලියාව"
+   ],
+   "sk": [
+    "Austrália",
+    "Austrálsky zväz"
+   ],
+   "sl": [
+    "Avstralija",
+    "Skupnost Avstralija",
+    "Nova Holandija"
+   ],
+   "so": [
+    "Australia"
+   ],
+   "sq": [
+    "Australia"
+   ],
+   "sr": [
+    "Аустралија",
+    "Федерација Аустралије"
+   ],
+   "sv": [
+    "Australien",
+    "Australia",
+    "Australiska statsförbundet",
+    "Samväldet Australien"
+   ],
+   "sw": [
+    "Australia"
+   ],
+   "ta": [
+    "அவுத்திரேலியா",
+    "ஆத்திரேலியா",
+    "அவுஸ்திரேலியா",
+    "ஆஸ்திரேலியா"
+   ],
+   "te": [
+    "ఆస్ట్రేలియా"
+   ],
+   "th": [
+    "ประเทศออสเตรเลีย",
+    "ออสเตรเลีย",
+    "เครือรัฐออสเตรเลีย"
+   ],
+   "tr": [
+    "Avustralya"
+   ],
+   "uk": [
+    "Австралія",
+    "Австралійський Союз"
+   ],
+   "ur": [
+    "آسٹریلیا"
+   ],
+   "uz": [
+    "Avstraliya"
+   ],
+   "vi": [
+    "Australia",
+    "Úc Đại Lợi",
+    "Úc Châu",
+    "Ô-xtrây-li-a",
+    "Ôxtrâylia",
+    "nước Úc"
+   ],
+   "zh": [
+    "澳大利亚",
+    "澳洲",
+    "澳大利亞",
+    "澳大利亚联邦",
+    "澳大利亞聯邦",
+    "澳州联邦",
+    "澳州聯邦"
+   ],
+   "zh-hant": [
+    "澳大利亞",
+    "澳洲",
+    "澳大利亞聯邦"
+   ]
+  },
+  "bolivia": {
+   "ar": [
+    "بوليفيا",
+    "البوليفية",
+    "بولیفیا",
+    "بوليفي"
+   ],
+   "az": [
+    "Boliviya"
+   ],
+   "bg": [
+    "Боливия"
+   ],
+   "bn": [
+    "বলিভিয়া",
+    "বোলিভিয়া"
+   ],
+   "bs": [
+    "Bolivija"
+   ],
+   "ca": [
+    "Bolívia",
+    "República de Bolívia",
+    "Estat Plurinacional de Bolívia",
+    "Estat bolivià"
+   ],
+   "cs": [
+    "Bolívie",
+    "Mnohonárodnostní stát Bolívie",
+    "Bolivijský mnohonárodnostní stát"
+   ],
+   "da": [
+    "Bolivia"
+   ],
+   "de": [
+    "Bolivien"
+   ],
+   "el": [
+    "Βολιβία",
+    "Πολυεθνοτικό Κράτος της Βολιβίας"
+   ],
+   "en": [
+    "Bolivia",
+    "Plurinational State of Bolivia",
+    "Republic of Bolivia",
+    "Bolivia (Plurinational State of)"
+   ],
+   "es": [
+    "Bolivia",
+    "República de Bolivia",
+    "Estado Plurinacional de Bolivia"
+   ],
+   "et": [
+    "Boliivia"
+   ],
+   "fa": [
+    "بولیوی"
+   ],
+   "fi": [
+    "Bolivia",
+    "Bolivian monikansainen valtio"
+   ],
+   "fr": [
+    "Bolivie",
+    "l’État plurinational de Bolivie"
+   ],
+   "gu": [
+    "બોલીવિયા"
+   ],
+   "he": [
+    "בוליביה"
+   ],
+   "hi": [
+    "बोलीविया"
+   ],
+   "hr": [
+    "Bolivija"
+   ],
+   "hu": [
+    "Bolívia",
+    "Bolíviai Többnemzetiségű Állam"
+   ],
+   "hy": [
+    "Բոլիվիա"
+   ],
+   "id": [
+    "Bolivia"
+   ],
+   "is": [
+    "Bólivía"
+   ],
+   "it": [
+    "Bolivia"
+   ],
+   "ja": [
+    "ボリビア",
+    "ボリビア多民族国"
+   ],
+   "ka": [
+    "ბოლივია"
+   ],
+   "kk": [
+    "Боливия"
+   ],
+   "kn": [
+    "ಬೊಲಿವಿಯ"
+   ],
+   "ko": [
+    "볼리비아"
+   ],
+   "lt": [
+    "Bolivija"
+   ],
+   "lv": [
+    "Bolīvija"
+   ],
+   "mk": [
+    "Боливија"
+   ],
+   "ml": [
+    "ബൊളീവിയ"
+   ],
+   "mn": [
+    "Боливи"
+   ],
+   "mr": [
+    "बोलिव्हिया"
+   ],
+   "ms": [
+    "Bolivia"
+   ],
+   "my": [
+    "ဘိုလီးဗီးယားနိုင်ငံ"
+   ],
+   "nb": [
+    "Bolivia",
+    "Republikken Bolivia",
+    "Den flernasjonale stat Bolivia"
+   ],
+   "nl": [
+    "Bolivia",
+    "Bolivië",
+    "Plurinationale Staat Bolivia",
+    "Plurinationale Staat Bolivië"
+   ],
+   "pa": [
+    "ਬੋਲੀਵੀਆ"
+   ],
+   "pl": [
+    "Boliwia"
+   ],
+   "pt": [
+    "Bolívia"
+   ],
+   "ro": [
+    "Bolivia"
+   ],
+   "ru": [
+    "Боливия",
+    "Многонациональное Государство Боливия"
+   ],
+   "si": [
+    "බොලිවියාව"
+   ],
+   "sk": [
+    "Bolívia",
+    "Bolívijský mnohonárodný štát"
+   ],
+   "sl": [
+    "Bolivija",
+    "Republika Bolivija",
+    "Večnacionalna država Bolivija"
+   ],
+   "so": [
+    "Boliifia"
+   ],
+   "sq": [
+    "Bolivia"
+   ],
+   "sr": [
+    "Боливија"
+   ],
+   "sv": [
+    "Bolivia",
+    "Mångnationella staten Bolivia"
+   ],
+   "sw": [
+    "Bolivia"
+   ],
+   "ta": [
+    "பொலிவியா"
+   ],
+   "te": [
+    "బొలీవియా"
+   ],
+   "th": [
+    "ประเทศโบลิเวีย",
+    "โบลิเวีย",
+    "รัฐพหุชนชาติโบลิเวีย"
+   ],
+   "tr": [
+    "Bolivya"
+   ],
+   "uk": [
+    "Болівія"
+   ],
+   "ur": [
+    "بولیویا"
+   ],
+   "uz": [
+    "Boliviya"
+   ],
+   "vi": [
+    "Bolivia",
+    "Nhà nước Đa dân tộc Bolivia"
+   ],
+   "zh": [
+    "玻利維亞",
+    "玻利维亚"
+   ],
+   "zh-hant": [
+    "玻利維亞"
+   ]
+  },
+  "canada": {
+   "ar": [
+    "كندا"
+   ],
+   "az": [
+    "Kanada"
+   ],
+   "bg": [
+    "Канада"
+   ],
+   "bn": [
+    "কানাডা"
+   ],
+   "bs": [
+    "Kanada"
+   ],
+   "ca": [
+    "Canadà",
+    "Estat canadenc"
+   ],
+   "cs": [
+    "Kanada"
+   ],
+   "da": [
+    "Canada"
+   ],
+   "de": [
+    "Kanada"
+   ],
+   "el": [
+    "Καναδάς"
+   ],
+   "en": [
+    "Canada"
+   ],
+   "es": [
+    "Canadá",
+    "Dominio de Canadá",
+    "Norteamérica Británica"
+   ],
+   "et": [
+    "Kanada"
+   ],
+   "fa": [
+    "کانادا"
+   ],
+   "fi": [
+    "Kanada"
+   ],
+   "fr": [
+    "Canada",
+    "le Canada"
+   ],
+   "gu": [
+    "કેનેડા"
+   ],
+   "he": [
+    "קנדה"
+   ],
+   "hi": [
+    "कनाडा"
+   ],
+   "hr": [
+    "Kanada"
+   ],
+   "hu": [
+    "Kanada"
+   ],
+   "hy": [
+    "Կանադա"
+   ],
+   "id": [
+    "Kanada"
+   ],
+   "is": [
+    "Kanada"
+   ],
+   "it": [
+    "Canada"
+   ],
+   "ja": [
+    "カナダ",
+    "加奈陀",
+    "キャナダ"
+   ],
+   "ka": [
+    "კანადა"
+   ],
+   "kk": [
+    "Канада"
+   ],
+   "kn": [
+    "ಕೆನಡಾ",
+    "ಉತ್ತರ ಬ್ರಿಟಿಷ್ ಅಮೇರಿಕ"
+   ],
+   "ko": [
+    "캐나다"
+   ],
+   "lt": [
+    "Kanada"
+   ],
+   "lv": [
+    "Kanāda"
+   ],
+   "mk": [
+    "Канада"
+   ],
+   "ml": [
+    "കാനഡ"
+   ],
+   "mn": [
+    "Канад"
+   ],
+   "mr": [
+    "कॅनडा"
+   ],
+   "ms": [
+    "Kanada"
+   ],
+   "my": [
+    "ကနေဒါနိုင်ငံ"
+   ],
+   "nb": [
+    "Canada",
+    "Kanada"
+   ],
+   "nl": [
+    "Canada"
+   ],
+   "pa": [
+    "ਕੈਨੇਡਾ"
+   ],
+   "pl": [
+    "Kanada"
+   ],
+   "pt": [
+    "Canadá"
+   ],
+   "ro": [
+    "Canada"
+   ],
+   "ru": [
+    "Канада"
+   ],
+   "si": [
+    "කැනඩාව"
+   ],
+   "sk": [
+    "Kanada"
+   ],
+   "sl": [
+    "Kanada"
+   ],
+   "so": [
+    "Kanada"
+   ],
+   "sq": [
+    "Kanadaja"
+   ],
+   "sr": [
+    "Канада",
+    "Доминион Канада",
+    "Британска Северна Америка"
+   ],
+   "sv": [
+    "Kanada"
+   ],
+   "sw": [
+    "Kanada"
+   ],
+   "ta": [
+    "கனடா"
+   ],
+   "te": [
+    "కెనడా"
+   ],
+   "th": [
+    "ประเทศแคนาดา"
+   ],
+   "tr": [
+    "Kanada"
+   ],
+   "uk": [
+    "Канада"
+   ],
+   "ur": [
+    "کینیڈا"
+   ],
+   "uz": [
+    "Kanada"
+   ],
+   "vi": [
+    "Canada",
+    "Ca-na-đa",
+    "Canađa",
+    "Gia Nã Đại"
+   ],
+   "zh": [
+    "加拿大",
+    "村之国",
+    "村国",
+    "北村之國"
+   ],
+   "zh-hant": [
+    "加拿大"
+   ]
+  },
   "ceuta": {
    "ar": [
     "سبتة"
@@ -491,9 +1853,8 @@
     "סין"
    ],
    "hi": [
-    "चीनी जनवादी गणराज्य",
     "चीन",
-    "मुख्य-भूमि चीन"
+    "चीन जनवादी गणराज्य"
    ],
    "hr": [
     "Narodna Republika Kina",
@@ -705,11 +2066,502 @@
     "中华",
     "共產中國",
     "中國大陸",
-    "中国"
+    "中国",
+    "中國"
    ],
    "zh-hant": [
     "中華人民共和國",
-    "共產中國"
+    "共產中國",
+    "中國"
+   ]
+  },
+  "cuba": {
+   "ar": [
+    "كوبا",
+    "جمهورية كوبا"
+   ],
+   "az": [
+    "Kuba",
+    "Kuba Respublikası"
+   ],
+   "bg": [
+    "Куба",
+    "Република Куба"
+   ],
+   "bn": [
+    "কিউবা"
+   ],
+   "bs": [
+    "Kuba"
+   ],
+   "ca": [
+    "Cuba",
+    "República de Cuba"
+   ],
+   "cs": [
+    "Kuba",
+    "Kubánská republika",
+    "Cuba"
+   ],
+   "da": [
+    "Cuba"
+   ],
+   "de": [
+    "Kuba"
+   ],
+   "el": [
+    "Κούβα",
+    "Δημοκρατία της Κούβας"
+   ],
+   "en": [
+    "Cuba",
+    "Republic of Cuba"
+   ],
+   "es": [
+    "Cuba",
+    "República de Cuba"
+   ],
+   "et": [
+    "Kuuba"
+   ],
+   "fa": [
+    "کوبا",
+    "کیوبا"
+   ],
+   "fi": [
+    "Kuuba",
+    "Kuuban tasavalta"
+   ],
+   "fr": [
+    "Cuba",
+    "République de Cuba"
+   ],
+   "gu": [
+    "ક્યૂબા"
+   ],
+   "he": [
+    "קובה"
+   ],
+   "hi": [
+    "क्यूबा"
+   ],
+   "hr": [
+    "Kuba"
+   ],
+   "hu": [
+    "Kuba",
+    "Kubai Köztársaság"
+   ],
+   "hy": [
+    "Կուբա"
+   ],
+   "id": [
+    "Kuba"
+   ],
+   "is": [
+    "Kúba"
+   ],
+   "it": [
+    "Cuba",
+    "Repubblica di Cuba"
+   ],
+   "ja": [
+    "キューバ",
+    "キューバ共和国"
+   ],
+   "ka": [
+    "კუბა"
+   ],
+   "kk": [
+    "Куба"
+   ],
+   "kn": [
+    "ಕ್ಯೂಬಾ"
+   ],
+   "ko": [
+    "쿠바"
+   ],
+   "lt": [
+    "Kuba"
+   ],
+   "lv": [
+    "Kuba"
+   ],
+   "mk": [
+    "Куба"
+   ],
+   "ml": [
+    "ക്യൂബ"
+   ],
+   "mn": [
+    "Куба"
+   ],
+   "mr": [
+    "क्युबा"
+   ],
+   "ms": [
+    "Cuba"
+   ],
+   "my": [
+    "ကျူးဘားနိုင်ငံ"
+   ],
+   "nb": [
+    "Cuba",
+    "Republikken Cuba"
+   ],
+   "nl": [
+    "Cuba",
+    "Republiek Cuba"
+   ],
+   "pa": [
+    "ਕਿਊਬਾ"
+   ],
+   "pl": [
+    "Kuba"
+   ],
+   "pt": [
+    "Cuba",
+    "República de Cuba"
+   ],
+   "ro": [
+    "Cuba"
+   ],
+   "ru": [
+    "Куба",
+    "Республика Куба",
+    "Остров Свободы"
+   ],
+   "si": [
+    "කියුබාව"
+   ],
+   "sk": [
+    "Kuba",
+    "Kubánska republika"
+   ],
+   "sl": [
+    "Kuba"
+   ],
+   "so": [
+    "Kuuba"
+   ],
+   "sq": [
+    "Kuba"
+   ],
+   "sr": [
+    "Куба",
+    "Република Куба"
+   ],
+   "sv": [
+    "Kuba"
+   ],
+   "sw": [
+    "Kuba"
+   ],
+   "ta": [
+    "கூபா"
+   ],
+   "te": [
+    "క్యూబా"
+   ],
+   "th": [
+    "ประเทศคิวบา"
+   ],
+   "tr": [
+    "Küba"
+   ],
+   "uk": [
+    "Куба",
+    "Республіка Куба"
+   ],
+   "ur": [
+    "کیوبا"
+   ],
+   "uz": [
+    "Kuba"
+   ],
+   "vi": [
+    "Cuba",
+    "Cộng hòa Cuba",
+    "Cộng hoà Cuba",
+    "Quy Ba",
+    "Cu-ba",
+    "Qui Ba"
+   ],
+   "zh": [
+    "古巴",
+    "古巴共和国"
+   ],
+   "zh-hant": [
+    "古巴"
+   ]
+  },
+  "dr-congo": {
+   "ar": [
+    "جمهورية الكونغو الديمقراطية",
+    "الكونغو",
+    "الكونغو الديمقراطية"
+   ],
+   "az": [
+    "Konqo Demokratik Respublikası"
+   ],
+   "bg": [
+    "Демократична република Конго"
+   ],
+   "bn": [
+    "গণতান্ত্রিক কঙ্গো প্রজাতন্ত্র",
+    "ডি.আর.সি"
+   ],
+   "bs": [
+    "Demokratska Republika Kongo"
+   ],
+   "ca": [
+    "República Democràtica del Congo",
+    "Congo Kinshasa",
+    "Congo Belga",
+    "Zaire"
+   ],
+   "cs": [
+    "Konžská demokratická republika",
+    "Demokratická republika Kongo"
+   ],
+   "da": [
+    "Demokratiske Republik Congo"
+   ],
+   "de": [
+    "Demokratische Republik Kongo",
+    "Dem. Rep. Kongo",
+    "Kongo-Léopoldville",
+    "Kongo",
+    "Kongo (Kinshasa)",
+    "Kongo, Demokratische Republik"
+   ],
+   "el": [
+    "Λαϊκή Δημοκρατία του Κονγκό",
+    "Ζαΐρ",
+    "Κονγκό-Κινσάσα",
+    "Λαοκρατικό Κονγκό",
+    "ΛΔ Κονγκό",
+    "Λαοκρατική Δημοκρατία του Κογκό",
+    "Κογκό-Κινσάσα",
+    "Λαοκρατικό Κογκό",
+    "ΛΔ Κογκό"
+   ],
+   "en": [
+    "Democratic Republic of the Congo",
+    "DR Congo",
+    "Democratic Republic of Congo",
+    "Dem. Republic of the Congo",
+    "Dem. Republic of Congo",
+    "Dem. Rep. Congo",
+    "Congo (Kinshasa)"
+   ],
+   "es": [
+    "República Democrática del Congo",
+    "Congo Kinshasa"
+   ],
+   "et": [
+    "Kongo Demokraatlik Vabariik"
+   ],
+   "fa": [
+    "جمهوری دموکراتیک کنگو",
+    "کانگو",
+    "زائیر"
+   ],
+   "fi": [
+    "Kongon demokraattinen tasavalta",
+    "Kinshasan Kongo",
+    "Kongo"
+   ],
+   "fr": [
+    "république démocratique du Congo",
+    "RD Congo",
+    "Zaïre",
+    "Rep. Dem. Congo",
+    "RD du Congo"
+   ],
+   "gu": [
+    "ડેમોક્રેટિક રિપબ્લિક ઓફ ધ કોંગો",
+    "કોંગોનું પ્રજાસત્તાક ગણતંત્ર"
+   ],
+   "he": [
+    "הרפובליקה הדמוקרטית של קונגו",
+    "זאיר"
+   ],
+   "hi": [
+    "कांगो लोकतान्त्रिक गणराज्य"
+   ],
+   "hr": [
+    "Demokratska Republika Kongo"
+   ],
+   "hu": [
+    "Kongói Demokratikus Köztársaság",
+    "Kongói Szabad Állam",
+    "Belga Kongó",
+    "Kongó-Léopoldville",
+    "Kongó-Kinshasa"
+   ],
+   "hy": [
+    "Կոնգոյի Դեմոկրատական Հանրապետություն"
+   ],
+   "id": [
+    "Republik Demokratik Kongo"
+   ],
+   "is": [
+    "Austur-Kongó"
+   ],
+   "it": [
+    "Repubblica Democratica del Congo"
+   ],
+   "ja": [
+    "コンゴ民主共和国",
+    "コンゴ"
+   ],
+   "ka": [
+    "კონგოს დემოკრატიული რესპუბლიკა"
+   ],
+   "kk": [
+    "Конго Демократиялық Республикасы"
+   ],
+   "kn": [
+    "ಕಾಂಗೋ ಪ್ರಜಾಸತ್ತಾತ್ಮಕ ಗಣರಾಜ್ಯ"
+   ],
+   "ko": [
+    "콩고 민주 공화국",
+    "콩고민주공화국",
+    "민주 콩고",
+    "콩고",
+    "자이르",
+    "DR 콩고",
+    "킨샤사 콩고",
+    "콩고 킨샤사"
+   ],
+   "lt": [
+    "Kongo Demokratinė Respublika"
+   ],
+   "lv": [
+    "Kongo Demokrātiskā Republika",
+    "Kongo DR"
+   ],
+   "mk": [
+    "Демократска Република Конго",
+    "ДР Конго",
+    "Заир",
+    "Конго-Киншаса"
+   ],
+   "ml": [
+    "ഡെമോക്രാറ്റിക് റിപബ്ലിക്ക് ഓഫ് കോംഗോ",
+    "റിപബ്ലിക്ക് ഓഫ് കോംഗോ"
+   ],
+   "mn": [
+    "Бүгд Найрамдах Ардчилсан Конго Улс"
+   ],
+   "mr": [
+    "काँगोचे लोकशाही प्रजासत्ताक"
+   ],
+   "ms": [
+    "Republik Demokratik Congo"
+   ],
+   "my": [
+    "ကွန်ဂိုဒီမိုကရက်တစ်သမ္မတနိုင်ငံ"
+   ],
+   "nb": [
+    "Kongo",
+    "Den demokratiske republikken Kongo"
+   ],
+   "nl": [
+    "Congo-Kinshasa",
+    "Democratische Republiek Congo",
+    "DR Congo",
+    "Congo (Kinshasa)"
+   ],
+   "pa": [
+    "ਕਾਂਗੋ ਲੋਕਤੰਤਰੀ ਗਣਰਾਜ"
+   ],
+   "pl": [
+    "Demokratyczna Republika Konga"
+   ],
+   "pt": [
+    "República Democrática do Congo",
+    "Congo-Quinxassa",
+    "Congo, R.D.",
+    "RD Congo"
+   ],
+   "ro": [
+    "Republica Democratică Congo"
+   ],
+   "ru": [
+    "Демократическая Республика Конго",
+    "Конго",
+    "Конго-Киншаса",
+    "Конго-Леопольдвиль",
+    "Заир",
+    "ДР Конго"
+   ],
+   "si": [
+    "කොංගෝ ප්‍රජාතන්ත්‍රවාදී ජනරජය"
+   ],
+   "sk": [
+    "Konžská demokratická republika"
+   ],
+   "sl": [
+    "Vzhodni Kongo",
+    "Demokratična republika Kongo"
+   ],
+   "so": [
+    "Jamhuuriyada Dimuqaraadiga Kongo"
+   ],
+   "sq": [
+    "Republika Demokratike e Kongos"
+   ],
+   "sr": [
+    "Демократска Република Конго",
+    "ДР Конго"
+   ],
+   "sv": [
+    "Kongo-Kinshasa",
+    "Demokratiska republiken Kongo",
+    "Kongo"
+   ],
+   "sw": [
+    "Jamhuri ya Kidemokrasia ya Kongo"
+   ],
+   "ta": [
+    "காங்கோ மக்களாட்சிக் குடியரசு"
+   ],
+   "te": [
+    "కాంగో గణారాజ్యం"
+   ],
+   "th": [
+    "สาธารณรัฐประชาธิปไตยคองโก"
+   ],
+   "tr": [
+    "Kongo Demokratik Cumhuriyeti",
+    "Kongo DC"
+   ],
+   "uk": [
+    "Демократична Республіка Конго",
+    "ДР Конго",
+    "Демократична Республіка Конґо"
+   ],
+   "ur": [
+    "جمہوری جمہوریہ کانگو"
+   ],
+   "uz": [
+    "Kongo Demokratik Respublikasi"
+   ],
+   "vi": [
+    "Cộng hòa Dân chủ Congo",
+    "Cộng hoà Dân chủ Congo"
+   ],
+   "zh": [
+    "刚果民主共和国",
+    "剛果民主共和國",
+    "民主剛果",
+    "刚果（金）"
+   ],
+   "zh-hant": [
+    "剛果民主共和國",
+    "民主剛果"
    ]
   },
   "gaza": {
@@ -1185,6 +3037,329 @@
     "哈馬斯"
    ]
   },
+  "hezbollah": {
+   "ar": [
+    "حزب الله"
+   ],
+   "az": [
+    "Hizbullah",
+    "Livan Hizbullahı",
+    "Hizbullah təşkilatı"
+   ],
+   "bg": [
+    "Хизбула"
+   ],
+   "bn": [
+    "হিজবুল্লাহ"
+   ],
+   "bs": [
+    "Hezbollah"
+   ],
+   "ca": [
+    "Hesbol·là",
+    "Hizbollah",
+    "Hesbol•là",
+    "Hezbol·lah",
+    "Hezbol·là",
+    "Hesbol.là",
+    "Hesboŀlà",
+    "Hizb Allāh",
+    "Hezbollah"
+   ],
+   "cs": [
+    "Hizballáh",
+    "Hizbaláh",
+    "Hizbu'lláh",
+    "Hizbulláh",
+    "Hezbollah",
+    "Hizballah"
+   ],
+   "da": [
+    "Hizbollah",
+    "Hisbollah",
+    "Hizbollahs",
+    "Hizbolla",
+    "Hezbollah",
+    "Hispolla"
+   ],
+   "de": [
+    "Hisbollah",
+    "Hizbollah",
+    "Hisbolla",
+    "Hizbullah",
+    "Partei Gottes",
+    "Hisbolah",
+    "Hizballah",
+    "Hezbollah"
+   ],
+   "el": [
+    "Χεζμπολάχ",
+    "Χεζμπολά"
+   ],
+   "en": [
+    "Hezbollah",
+    "Lebanese Hizbullah",
+    "Lebanese Hezbollah",
+    "Hizbullah",
+    "Hizballah",
+    "Hizbollah"
+   ],
+   "es": [
+    "Hezbolá",
+    "Hizbollah",
+    "Hizbolá",
+    "Hizbulá",
+    "Hizbolab",
+    "Hezbola",
+    "Hizbula",
+    "Hizbulah",
+    "Hezbollah",
+    "Hizbola",
+    "Hisbulá",
+    "Hizbullah",
+    "Hisbula",
+    "Hisbollah"
+   ],
+   "et": [
+    "Ḩizb Allāh",
+    "Hizbollah",
+    "Hizb Allah",
+    "Hezbollah",
+    "Hizballah",
+    "Hizbullah"
+   ],
+   "fa": [
+    "حزب‌الله",
+    "حزب الله لبنان"
+   ],
+   "fi": [
+    "Hizbollah"
+   ],
+   "fr": [
+    "Hezbollah",
+    "Hesbollah",
+    "Parti de Dieu",
+    "Hizbollah"
+   ],
+   "he": [
+    "חזבאללה",
+    "חיזבאללה",
+    "החזבאללה",
+    "חזב אללה",
+    "חיזבללה"
+   ],
+   "hi": [
+    "हिज़्बुल्लाह",
+    "हिज्बुल्लाह्"
+   ],
+   "hr": [
+    "Hezbollah",
+    "Hisbollah",
+    "Hezbolah"
+   ],
+   "hu": [
+    "Hezbollah"
+   ],
+   "hy": [
+    "Հեզբոլլահ",
+    "Հիզբալլահ",
+    "Հիզբ Ալլահ",
+    "Հիզբոլլահ",
+    "Հեզբոլլա",
+    "Հզբալլահ",
+    "Հեզբոլա",
+    "Հեզբալլահ"
+   ],
+   "id": [
+    "Hizbullah"
+   ],
+   "is": [
+    "Hizbollah"
+   ],
+   "it": [
+    "Hezbollah",
+    "Hizbollah",
+    "Ezbolla",
+    "Hizballah",
+    "Hizbullah"
+   ],
+   "ja": [
+    "ヒズボラ",
+    "ヒズブッラー",
+    "ヒズボッラー",
+    "ヘズボッラー",
+    "ヒズブ・アッラーフ",
+    "ヒズブ・アッラー",
+    "ヒズブ・アラー",
+    "神の党",
+    "アッラーの党"
+   ],
+   "ka": [
+    "ჰეზბოლა",
+    "ჰეზბოლაჰ"
+   ],
+   "kk": [
+    "Хизбуллаһ",
+    "Хезболла"
+   ],
+   "ko": [
+    "헤즈볼라"
+   ],
+   "lt": [
+    "Hezbollah"
+   ],
+   "lv": [
+    "Hezbollah",
+    "Hizballah",
+    "Hezballāh"
+   ],
+   "mk": [
+    "Хезболах"
+   ],
+   "ml": [
+    "ഹിസ്ബുല്ല",
+    "ഹിസ്ബുള്ളാ"
+   ],
+   "mn": [
+    "Хезболлах"
+   ],
+   "mr": [
+    "हिझबुल्ला"
+   ],
+   "ms": [
+    "Hizbullah",
+    "Hezbollah"
+   ],
+   "my": [
+    "ဟစ်ဇ်ဘိုလာ"
+   ],
+   "nb": [
+    "Hizbollah",
+    "Hizbullah",
+    "Hizballa",
+    "Hizb Allah",
+    "Hezbollah",
+    "Hizballah",
+    "Hizbolla",
+    "Hezbolla",
+    "Hezbullah",
+    "حزب الله"
+   ],
+   "nl": [
+    "Hezbollah",
+    "Hizballah",
+    "Hesbolla",
+    "Hezbolla",
+    "Libanese Hezbollah"
+   ],
+   "pa": [
+    "ਹਿਜ਼ਬੁੱਲਾ"
+   ],
+   "pl": [
+    "Hezbollah",
+    "Hizbollah"
+   ],
+   "pt": [
+    "Hizbollah",
+    "Hizbolá",
+    "Hizbullah",
+    "Esbolá",
+    "Hisbollah",
+    "Hezzbolah",
+    "Hezbullah",
+    "Hezbollah",
+    "Hizbola",
+    "Hezbolah"
+   ],
+   "ro": [
+    "Hezbollah",
+    "Hezbollah Libanez"
+   ],
+   "ru": [
+    "Хезболла",
+    "Хизболла",
+    "Хезболлах",
+    "Хизбаллах",
+    "Хизбулла",
+    "Хезбалла",
+    "Хизбалла",
+    "Хизбуллах"
+   ],
+   "si": [
+    "හිස්බුල්ලා"
+   ],
+   "sk": [
+    "Hizballáh"
+   ],
+   "sl": [
+    "Hezbolah",
+    "Hezbollah"
+   ],
+   "sq": [
+    "Hizbullah"
+   ],
+   "sr": [
+    "Хезболах"
+   ],
+   "sv": [
+    "Hizbollah",
+    "Hisbolla",
+    "Hizbolla",
+    "Hizbullah",
+    "Hizbulla",
+    "Hesbollah",
+    "Hisbollah",
+    "Hezbolla",
+    "Hesbolla",
+    "Hezbullah",
+    "Hizballah",
+    "Hezbollah"
+   ],
+   "sw": [
+    "Hezbollah"
+   ],
+   "ta": [
+    "ஹிஸ்புல்லா",
+    "ஹெஸ்புல்லா"
+   ],
+   "th": [
+    "ฮิซบุลลอฮ์",
+    "ฮิซบอลเลาะห์",
+    "ฮิซบุลลอหฺ",
+    "ฮิซบุลเลาะห์",
+    "เฮซบอลลาห์"
+   ],
+   "tr": [
+    "Hizbullah",
+    "Hizbullah Örgütü",
+    "Lübnan Hizbullahı"
+   ],
+   "uk": [
+    "Хізбалла",
+    "Хезболлах",
+    "Хезболла"
+   ],
+   "ur": [
+    "حزب اللہ"
+   ],
+   "uz": [
+    "Hizbulloh"
+   ],
+   "vi": [
+    "Hezbollah",
+    "Héc-bô-la",
+    "Hecbôla"
+   ],
+   "zh": [
+    "真主党",
+    "黎巴嫩真主党",
+    "真主黨",
+    "真主教"
+   ],
+   "zh-hant": [
+    "真主黨"
+   ]
+  },
   "hormuz": {
    "ar": [
     "مضيق هرمز",
@@ -1438,6 +3613,560 @@
     "荷莫茲海峽",
     "荷姆茲海峽",
     "霍爾木茲海峽"
+   ]
+  },
+  "india": {
+   "ar": [
+    "الهند",
+    "جمهورية الهند"
+   ],
+   "az": [
+    "Hindistan"
+   ],
+   "bg": [
+    "Индия",
+    "Република Индия"
+   ],
+   "bn": [
+    "ভারত",
+    "ভারতীয় প্রজাতন্ত্র",
+    "ভারতীয় রাজ্যসংঘ",
+    "ভারত গণরাজ্য",
+    "ইন্ডিয়া",
+    "রিপাবলিক অফ ইন্ডিয়া",
+    "ভারতবর্ষ",
+    "হিন্দুস্তান",
+    "আর্যাবর্ত",
+    "ইণ্ডিয়া"
+   ],
+   "bs": [
+    "Indija"
+   ],
+   "ca": [
+    "Índia",
+    "República de l'Índia"
+   ],
+   "cs": [
+    "Indie",
+    "Indická republika"
+   ],
+   "da": [
+    "Indien"
+   ],
+   "de": [
+    "Indien"
+   ],
+   "el": [
+    "Ινδία",
+    "Δημοκρατία της Ινδίας",
+    "Μπχαράτ",
+    "Ινδοστάν",
+    "Χιντουστάν",
+    "Μπχαράτβαρς",
+    "Αρυαβάρτ",
+    "Τζαμπούντβιπ"
+   ],
+   "en": [
+    "India",
+    "Republic of India",
+    "Bharatvarsh",
+    "Hindustan",
+    "Bharata",
+    "Hindoostan",
+    "Indostan",
+    "Bharat Ganarajya",
+    "Al Hind",
+    "Tianzhu",
+    "Tenjiku"
+   ],
+   "es": [
+    "India",
+    "República de la India",
+    "La India"
+   ],
+   "et": [
+    "India",
+    "India Vabariik"
+   ],
+   "fa": [
+    "هند",
+    "هندوستان"
+   ],
+   "fi": [
+    "Intia",
+    "Intian tasavalta"
+   ],
+   "fr": [
+    "Inde",
+    "République d'Inde",
+    "République de l'Inde",
+    "Hindustan",
+    "Bharatvarsh",
+    "Indostan"
+   ],
+   "gu": [
+    "ભારત",
+    "હિંદુસ્તાન",
+    "ભારત વર્ષ",
+    "ભારત પ્રજાસત્તાક",
+    "ઇન્ડિયા"
+   ],
+   "he": [
+    "הודו"
+   ],
+   "hi": [
+    "भारत",
+    "हिंदुस्तान",
+    "भारतवर्ष",
+    "इंडिया",
+    "भारत गणराज्य",
+    "इण्डिया",
+    "हिन्दोस्तान",
+    "हिन्दुस्तान",
+    "आर्यवर्त"
+   ],
+   "hr": [
+    "Indija"
+   ],
+   "hu": [
+    "India",
+    "Indiai Köztársaság"
+   ],
+   "hy": [
+    "Հնդկաստան"
+   ],
+   "id": [
+    "India",
+    "Republik India"
+   ],
+   "is": [
+    "Indland"
+   ],
+   "it": [
+    "India",
+    "Repubblica dell'India"
+   ],
+   "ja": [
+    "インド",
+    "インド共和国",
+    "印度",
+    "ブハラトゥ",
+    "天竺",
+    "インディア",
+    "インド国",
+    "バーラト"
+   ],
+   "ka": [
+    "ინდოეთი"
+   ],
+   "kk": [
+    "Үндістан"
+   ],
+   "kn": [
+    "ಭಾರತ",
+    "ಹಿಂದುಸ್ತಾನ",
+    "ಭಾರತವರ್ಷ"
+   ],
+   "ko": [
+    "인도",
+    "인디아",
+    "인도 공화국",
+    "바라트",
+    "힌두스탄"
+   ],
+   "lt": [
+    "Indija"
+   ],
+   "lv": [
+    "Indija"
+   ],
+   "mk": [
+    "Индија"
+   ],
+   "ml": [
+    "ഇന്ത്യ",
+    "ഭാരതം",
+    "ഹിന്ദുസ്ഥാൻ"
+   ],
+   "mn": [
+    "Энэтхэг"
+   ],
+   "mr": [
+    "भारत",
+    "भारतवर्ष",
+    "हिंदुस्थान",
+    "भारत गणराज्य",
+    "आर्यावर्त",
+    "इंडिया"
+   ],
+   "ms": [
+    "India"
+   ],
+   "my": [
+    "အိန္ဒိယနိုင်ငံ"
+   ],
+   "nb": [
+    "India",
+    "Republikken India"
+   ],
+   "nl": [
+    "India",
+    "Republiek India",
+    "Hindustan",
+    "Bharatvarsh"
+   ],
+   "pa": [
+    "ਭਾਰਤ",
+    "ਇੰਡੀਆ",
+    "ਹਿੰਦੁਸਤਾਨ",
+    "ਹਿੰਦੋਸਤਾਨ",
+    "ਭਾਰਤਵਰਸ਼",
+    "ਭਾਰਤ ਦਾ ਗਣਰਾਜ",
+    "ਭਾਰਤੀ ਗਣਰਾਜ"
+   ],
+   "pl": [
+    "Indie",
+    "Republika Indii"
+   ],
+   "pt": [
+    "Índia"
+   ],
+   "ro": [
+    "India",
+    "Republica India"
+   ],
+   "ru": [
+    "Индия",
+    "Республика Индия",
+    "Бхарат"
+   ],
+   "si": [
+    "භාරත ජනරජය"
+   ],
+   "sk": [
+    "India",
+    "Indická republika"
+   ],
+   "sl": [
+    "Indija",
+    "Republika Indija"
+   ],
+   "so": [
+    "Hindiya"
+   ],
+   "sq": [
+    "India"
+   ],
+   "sr": [
+    "Индија"
+   ],
+   "sv": [
+    "Indien",
+    "Republiken Indien"
+   ],
+   "sw": [
+    "Uhindi"
+   ],
+   "ta": [
+    "இந்தியா",
+    "பாரதம்",
+    "இந்தியக் குடியரசு",
+    "இந்திய ஒன்றியம்",
+    "இண்டியா",
+    "நாவலந்தீவு",
+    "இந்திய"
+   ],
+   "te": [
+    "భారతదేశం",
+    "భారత్",
+    "ఇండియా",
+    "భారత దేశము",
+    "హిందూస్థాన్"
+   ],
+   "th": [
+    "ประเทศอินเดีย",
+    "สาธารณรัฐอินเดีย",
+    "ภารัต",
+    "อินเดีย",
+    "ภารตะ",
+    "ฮินดูสถาน",
+    "ภารตวรรษ"
+   ],
+   "tr": [
+    "Hindistan",
+    "Hindistan Cumhuriyeti",
+    "Bharat Ganarajya",
+    "Bharata",
+    "Bharatvarsh"
+   ],
+   "uk": [
+    "Індія",
+    "Республіка Індія",
+    "Бгарат"
+   ],
+   "ur": [
+    "بھارت",
+    "انڈیا",
+    "جمہوریہ ہندوستان",
+    "ہندوستان",
+    "جمہوریہ ہند",
+    "ہند"
+   ],
+   "uz": [
+    "Hindiston"
+   ],
+   "vi": [
+    "Ấn Độ",
+    "Cộng hòa Ấn Độ",
+    "Cộng hoà Ấn Độ"
+   ],
+   "zh": [
+    "印度",
+    "天竺",
+    "身毒",
+    "贤督",
+    "賢豆",
+    "神督"
+   ],
+   "zh-hant": [
+    "印度"
+   ]
+  },
+  "indonesia": {
+   "ar": [
+    "إندونيسيا",
+    "جمهورية إندونيسيا"
+   ],
+   "az": [
+    "İndoneziya"
+   ],
+   "bg": [
+    "Индонезия",
+    "Република Индонезия"
+   ],
+   "bn": [
+    "ইন্দোনেশিয়া"
+   ],
+   "bs": [
+    "Indonezija"
+   ],
+   "ca": [
+    "Indonèsia",
+    "República d'Indonèsia"
+   ],
+   "cs": [
+    "Indonésie",
+    "Indonéská republika"
+   ],
+   "da": [
+    "Indonesien"
+   ],
+   "de": [
+    "Indonesien",
+    "Republik Indonesien"
+   ],
+   "el": [
+    "Ινδονησία",
+    "Δημοκρατία της Ινδονησίας"
+   ],
+   "en": [
+    "Indonesia",
+    "Republic of Indonesia"
+   ],
+   "es": [
+    "Indonesia",
+    "República de Indonesia"
+   ],
+   "et": [
+    "Indoneesia",
+    "Indoneesia Vabariik"
+   ],
+   "fa": [
+    "اندونزی"
+   ],
+   "fi": [
+    "Indonesia",
+    "Indonesian tasavalta"
+   ],
+   "fr": [
+    "Indonésie",
+    "République d'Indonésie",
+    "Indonesie"
+   ],
+   "gu": [
+    "ઈંડોનેશિયા"
+   ],
+   "he": [
+    "אינדונזיה"
+   ],
+   "hi": [
+    "इंडोनेशिया"
+   ],
+   "hr": [
+    "Indonezija"
+   ],
+   "hu": [
+    "Indonézia",
+    "Indonéz Köztársaság"
+   ],
+   "hy": [
+    "Ինդոնեզիա"
+   ],
+   "id": [
+    "Indonesia",
+    "Negara Kesatuan Republik Indonesia"
+   ],
+   "is": [
+    "Indónesía"
+   ],
+   "it": [
+    "Indonesia"
+   ],
+   "ja": [
+    "インドネシア",
+    "インドネシア共和国"
+   ],
+   "ka": [
+    "ინდონეზია"
+   ],
+   "kk": [
+    "Индонезия"
+   ],
+   "kn": [
+    "ಇಂಡೋನೇಷ್ಯಾ",
+    "ಎನ್‍ಕೆಆರ್‌ಐ",
+    "ರಿಪಬ್ಲಿಕ್ ಇಂಡೋನೇಶಿಯಾ"
+   ],
+   "ko": [
+    "인도네시아",
+    "인니"
+   ],
+   "lt": [
+    "Indonezija"
+   ],
+   "lv": [
+    "Indonēzija"
+   ],
+   "mk": [
+    "Индонезија"
+   ],
+   "ml": [
+    "ഇന്തോനേഷ്യ",
+    "റിറിപ്പബ്ലിക്‌ ഓഫ്‌ ഇന്തോനേഷ്യ"
+   ],
+   "mn": [
+    "Индонез"
+   ],
+   "mr": [
+    "इंडोनेशिया"
+   ],
+   "ms": [
+    "Indonesia",
+    "Negara Kesatuan Republik Indonesia"
+   ],
+   "my": [
+    "အင်ဒိုနီးရှားနိုင်ငံ"
+   ],
+   "nb": [
+    "Indonesia",
+    "Den indonesiske republikk",
+    "Republikken Indonesia"
+   ],
+   "nl": [
+    "Indonesië",
+    "Indonesie"
+   ],
+   "pa": [
+    "ਇੰਡੋਨੇਸ਼ੀਆ"
+   ],
+   "pl": [
+    "Indonezja",
+    "Republika Indonezji"
+   ],
+   "pt": [
+    "Indonésia",
+    "República da Indonésia"
+   ],
+   "ro": [
+    "Indonezia"
+   ],
+   "ru": [
+    "Индонезия",
+    "Республика Индонезия"
+   ],
+   "si": [
+    "ඉන්දුනීසියාව"
+   ],
+   "sk": [
+    "Indonézia",
+    "Indonézska republika"
+   ],
+   "sl": [
+    "Indonezija",
+    "Republika Indonezija",
+    "Indonezijska republika"
+   ],
+   "so": [
+    "Indunisiya"
+   ],
+   "sq": [
+    "Indonezia"
+   ],
+   "sr": [
+    "Индонезија",
+    "Република Индонезија"
+   ],
+   "sv": [
+    "Indonesien",
+    "Republiken Indonesien",
+    "Indonesia"
+   ],
+   "sw": [
+    "Indonesia"
+   ],
+   "ta": [
+    "இந்தோனேசியா",
+    "இந்துனீசியா"
+   ],
+   "te": [
+    "ఇండోనేషియా"
+   ],
+   "th": [
+    "ประเทศอินโดนีเซีย",
+    "อินโดนีเซีย",
+    "สาธารณรัฐอินโดนีเซีย",
+    "หมู่เกาะอินเดีย",
+    "หมู่เกาะมลายู",
+    "อินโด"
+   ],
+   "tr": [
+    "Endonezya"
+   ],
+   "uk": [
+    "Індонезія",
+    "Республіка Індонезія"
+   ],
+   "ur": [
+    "انڈونیشیا"
+   ],
+   "uz": [
+    "Indoneziya"
+   ],
+   "vi": [
+    "Indonesia",
+    "Cộng hòa Indonesia",
+    "Cộng hoà Indonesia",
+    "Ấn Độ Nê Tây Á",
+    "Ấn Ni"
+   ],
+   "zh": [
+    "印度尼西亚",
+    "印度尼西亚共和国",
+    "努山達拉人民國"
+   ],
+   "zh-hant": [
+    "印度尼西亞",
+    "印度尼西亚共和國"
    ]
   },
   "iran": {
@@ -2211,6 +4940,485 @@
     "以色列"
    ]
   },
+  "italy": {
+   "ar": [
+    "إيطاليا"
+   ],
+   "az": [
+    "İtaliya"
+   ],
+   "bg": [
+    "Италия",
+    "Италианска република"
+   ],
+   "bn": [
+    "ইতালি",
+    "ইতালিয়া",
+    "ইতালীয় প্রজাতন্ত্র",
+    "রিপাবলিকা ইতালিয়ানা"
+   ],
+   "bs": [
+    "Italija"
+   ],
+   "ca": [
+    "Itàlia",
+    "Estat italià",
+    "República Italiana",
+    "República d'Itàlia"
+   ],
+   "cs": [
+    "Itálie",
+    "Italská republika"
+   ],
+   "da": [
+    "Italien"
+   ],
+   "de": [
+    "Italien",
+    "Italienische Republik"
+   ],
+   "el": [
+    "Ιταλία",
+    "Ιταλική Δημοκρατία"
+   ],
+   "en": [
+    "Italy",
+    "Italian Republic",
+    "Republic of Italy"
+   ],
+   "es": [
+    "Italia",
+    "República Italiana"
+   ],
+   "et": [
+    "Itaalia",
+    "Itaalia Vabariik"
+   ],
+   "fa": [
+    "ایتالیا"
+   ],
+   "fi": [
+    "Italia",
+    "Italian tasavalta"
+   ],
+   "fr": [
+    "Italie",
+    "République italienne",
+    "la République italienne",
+    "Ital.",
+    "Ita."
+   ],
+   "gu": [
+    "ઈટલી",
+    "ઇટાલી"
+   ],
+   "he": [
+    "איטליה"
+   ],
+   "hi": [
+    "इटली"
+   ],
+   "hr": [
+    "Italija",
+    "Republika Italija"
+   ],
+   "hu": [
+    "Olaszország"
+   ],
+   "hy": [
+    "Իտալիա",
+    "Իտալական Հանրապետություն"
+   ],
+   "id": [
+    "Italia",
+    "Republik Italia"
+   ],
+   "is": [
+    "Ítalía"
+   ],
+   "it": [
+    "Italia",
+    "Repubblica Italiana"
+   ],
+   "ja": [
+    "イタリア",
+    "イタリア共和国"
+   ],
+   "ka": [
+    "იტალია"
+   ],
+   "kk": [
+    "Италия"
+   ],
+   "kn": [
+    "ಇಟಲಿ"
+   ],
+   "ko": [
+    "이탈리아",
+    "이태리"
+   ],
+   "lt": [
+    "Italija",
+    "Italijos Respublika"
+   ],
+   "lv": [
+    "Itālija"
+   ],
+   "mk": [
+    "Италија"
+   ],
+   "ml": [
+    "ഇറ്റലി"
+   ],
+   "mn": [
+    "Итали"
+   ],
+   "mr": [
+    "इटली"
+   ],
+   "ms": [
+    "Itali"
+   ],
+   "my": [
+    "အီတလီနိုင်ငံ"
+   ],
+   "nb": [
+    "Italia",
+    "Den italienske republikk"
+   ],
+   "nl": [
+    "Italië",
+    "Italiaanse Republiek",
+    "Italie",
+    "Republiek Italië"
+   ],
+   "pa": [
+    "ਇਟਲੀ"
+   ],
+   "pl": [
+    "Włochy"
+   ],
+   "pt": [
+    "Itália",
+    "República Italiana",
+    "República da Itália",
+    "Repubblica Italiana"
+   ],
+   "ro": [
+    "Italia",
+    "Republica Italiană"
+   ],
+   "ru": [
+    "Италия",
+    "Итальянская Республика"
+   ],
+   "si": [
+    "ඉතාලිය"
+   ],
+   "sk": [
+    "Taliansko",
+    "Talianska republika"
+   ],
+   "sl": [
+    "Italija",
+    "Italijanska republika",
+    "Lepa dežela",
+    "italijanski škorenj"
+   ],
+   "so": [
+    "Talyaaniga"
+   ],
+   "sq": [
+    "Italia"
+   ],
+   "sr": [
+    "Италија"
+   ],
+   "sv": [
+    "Italien",
+    "Republiken Italien"
+   ],
+   "sw": [
+    "Italia"
+   ],
+   "ta": [
+    "இத்தாலி",
+    "இத்தாலியா"
+   ],
+   "te": [
+    "ఇటలీ"
+   ],
+   "th": [
+    "ประเทศอิตาลี",
+    "Italy",
+    "อิตาลี",
+    "อิตาลี่",
+    "สาธารณรัฐอิตาลี",
+    "อิตาเลีย"
+   ],
+   "tr": [
+    "İtalya",
+    "İtalyan Cumhuriyeti",
+    "İtalya Cumhuriyeti"
+   ],
+   "uk": [
+    "Італія",
+    "Італійська Республіка"
+   ],
+   "ur": [
+    "اطالیہ"
+   ],
+   "uz": [
+    "Italiya"
+   ],
+   "vi": [
+    "Italy",
+    "Cộng hòa Ý",
+    "Cộng hoà Ý",
+    "Cộng hòa Italia",
+    "Cộng hoà Italia"
+   ],
+   "zh": [
+    "意大利",
+    "意大利共和国",
+    "義大利共和國",
+    "義大利",
+    "意大利共和國"
+   ],
+   "zh-hant": [
+    "義大利",
+    "意大利共和國",
+    "義大利共和國",
+    "意大利"
+   ]
+  },
+  "lebanon": {
+   "ar": [
+    "لبنان",
+    "الجمهوريّة اللبنانيّة",
+    "الجمهورية اللبنانية"
+   ],
+   "az": [
+    "Livan"
+   ],
+   "bg": [
+    "Ливан"
+   ],
+   "bn": [
+    "লেবানন"
+   ],
+   "bs": [
+    "Liban"
+   ],
+   "ca": [
+    "Líban",
+    "República libanesa"
+   ],
+   "cs": [
+    "Libanon",
+    "Libanonská republika"
+   ],
+   "da": [
+    "Libanon"
+   ],
+   "de": [
+    "Libanon",
+    "Libanesische Republik"
+   ],
+   "el": [
+    "Λίβανος"
+   ],
+   "en": [
+    "Lebanon",
+    "Lebanese Republic",
+    "Republic of Lebanon",
+    "Lubnan",
+    "State of Lebanon"
+   ],
+   "es": [
+    "Líbano",
+    "República Libanesa"
+   ],
+   "et": [
+    "Liibanon",
+    "Liibanoni Vabariik"
+   ],
+   "fa": [
+    "لبنان"
+   ],
+   "fi": [
+    "Libanon",
+    "Libanonin tasavalta"
+   ],
+   "fr": [
+    "Liban",
+    "République libanaise"
+   ],
+   "gu": [
+    "લેબેનાન"
+   ],
+   "he": [
+    "לבנון"
+   ],
+   "hi": [
+    "लेबनॉन",
+    "लेबनान"
+   ],
+   "hr": [
+    "Libanon"
+   ],
+   "hu": [
+    "Libanon",
+    "Libanoni Köztársaság"
+   ],
+   "hy": [
+    "Լիբանան"
+   ],
+   "id": [
+    "Lebanon",
+    "Republik Lebanon"
+   ],
+   "is": [
+    "Líbanon"
+   ],
+   "it": [
+    "Libano",
+    "Reppublica del Libano",
+    "Repubblica del Libano",
+    "Repubblica Libanese"
+   ],
+   "ja": [
+    "レバノン",
+    "レバノン共和国"
+   ],
+   "ka": [
+    "ლიბანი"
+   ],
+   "kk": [
+    "Ливан"
+   ],
+   "kn": [
+    "ಲೆಬನಾನ್",
+    "ಲೆಬನನ್"
+   ],
+   "ko": [
+    "레바논"
+   ],
+   "lt": [
+    "Libanas"
+   ],
+   "lv": [
+    "Libāna"
+   ],
+   "mk": [
+    "Либан"
+   ],
+   "ml": [
+    "ലെബനാൻ"
+   ],
+   "mn": [
+    "Ливан"
+   ],
+   "mr": [
+    "लेबेनॉन"
+   ],
+   "ms": [
+    "Lubnan",
+    "Republik Lubnan"
+   ],
+   "my": [
+    "လက်ဘနွန်နိုင်ငံ"
+   ],
+   "nb": [
+    "Libanon",
+    "Republikken Libanon"
+   ],
+   "nl": [
+    "Libanon",
+    "Libaneese Republiek",
+    "Republiek Libanon"
+   ],
+   "pa": [
+    "ਲਿਬਨਾਨ"
+   ],
+   "pl": [
+    "Liban"
+   ],
+   "pt": [
+    "Líbano",
+    "República do Líbano"
+   ],
+   "ro": [
+    "Liban",
+    "Republica Libaneză",
+    "Statul Liban"
+   ],
+   "ru": [
+    "Ливан",
+    "Ливанская Республика",
+    "Ближневосточная Швейцария"
+   ],
+   "si": [
+    "ලෙබනන් සමුහාණ්ඩුව"
+   ],
+   "sk": [
+    "Libanon",
+    "Libanonská republika"
+   ],
+   "sl": [
+    "Libanon",
+    "Libanonska republika"
+   ],
+   "so": [
+    "Lubnaan"
+   ],
+   "sq": [
+    "Libani"
+   ],
+   "sr": [
+    "Либан"
+   ],
+   "sv": [
+    "Libanon",
+    "Republiken Libanon"
+   ],
+   "sw": [
+    "Lebanoni"
+   ],
+   "ta": [
+    "லெபனான்"
+   ],
+   "te": [
+    "లెబనాన్"
+   ],
+   "th": [
+    "ประเทศเลบานอน"
+   ],
+   "tr": [
+    "Lübnan",
+    "Lübnan Cumhuriyeti"
+   ],
+   "uk": [
+    "Ліван",
+    "Ліва́нська Респу́бліка"
+   ],
+   "ur": [
+    "لبنان"
+   ],
+   "uz": [
+    "Livan"
+   ],
+   "vi": [
+    "Liban",
+    "Lebanon"
+   ],
+   "zh": [
+    "黎巴嫩"
+   ],
+   "zh-hant": [
+    "黎巴嫩"
+   ]
+  },
   "morocco": {
    "ar": [
     "المغرب",
@@ -2450,6 +5658,1021 @@
     "摩洛哥王國"
    ]
   },
+  "myanmar": {
+   "ar": [
+    "ميانمار",
+    "بورما",
+    "جمهورية اتحاد ميانمار",
+    "اتحاد بورما",
+    "برمانيا"
+   ],
+   "az": [
+    "Myanma"
+   ],
+   "bg": [
+    "Мианмар",
+    "Бирма",
+    "Република Съюз Мианмар",
+    "Бирмански съюз"
+   ],
+   "bn": [
+    "মিয়ানমার",
+    "বার্মা",
+    "ব্রহ্মদেশ",
+    "বর্মা",
+    "মায়ানমার"
+   ],
+   "bs": [
+    "Mijanmar"
+   ],
+   "ca": [
+    "Myanmar",
+    "Birmània"
+   ],
+   "cs": [
+    "Myanmar",
+    "Barma",
+    "Myanma",
+    "Republika Myanmarský svaz"
+   ],
+   "da": [
+    "Myanmar"
+   ],
+   "de": [
+    "Myanmar",
+    "Republik der Union Myanmar",
+    "Pyidaunzu Thanmăda Myăma Nainngandaw",
+    "Mjanmar",
+    "Myanma",
+    "Myanma Naingngan",
+    "Pye Tawngsu Myanma Naingngan",
+    "Union Myanmar",
+    "Pyidaungsu Thamada Myanmar Naing-Ngan-Daw",
+    "Union von Myanmar",
+    "Myanmarischer Staat",
+    "Birmanien"
+   ],
+   "el": [
+    "Μιανμάρ",
+    "Μυανμάρ",
+    "Μπούρμα",
+    "Βιρμανία"
+   ],
+   "en": [
+    "Myanmar",
+    "Republic of the Union of Myanmar",
+    "Union of Burma"
+   ],
+   "es": [
+    "Birmania",
+    "Unión de Myanmar",
+    "República de la Unión de Myanmar",
+    "Miamá",
+    "Mianmá",
+    "Miagmá"
+   ],
+   "et": [
+    "Myanmar",
+    "Myanmari Liidu Vabariik"
+   ],
+   "fa": [
+    "میانمار"
+   ],
+   "fi": [
+    "Myanmar",
+    "Myanmarin liiton tasavalta"
+   ],
+   "fr": [
+    "Birmanie",
+    "République de l'Union du Myanmar",
+    "République de l’Union de Birmanie"
+   ],
+   "gu": [
+    "મ્યાનમાર",
+    "બર્મા",
+    "બ્રહ્મદેશ",
+    "મ્યાંમાર"
+   ],
+   "he": [
+    "מיאנמר"
+   ],
+   "hi": [
+    "म्यान्मार",
+    "बर्मा",
+    "ब्रह्मदेश",
+    "म्यांमार"
+   ],
+   "hr": [
+    "Mjanmar"
+   ],
+   "hu": [
+    "Mianmar",
+    "Mianmari Államszövetség Köztársasága"
+   ],
+   "hy": [
+    "Մյանմա"
+   ],
+   "id": [
+    "Myanmar",
+    "Miangma",
+    "Miema",
+    "Republik Uni Miema",
+    "Republik Uni Miangma"
+   ],
+   "is": [
+    "Mjanmar"
+   ],
+   "it": [
+    "Myanmar",
+    "Repubblica dell'Unione della Birmania"
+   ],
+   "ja": [
+    "ミャンマー",
+    "ビルマ",
+    "ミャンマー連邦共和国"
+   ],
+   "ka": [
+    "მიანმარი"
+   ],
+   "kk": [
+    "Мианма"
+   ],
+   "kn": [
+    "ಮಯನ್ಮಾರ್"
+   ],
+   "ko": [
+    "미얀마",
+    "버마"
+   ],
+   "lt": [
+    "Mianmaras"
+   ],
+   "lv": [
+    "Mjanma"
+   ],
+   "mk": [
+    "Мјанмар",
+    "Бурма"
+   ],
+   "ml": [
+    "മ്യാന്മാർ"
+   ],
+   "mn": [
+    "Мьянмар"
+   ],
+   "mr": [
+    "म्यानमार"
+   ],
+   "ms": [
+    "Myanmar",
+    "Republik Kesatuan Myanmar"
+   ],
+   "my": [
+    "မြန်မာ",
+    "ပြည်ထောင်စုသမ္မတမြန်မာနိုင်ငံတော်",
+    "ဗမာပြည်",
+    "ပြည်ထောင်စုသမ္မတမြန်မာနိုင်ငံ",
+    "မြန်မာနိုင်ငံ",
+    "မြန်မာနိုင်ငံတော်",
+    "မြန်မာပြည်",
+    "ပြည်ထောင်စုမြန်မာနိုင်ငံတော်",
+    "ပြည်ထောင်စု သမ္မတ မြန်မာနိုင်ငံတော်",
+    "ပြည်ထောင်စု သမ္မတ မြန်မာနိုင်ငံ",
+    "ပြည်ထောင်စု မြန်မာနိုင်ငံတော်",
+    "ပြည်ထောင်စု မြန်မာနိုင်ငံ"
+   ],
+   "nb": [
+    "Myanmar",
+    "Republikken Myanmarunionen"
+   ],
+   "nl": [
+    "Myanmar",
+    "Republiek Unie van Myanmar"
+   ],
+   "pa": [
+    "ਮਿਆਂਮਾਰ"
+   ],
+   "pl": [
+    "Mjanma"
+   ],
+   "pt": [
+    "Myanmar",
+    "Birmânia",
+    "Mianmar",
+    "República da União de Myanmar"
+   ],
+   "ro": [
+    "Myanmar"
+   ],
+   "ru": [
+    "Мьянма",
+    "Союз Мьянма",
+    "Бирманский Союз",
+    "Мьянмар",
+    "Бирма (государство)",
+    "Бирма",
+    "Республика Союз Мьянма"
+   ],
+   "si": [
+    "බුරුමය"
+   ],
+   "sk": [
+    "Mjanmarsko",
+    "Mjanmarská zväzová republika"
+   ],
+   "sl": [
+    "Mjanmar"
+   ],
+   "so": [
+    "Burma"
+   ],
+   "sq": [
+    "Birmania"
+   ],
+   "sr": [
+    "Мјанмар",
+    "Бурма",
+    "Република Мјанмарска Унија",
+    "Република Мјанмар"
+   ],
+   "sv": [
+    "Myanmar",
+    "Republiken Unionen Myanmar"
+   ],
+   "sw": [
+    "Myanmar"
+   ],
+   "ta": [
+    "மியான்மர்"
+   ],
+   "te": [
+    "మయన్మార్"
+   ],
+   "th": [
+    "ประเทศพม่า",
+    "ประเทศเมียนมา",
+    "สาธารณรัฐแห่งสหภาพพม่า",
+    "สาธารณรัฐแห่งสหภาพเมียนมา",
+    "พม่า",
+    "เมียนมา"
+   ],
+   "tr": [
+    "Myanmar"
+   ],
+   "uk": [
+    "М'янма"
+   ],
+   "ur": [
+    "میانمار",
+    "برما"
+   ],
+   "uz": [
+    "Myanma",
+    "Myanma Ittifoqi Respublikasi"
+   ],
+   "vi": [
+    "Myanma"
+   ],
+   "zh": [
+    "緬甸",
+    "緬甸聯邦共和國"
+   ],
+   "zh-hant": [
+    "緬甸",
+    "緬甸聯邦共和國"
+   ]
+  },
+  "nepal": {
+   "ar": [
+    "نيبال",
+    "النيبال",
+    "جمهورية نيبال الديمقراطية الاتحادية"
+   ],
+   "az": [
+    "Nepal"
+   ],
+   "bg": [
+    "Непал",
+    "Федеративна демократична република Непал"
+   ],
+   "bn": [
+    "নেপাল"
+   ],
+   "bs": [
+    "Nepal"
+   ],
+   "ca": [
+    "Nepal",
+    "República Federal Democràtica del Nepal"
+   ],
+   "cs": [
+    "Nepál",
+    "Nepálská federativní demokratická republika"
+   ],
+   "da": [
+    "Nepal"
+   ],
+   "de": [
+    "Nepal",
+    "Demokratische Bundesrepublik Nepal"
+   ],
+   "el": [
+    "Νεπάλ",
+    "Ομοσπονδιακή Λαϊκή Δημοκρατία του Νεπάλ"
+   ],
+   "en": [
+    "Nepal",
+    "Federal Democratic Republic of Nepal",
+    "Nipal",
+    "Nekbal",
+    "Nehpal",
+    "Palpou",
+    "Naipala",
+    "Naipála",
+    "Pa-lo-pou",
+    "Pa-le-pou",
+    "Pa-eul-pou",
+    "Paï-pou",
+    "Pai-pou",
+    "Balpo",
+    "Balbo",
+    "Bal-bo",
+    "Bal-po'i yul",
+    "Bal-yul",
+    "Naipál",
+    "Necbal",
+    "Nei-pal",
+    "Népaal",
+    "Nepall",
+    "Nepaul",
+    "Ne-pel",
+    "Nercerri",
+    "Niepal",
+    "Ni-po-lo",
+    "Ni-po-louo",
+    "Palpa",
+    "Balpo-yul",
+    "Nekpal",
+    "Nepál",
+    "Népál"
+   ],
+   "es": [
+    "Nepal",
+    "República Federal Democrática de Nepal"
+   ],
+   "et": [
+    "Nepal",
+    "Nepali Demokraatlik Liitvabariik"
+   ],
+   "fa": [
+    "نپال"
+   ],
+   "fi": [
+    "Nepal",
+    "Nepalin demokraattinen liittotasavalta"
+   ],
+   "fr": [
+    "Népal",
+    "République démocratique fédérale du Népal",
+    "la République démocratique fédérale du Népal",
+    "Nipal",
+    "Nepal",
+    "Paï-pou"
+   ],
+   "gu": [
+    "નેપાળ"
+   ],
+   "he": [
+    "נפאל"
+   ],
+   "hi": [
+    "नेपाल",
+    "सङ्घीय लोकतान्त्रिक गणतन्त्र नेपाल"
+   ],
+   "hr": [
+    "Nepal"
+   ],
+   "hu": [
+    "Nepál",
+    "Nepáli Szövetségi Demokratikus Köztársaság"
+   ],
+   "hy": [
+    "Նեպալ",
+    "Նեպալի Դաշնային Ժողովրդավարական Հանրապետություն"
+   ],
+   "id": [
+    "Nepal"
+   ],
+   "is": [
+    "Nepal"
+   ],
+   "it": [
+    "Nepal"
+   ],
+   "ja": [
+    "ネパール",
+    "ネパール連邦民主共和国",
+    "尼婆羅"
+   ],
+   "ka": [
+    "ნეპალი"
+   ],
+   "kk": [
+    "Непал"
+   ],
+   "kn": [
+    "ನೇಪಾಳ"
+   ],
+   "ko": [
+    "네팔"
+   ],
+   "lt": [
+    "Nepalas",
+    "Nepalo Federacinė Demokratinė Respublika"
+   ],
+   "lv": [
+    "Nepāla"
+   ],
+   "mk": [
+    "Непал"
+   ],
+   "ml": [
+    "നേപ്പാൾ",
+    "ഫെഡറൽ ഡെമോക്രാറ്റിക് റിപ്പബ്ലിക് ഓഫ് നേപ്പാൾ"
+   ],
+   "mn": [
+    "Балба"
+   ],
+   "mr": [
+    "नेपाळ"
+   ],
+   "ms": [
+    "Nepal"
+   ],
+   "my": [
+    "နီပေါနိုင်ငံ"
+   ],
+   "nb": [
+    "Nepal",
+    "Den føderale demokratiske republikken Nepal"
+   ],
+   "nl": [
+    "Nepal",
+    "Federale Democratische Republiek Nepal"
+   ],
+   "pa": [
+    "ਨੇਪਾਲ"
+   ],
+   "pl": [
+    "Nepal"
+   ],
+   "pt": [
+    "Nepal",
+    "República Democrática Federal do Nepal"
+   ],
+   "ro": [
+    "Nepal"
+   ],
+   "ru": [
+    "Непал",
+    "Федеративная Демократическая Республика Непал"
+   ],
+   "si": [
+    "නේපාලය"
+   ],
+   "sk": [
+    "Nepál",
+    "Nepálska federatívna demokratická republika"
+   ],
+   "sl": [
+    "Nepal",
+    "Federativna demokratična republika Nepal"
+   ],
+   "so": [
+    "Nebal"
+   ],
+   "sq": [
+    "Nepali"
+   ],
+   "sr": [
+    "Непал"
+   ],
+   "sv": [
+    "Nepal",
+    "Demokratiska förbundsrepubliken Nepal"
+   ],
+   "sw": [
+    "Nepal"
+   ],
+   "ta": [
+    "நேபாளம்",
+    "நேப்பாளம்"
+   ],
+   "te": [
+    "నేపాల్"
+   ],
+   "th": [
+    "ประเทศเนปาล"
+   ],
+   "tr": [
+    "Nepal"
+   ],
+   "uk": [
+    "Непал"
+   ],
+   "ur": [
+    "نیپال"
+   ],
+   "uz": [
+    "Nepal"
+   ],
+   "vi": [
+    "Nepal",
+    "Cộng hòa Dân chủ Liên bang Nepal",
+    "Nê-pan"
+   ],
+   "zh": [
+    "尼泊爾",
+    "尼泊尔",
+    "Níbó'ěr"
+   ],
+   "zh-hant": [
+    "尼泊爾"
+   ]
+  },
+  "pakistan": {
+   "ar": [
+    "باكستان",
+    "جمهورية باكستان الإسلامية"
+   ],
+   "az": [
+    "Pakistan",
+    "Pakistan İslam Respublikası",
+    "Pakistan Respublikası"
+   ],
+   "bg": [
+    "Пакистан"
+   ],
+   "bn": [
+    "পাকিস্তান",
+    "ইসলামী প্রজাতন্ত্রী পাকিস্তান"
+   ],
+   "bs": [
+    "Pakistan"
+   ],
+   "ca": [
+    "Pakistan",
+    "República Islàmica del Pakistan"
+   ],
+   "cs": [
+    "Pákistán",
+    "Islámská republika Pákistán"
+   ],
+   "da": [
+    "Pakistan"
+   ],
+   "de": [
+    "Pakistan"
+   ],
+   "el": [
+    "Πακιστάν",
+    "Ισλαμική Δημοκρατία του Πακιστάν"
+   ],
+   "en": [
+    "Pakistan",
+    "Islamic Republic of Pakistan",
+    "Republic of Pakistan",
+    "Hồi Quốc",
+    "Tây Hồi"
+   ],
+   "es": [
+    "Pakistán",
+    "República Islámica del Pakistán",
+    "Paquistán",
+    "República Islámica del Paquistán"
+   ],
+   "et": [
+    "Pakistan",
+    "Pakistani Islamivabariik"
+   ],
+   "fa": [
+    "پاکستان"
+   ],
+   "fi": [
+    "Pakistan",
+    "Pakistanin islamilainen tasavalta"
+   ],
+   "fr": [
+    "Pakistan",
+    "République islamique du Pakistan",
+    "la République islamique du Pakistan"
+   ],
+   "gu": [
+    "પાકિસ્તાન"
+   ],
+   "he": [
+    "פקיסטן"
+   ],
+   "hi": [
+    "पाकिस्तान",
+    "इस्लामी जम्हूरिया पाकिस्तान",
+    "पाकिस्तान इस्लामी गणतंत्र"
+   ],
+   "hr": [
+    "Pakistan",
+    "Islamska Republika Pakistan"
+   ],
+   "hu": [
+    "Pakisztán",
+    "Pakisztáni Iszlám Köztársaság"
+   ],
+   "hy": [
+    "Պակիստան"
+   ],
+   "id": [
+    "Pakistan",
+    "Republik Islam Pakistan",
+    "Republik Pakistan"
+   ],
+   "is": [
+    "Pakistan"
+   ],
+   "it": [
+    "Pakistan",
+    "Repubblica islamica del Pakistan"
+   ],
+   "ja": [
+    "パキスタン",
+    "パキスタン・イスラム共和国"
+   ],
+   "ka": [
+    "პაკისტანი"
+   ],
+   "kk": [
+    "Пәкістан"
+   ],
+   "kn": [
+    "ಪಾಕಿಸ್ತಾನ"
+   ],
+   "ko": [
+    "파키스탄"
+   ],
+   "lt": [
+    "Pakistanas"
+   ],
+   "lv": [
+    "Pakistāna",
+    "Pakistānas Islāma Republika"
+   ],
+   "mk": [
+    "Пакистан"
+   ],
+   "ml": [
+    "പാകിസ്താൻ"
+   ],
+   "mn": [
+    "Пакистан"
+   ],
+   "mr": [
+    "पाकिस्तान"
+   ],
+   "ms": [
+    "Pakistan"
+   ],
+   "my": [
+    "ပါကစ္စတန်နိုင်ငံ"
+   ],
+   "nb": [
+    "Pakistan",
+    "Den islamske republikken Pakistan"
+   ],
+   "nl": [
+    "Pakistan",
+    "Islamitische Republiek Pakistan"
+   ],
+   "pa": [
+    "ਪਾਕਿਸਤਾਨ"
+   ],
+   "pl": [
+    "Pakistan",
+    "Islamska Republika Pakistanu"
+   ],
+   "pt": [
+    "Paquistão"
+   ],
+   "ro": [
+    "Pakistan",
+    "Republica Islamică Pakistan",
+    "Republica Pakistan"
+   ],
+   "ru": [
+    "Пакистан",
+    "Ислами́ Джумхури́йе Пакиста́н",
+    "Исламская Республика Пакистан"
+   ],
+   "si": [
+    "පාකිස්ථානය"
+   ],
+   "sk": [
+    "Pakistan",
+    "Pakistanská islamská republika"
+   ],
+   "sl": [
+    "Pakistan",
+    "Islamska republika Pakistan"
+   ],
+   "so": [
+    "Bakistaan"
+   ],
+   "sq": [
+    "Pakistani"
+   ],
+   "sr": [
+    "Пакистан"
+   ],
+   "sv": [
+    "Pakistan",
+    "Islamiska republiken Pakistan"
+   ],
+   "sw": [
+    "Pakistan"
+   ],
+   "ta": [
+    "பாக்கித்தான்",
+    "பாக்கிஸ்தான்",
+    "பாகிஸ்தான்"
+   ],
+   "te": [
+    "పాకిస్తాన్"
+   ],
+   "th": [
+    "ประเทศปากีสถาน"
+   ],
+   "tr": [
+    "Pakistan"
+   ],
+   "uk": [
+    "Пакистан",
+    "Ісламська Республіка Пакистан",
+    "Пакістан"
+   ],
+   "ur": [
+    "پاکستان",
+    "اسلامی جمہوریہ پاکستان",
+    "باکستان",
+    "پی کے"
+   ],
+   "uz": [
+    "Pokiston"
+   ],
+   "vi": [
+    "Pakistan"
+   ],
+   "zh": [
+    "巴基斯坦",
+    "巴基",
+    "巴基国",
+    "巴国"
+   ],
+   "zh-hant": [
+    "巴基斯坦"
+   ]
+  },
+  "portugal": {
+   "ar": [
+    "البرتغال",
+    "الجمهورية البرتغالية"
+   ],
+   "az": [
+    "Portuqaliya"
+   ],
+   "bg": [
+    "Португалия",
+    "Република Португалия"
+   ],
+   "bn": [
+    "পর্তুগাল",
+    "পোর্তুগাল",
+    "পর্তুগিজ প্রজাতন্ত্র"
+   ],
+   "bs": [
+    "Portugal"
+   ],
+   "ca": [
+    "Portugal",
+    "República de Portugal",
+    "República Portuguesa"
+   ],
+   "cs": [
+    "Portugalsko"
+   ],
+   "da": [
+    "Portugal"
+   ],
+   "de": [
+    "Portugal",
+    "Portugiesische Republik"
+   ],
+   "el": [
+    "Πορτογαλία",
+    "Πορτογαλική Δημοκρατία"
+   ],
+   "en": [
+    "Portugal",
+    "Portuguese Republic"
+   ],
+   "es": [
+    "Portugal",
+    "República Portuguesa",
+    "República de Portugal"
+   ],
+   "et": [
+    "Portugal",
+    "Portugali Vabariik"
+   ],
+   "fa": [
+    "پرتغال",
+    "پرتگال"
+   ],
+   "fi": [
+    "Portugali",
+    "República Portuguesa",
+    "Portugalin tasavalta"
+   ],
+   "fr": [
+    "Portugal",
+    "République portugaise"
+   ],
+   "gu": [
+    "પોર્ટુગલ"
+   ],
+   "he": [
+    "פורטוגל"
+   ],
+   "hi": [
+    "पुर्तगाल"
+   ],
+   "hr": [
+    "Portugal",
+    "Republika Portugal"
+   ],
+   "hu": [
+    "Portugália"
+   ],
+   "hy": [
+    "Պորտուգալիա"
+   ],
+   "id": [
+    "Portugal",
+    "Portugis"
+   ],
+   "is": [
+    "Portúgal"
+   ],
+   "it": [
+    "Portogallo"
+   ],
+   "ja": [
+    "ポルトガル",
+    "ポルトガル共和国"
+   ],
+   "ka": [
+    "პორტუგალია"
+   ],
+   "kk": [
+    "Португалия"
+   ],
+   "kn": [
+    "ಪೋರ್ಚುಗಲ್"
+   ],
+   "ko": [
+    "포르투갈",
+    "포르투갈 공화국"
+   ],
+   "lt": [
+    "Portugalija"
+   ],
+   "lv": [
+    "Portugāle"
+   ],
+   "mk": [
+    "Португалија"
+   ],
+   "ml": [
+    "പോർച്ചുഗൽ"
+   ],
+   "mn": [
+    "Португал"
+   ],
+   "mr": [
+    "पोर्तुगाल"
+   ],
+   "ms": [
+    "Portugal"
+   ],
+   "my": [
+    "ပေါ်တူဂီနိုင်ငံ"
+   ],
+   "nb": [
+    "Portugal"
+   ],
+   "nl": [
+    "Portugal",
+    "Portugese Republiek"
+   ],
+   "pa": [
+    "ਪੁਰਤਗਾਲ"
+   ],
+   "pl": [
+    "Portugalia"
+   ],
+   "pt": [
+    "Portugal",
+    "República Portuguesa"
+   ],
+   "ro": [
+    "Portugalia",
+    "Republica Portugheză"
+   ],
+   "ru": [
+    "Португалия",
+    "Portugal",
+    "Португальская Республика"
+   ],
+   "si": [
+    "පෘතුගාලය"
+   ],
+   "sk": [
+    "Portugalsko",
+    "Portugalská republika"
+   ],
+   "sl": [
+    "Portugalska"
+   ],
+   "so": [
+    "Bortuqaal"
+   ],
+   "sq": [
+    "Portugalia"
+   ],
+   "sr": [
+    "Португалија",
+    "Португал"
+   ],
+   "sv": [
+    "Portugal"
+   ],
+   "sw": [
+    "Ureno"
+   ],
+   "ta": [
+    "போர்த்துகல்",
+    "போர்த்துக்கல்",
+    "போர்ச்சுக்கல்",
+    "போர்த்துகீசு"
+   ],
+   "te": [
+    "పోర్చుగల్"
+   ],
+   "th": [
+    "ประเทศโปรตุเกส",
+    "โปรตุเกส",
+    "Portugal",
+    "สาธารณรัฐโปรตุเกส"
+   ],
+   "tr": [
+    "Portekiz",
+    "Portekiz Cumhuriyeti"
+   ],
+   "uk": [
+    "Португалія",
+    "Португальська Республіка"
+   ],
+   "ur": [
+    "پرتگال"
+   ],
+   "uz": [
+    "Portugaliya"
+   ],
+   "vi": [
+    "Bồ Đào Nha",
+    "Cộng hòa Bồ Đào Nha",
+    "Bút-tu-ghê",
+    "Phu-tu-ghê"
+   ],
+   "zh": [
+    "葡萄牙",
+    "葡萄牙共和国",
+    "葡国",
+    "葡國"
+   ],
+   "zh-hant": [
+    "葡萄牙",
+    "葡萄牙共和國",
+    "葡國",
+    "葡萄牙民國"
+   ]
+  },
   "russia": {
    "ar": [
     "روسيا",
@@ -2496,8 +6719,7 @@
    ],
    "en": [
     "Russia",
-    "Russian Federation",
-    "Federation of Russia"
+    "Russian Federation"
    ],
    "es": [
     "Rusia",
@@ -2517,9 +6739,8 @@
    ],
    "fr": [
     "Russie",
-    "Rus.",
-    "Fédération de Russie",
-    "Fédération russe"
+    "Fédération russe",
+    "Fédération de Russie"
    ],
    "gu": [
     "રશિયા"
@@ -2736,11 +6957,13 @@
     "ইএসপি"
    ],
    "bs": [
-    "Španija"
+    "Španija",
+    "Španjolska"
    ],
    "ca": [
     "Espanya",
-    "Regne d'Espanya"
+    "Regne d'Espanya",
+    "Estat espanyol"
    ],
    "cs": [
     "Španělsko",
@@ -2907,11 +7130,7 @@
     "Spanja"
    ],
    "sr": [
-    "Шпанија",
-    "Еспања",
-    "Краљевина Шпанија",
-    "Шпанско Краљевство",
-    "Шпањолска"
+    "Шпанија"
    ],
    "sv": [
     "Spanien",
@@ -2963,11 +7182,227 @@
    ],
    "zh": [
     "西班牙",
-    "西班牙王國"
+    "西班牙王國",
+    "日斯巴尼亚"
    ],
    "zh-hant": [
     "西班牙",
-    "西班牙王國"
+    "西班牙王國",
+    "日斯巴尼亞"
+   ]
+  },
+  "tibet": {
+   "ar": [
+    "التبت",
+    "تيبت",
+    "التيبت",
+    "تبت"
+   ],
+   "az": [
+    "Tibet"
+   ],
+   "bg": [
+    "Тибет"
+   ],
+   "bn": [
+    "তিব্বত"
+   ],
+   "bs": [
+    "Tibet"
+   ],
+   "ca": [
+    "Tibet"
+   ],
+   "cs": [
+    "Tibet"
+   ],
+   "da": [
+    "Tibet"
+   ],
+   "de": [
+    "Tibet"
+   ],
+   "el": [
+    "Θιβέτ"
+   ],
+   "en": [
+    "Tibet",
+    "Thibet",
+    "Greater Tibet",
+    "Tibetan cultural zone",
+    "Tibetan Highland",
+    "Tibetan Tableland",
+    "Tibetan Plateau",
+    "Tubet",
+    "Tangut",
+    "Tobat",
+    "Thebet"
+   ],
+   "es": [
+    "Tíbet",
+    "Thibet",
+    "Tibet"
+   ],
+   "et": [
+    "Tiibet"
+   ],
+   "fa": [
+    "تبت"
+   ],
+   "fi": [
+    "Tiibet"
+   ],
+   "fr": [
+    "Tibet",
+    "Thibet",
+    "le Thibet",
+    "le Tibet",
+    "Tubet",
+    "Tangut"
+   ],
+   "gu": [
+    "તિબેટ",
+    "તિબ્બત"
+   ],
+   "he": [
+    "טיבט"
+   ],
+   "hi": [
+    "तिब्बत",
+    "भोट"
+   ],
+   "hr": [
+    "Tibet"
+   ],
+   "hu": [
+    "Tibet"
+   ],
+   "hy": [
+    "Տիբեթ"
+   ],
+   "id": [
+    "Tibet",
+    "Dataran Tinggi Tibet"
+   ],
+   "it": [
+    "Tibet",
+    "Thibet"
+   ],
+   "ja": [
+    "チベット"
+   ],
+   "ka": [
+    "ტიბეტი"
+   ],
+   "kk": [
+    "Тибет"
+   ],
+   "kn": [
+    "ಟಿಬೆಟ್"
+   ],
+   "ko": [
+    "티베트"
+   ],
+   "lt": [
+    "Tibetas"
+   ],
+   "lv": [
+    "Tibeta"
+   ],
+   "mk": [
+    "Тибет"
+   ],
+   "ml": [
+    "തിബെത്ത്"
+   ],
+   "mn": [
+    "Төвөд"
+   ],
+   "mr": [
+    "तिबेट"
+   ],
+   "ms": [
+    "Tibet"
+   ],
+   "my": [
+    "တိဗက်"
+   ],
+   "nb": [
+    "Tibet"
+   ],
+   "nl": [
+    "Tibet"
+   ],
+   "pa": [
+    "ਤਿੱਬਤ"
+   ],
+   "pl": [
+    "Tybet"
+   ],
+   "pt": [
+    "Tibete",
+    "Tibet"
+   ],
+   "ro": [
+    "Tibet"
+   ],
+   "ru": [
+    "Тибет"
+   ],
+   "si": [
+    "ටිබෙට්"
+   ],
+   "sk": [
+    "Tibet"
+   ],
+   "sl": [
+    "Tibet"
+   ],
+   "so": [
+    "Tibet"
+   ],
+   "sq": [
+    "Tibet"
+   ],
+   "sr": [
+    "Тибет"
+   ],
+   "sv": [
+    "Tibet"
+   ],
+   "sw": [
+    "Tibet"
+   ],
+   "ta": [
+    "திபெத்து",
+    "திபெத்"
+   ],
+   "te": [
+    "టిబెట్"
+   ],
+   "th": [
+    "ทิเบต"
+   ],
+   "tr": [
+    "Tibet"
+   ],
+   "uk": [
+    "Тибет"
+   ],
+   "ur": [
+    "تبت"
+   ],
+   "vi": [
+    "Tây Tạng"
+   ],
+   "zh": [
+    "西藏",
+    "吐蕃",
+    "藏区"
+   ],
+   "zh-hant": [
+    "西藏",
+    "圖博"
    ]
   },
   "trump": {
@@ -2993,14 +7428,7 @@
     "ডোনাল্ড ট্রাম্প",
     "ট্রামপ"
    ],
-   "ca": [
-    "Donald Trump"
-   ],
-   "cs": [
-    "Donald Trump"
-   ],
    "de": [
-    "Donald Trump",
     "Präsident Donald Trump"
    ],
    "el": [
@@ -3009,18 +7437,6 @@
     "Πρώην Πρόεδρος Τραμπ",
     "Τραμπ",
     "Ντόναλντ Τζ. Τραμπ"
-   ],
-   "en": [
-    "Donald Trump",
-    "POTUS 45",
-    "President Donald Trump",
-    "President Trump",
-    "President Donald J. Trump",
-    "President Donald John Trump",
-    "President Donald J Trump",
-    "@realDonaldTrump",
-    "POTUS 47",
-    "President DJT"
    ],
    "fa": [
     "دونالد ترامپ",
@@ -3049,8 +7465,7 @@
     "Տանըլտ Թրամփ"
    ],
    "id": [
-    "Presiden Donald Trump",
-    "Mr. Trump"
+    "Presiden Donald Trump"
    ],
    "ja": [
     "ドナルド・トランプ",
@@ -3084,8 +7499,8 @@
     "트럼프"
    ],
    "lt": [
-    "Donaldas Trampas",
-    "Donaldas Trumpas"
+    "Donaldas Trumpas",
+    "Donaldas Trampas"
    ],
    "lv": [
     "Donalds Tramps",
@@ -3123,9 +7538,6 @@
    "pt": [
     "Presidente Trump"
    ],
-   "ro": [
-    "Donald Trump"
-   ],
    "ru": [
     "Дональд Трамп",
     "Трамп",
@@ -3134,9 +7546,6 @@
    ],
    "si": [
     "ඩොනල්ඩ් ට්‍රම්ප්"
-   ],
-   "sk": [
-    "Donald Trump"
    ],
    "sl": [
     "predsednik Donald Trump"
@@ -3221,7 +7630,8 @@
     "Ukrajina"
    ],
    "ca": [
-    "Ucraïna"
+    "Ucraïna",
+    "República d'Ucraïna"
    ],
    "cs": [
     "Ukrajina"
@@ -3420,6 +7830,497 @@
    ],
    "zh-hant": [
     "烏克蘭"
+   ]
+  },
+  "venezuela": {
+   "ar": [
+    "فنزويلا"
+   ],
+   "az": [
+    "Venesuela",
+    "Venesuela Bolivar Respublikası",
+    "Bolivarçı Venesuela Respublikası"
+   ],
+   "bg": [
+    "Венецуела"
+   ],
+   "bn": [
+    "ভেনেজুয়েলা"
+   ],
+   "bs": [
+    "Venecuela"
+   ],
+   "ca": [
+    "Veneçuela",
+    "Estats Units de Veneçuela",
+    "República Bolivariana de Veneçuela",
+    "República de Veneçuela"
+   ],
+   "cs": [
+    "Venezuela",
+    "Bolívarovská republika Venezuela"
+   ],
+   "da": [
+    "Venezuela"
+   ],
+   "de": [
+    "Venezuela",
+    "Bolivarische Republik Venezuela"
+   ],
+   "el": [
+    "Βενεζουέλα",
+    "Μπολιβαριανή Δημοκρατία της Βενεζουέλας"
+   ],
+   "en": [
+    "Venezuela",
+    "Bolivarian Republic of Venezuela",
+    "BR Venezuela",
+    "Republic of Venezuela"
+   ],
+   "es": [
+    "Venezuela",
+    "RB Venezuela",
+    "Estados Unidos de Venezuela",
+    "República Bolivariana de Venezuela",
+    "República de Venezuela"
+   ],
+   "et": [
+    "Venezuela",
+    "Venezuela Bolívari Vabariik",
+    "Venetsueela"
+   ],
+   "fa": [
+    "ونزوئلا",
+    "ونیزویلا"
+   ],
+   "fi": [
+    "Venezuela",
+    "Venezuelan bolivariaaninen tasavalta"
+   ],
+   "fr": [
+    "Venezuela",
+    "Vénézuéla",
+    "Vénézuela",
+    "République bolivarienne du Venezuela",
+    "République bolivarienne du Vénézuéla"
+   ],
+   "gu": [
+    "વેનેઝુએલા"
+   ],
+   "he": [
+    "ונצואלה"
+   ],
+   "hi": [
+    "वेनेज़ुएला"
+   ],
+   "hr": [
+    "Venezuela"
+   ],
+   "hu": [
+    "Venezuela",
+    "Venezuelai Bolivári Köztársaság"
+   ],
+   "hy": [
+    "Վենեսուելա"
+   ],
+   "id": [
+    "Venezuela"
+   ],
+   "is": [
+    "Venesúela"
+   ],
+   "it": [
+    "Venezuela",
+    "Repubblica Bolivariana del Venezuela"
+   ],
+   "ja": [
+    "ベネズエラ",
+    "ベネズエラ・ボリバル共和国",
+    "ヴェネズエラ"
+   ],
+   "ka": [
+    "ვენესუელა"
+   ],
+   "kk": [
+    "Венесуэла"
+   ],
+   "kn": [
+    "ವೆನೆಜುವೆಲಾ"
+   ],
+   "ko": [
+    "베네수엘라"
+   ],
+   "lt": [
+    "Venesuela"
+   ],
+   "lv": [
+    "Venecuēla",
+    "Venecuēlas Bolivara Republika"
+   ],
+   "mk": [
+    "Венецуела"
+   ],
+   "ml": [
+    "വെനിസ്വേല"
+   ],
+   "mn": [
+    "Венесуэл"
+   ],
+   "mr": [
+    "व्हेनेझुएला"
+   ],
+   "ms": [
+    "Venezuela"
+   ],
+   "my": [
+    "ဗင်နီဇွဲလားနိုင်ငံ"
+   ],
+   "nb": [
+    "Venezuela",
+    "den Bolivarianske Republikken Venezuela"
+   ],
+   "nl": [
+    "Venezuela",
+    "Bolivariaanse Republiek Venezuela"
+   ],
+   "pa": [
+    "ਵੈਨੇਜ਼ੁਏਲਾ"
+   ],
+   "pl": [
+    "Wenezuela",
+    "Boliwariańska Republika Wenezueli",
+    "República Bolivariana de Venezuela",
+    "Estados Unidos de Venezuela"
+   ],
+   "pt": [
+    "Venezuela",
+    "República Bolivariana da Venezuela"
+   ],
+   "ro": [
+    "Venezuela"
+   ],
+   "ru": [
+    "Венесуэла",
+    "Боливарианская Республика Венесуэла"
+   ],
+   "si": [
+    "කොලොම්බියානා",
+    "වෙනිසියුලාව",
+    "වෙනිසුයෙලාව"
+   ],
+   "sk": [
+    "Venezuela",
+    "Venezuelská bolívarovská republika"
+   ],
+   "sl": [
+    "Venezuela",
+    "Bolivarska republika Venezuela"
+   ],
+   "so": [
+    "Fanansuwela"
+   ],
+   "sq": [
+    "Venezuela"
+   ],
+   "sr": [
+    "Венецуела"
+   ],
+   "sv": [
+    "Venezuela",
+    "Bolivarianska republiken Venezuela"
+   ],
+   "sw": [
+    "Venezuela"
+   ],
+   "ta": [
+    "வெனிசுவேலா"
+   ],
+   "te": [
+    "వెనుజులా"
+   ],
+   "th": [
+    "ประเทศเวเนซุเอลา"
+   ],
+   "tr": [
+    "Venezuela",
+    "Bolivarcı Venezuela Cumhuriyeti"
+   ],
+   "uk": [
+    "Венесуела",
+    "Боліварианська Республіка Венесуела"
+   ],
+   "ur": [
+    "وینیزویلا"
+   ],
+   "uz": [
+    "Venesuela"
+   ],
+   "vi": [
+    "Venezuela",
+    "Cộng hòa Bolivariana Venezuela",
+    "Cộng hoà Bolivariana Venezuela"
+   ],
+   "zh": [
+    "委內瑞拉"
+   ],
+   "zh-hant": [
+    "委內瑞拉"
+   ]
+  },
+  "vietnam": {
+   "ar": [
+    "فيتنام",
+    "جمهورية فيتنام الاشتراكية"
+   ],
+   "az": [
+    "Vyetnam",
+    "Vyetnam Sosialist Respublikası"
+   ],
+   "bg": [
+    "Виетнам",
+    "Социалистическа република Виетнам"
+   ],
+   "bn": [
+    "ভিয়েতনাম"
+   ],
+   "bs": [
+    "Vijetnam"
+   ],
+   "ca": [
+    "Vietnam",
+    "República Socialista del Vietnam"
+   ],
+   "cs": [
+    "Vietnam",
+    "Vietnamská socialistická republika"
+   ],
+   "da": [
+    "Vietnam"
+   ],
+   "de": [
+    "Vietnam",
+    "Sozialistische Republik Vietnam"
+   ],
+   "el": [
+    "Βιετνάμ",
+    "Σοσιαλιστική Δημοκρατία του Βιετνάμ"
+   ],
+   "en": [
+    "Vietnam",
+    "Socialist Republic of Vietnam",
+    "Việt Nam",
+    "Viet Nam",
+    "Socialist Republic of Viet Nam"
+   ],
+   "es": [
+    "Vietnam",
+    "República Socialista de Vietnam",
+    "Viet Nam"
+   ],
+   "et": [
+    "Vietnam",
+    "Vietnami Sotsialistlik Vabariik"
+   ],
+   "fa": [
+    "ویتنام"
+   ],
+   "fi": [
+    "Vietnam",
+    "Vietnamin sosialistinen tasavalta"
+   ],
+   "fr": [
+    "Vietnam",
+    "Viet Nam",
+    "Viêt Nam",
+    "Viet-Nam",
+    "Viêt-Nam",
+    "Viêtnam",
+    "la République socialiste du Vietnam",
+    "Việt Nam"
+   ],
+   "gu": [
+    "વિએટનામ"
+   ],
+   "he": [
+    "וייטנאם"
+   ],
+   "hi": [
+    "वियतनाम"
+   ],
+   "hr": [
+    "Vijetnam"
+   ],
+   "hu": [
+    "Vietnám",
+    "Vietnámi Szocialista Köztársaság",
+    "Vietnam"
+   ],
+   "hy": [
+    "Վիետնամ"
+   ],
+   "id": [
+    "Vietnam",
+    "Republik Sosialis Vietnam"
+   ],
+   "is": [
+    "Víetnam"
+   ],
+   "it": [
+    "Vietnam"
+   ],
+   "ja": [
+    "ベトナム",
+    "ベトナム社会主義共和国",
+    "越南",
+    "越南社会主義共和国",
+    "ヴェトナム"
+   ],
+   "ka": [
+    "ვიეტნამი"
+   ],
+   "kk": [
+    "Вьетнам"
+   ],
+   "kn": [
+    "ವಿಯೆಟ್ನಾಮ್"
+   ],
+   "ko": [
+    "베트남",
+    "월남",
+    "베트남 사회주의 공화국",
+    "월남 사회주의 공화국"
+   ],
+   "lt": [
+    "Vietnamas"
+   ],
+   "lv": [
+    "Vjetnama"
+   ],
+   "mk": [
+    "Виетнам"
+   ],
+   "ml": [
+    "വിയറ്റ്നാം"
+   ],
+   "mn": [
+    "Вьетнам"
+   ],
+   "mr": [
+    "व्हियेतनाम"
+   ],
+   "ms": [
+    "Vietnam",
+    "Republik Sosialis Vietnam"
+   ],
+   "my": [
+    "ဗီယက်နမ်နိုင်ငံ"
+   ],
+   "nb": [
+    "Vietnam",
+    "Den sosialistiske republikk Vietnam"
+   ],
+   "nl": [
+    "Vietnam",
+    "Socialistische Republiek Vietnam"
+   ],
+   "pa": [
+    "ਵੀਅਤਨਾਮ"
+   ],
+   "pl": [
+    "Wietnam",
+    "Socjalistyczna Republika Wietnamu"
+   ],
+   "pt": [
+    "Vietname",
+    "República Socialista do Vietname",
+    "Việt Nam",
+    "Republica Socialista do Vietname"
+   ],
+   "ro": [
+    "Vietnam",
+    "Viet Nam",
+    "Republica Socialistă Vietnam",
+    "Viet-Nam",
+    "Viêtnam",
+    "Viêt-Nam"
+   ],
+   "ru": [
+    "Вьетнам",
+    "Социалистическая Республика Вьетнам"
+   ],
+   "si": [
+    "වියට්නාමය"
+   ],
+   "sk": [
+    "Vietnam",
+    "Vietnamská socialistická republika"
+   ],
+   "sl": [
+    "Vietnam",
+    "Socialistična republika Vietnam",
+    "Việt Nam",
+    "Viet Nam"
+   ],
+   "so": [
+    "Fiyetnam"
+   ],
+   "sq": [
+    "Vietnami"
+   ],
+   "sr": [
+    "Вијетнам"
+   ],
+   "sv": [
+    "Vietnam",
+    "Socialistiska republiken Vietnam"
+   ],
+   "sw": [
+    "Vietnam",
+    "Socialist Republic of Vietnam",
+    "Việt Nam"
+   ],
+   "ta": [
+    "வியட்நாம்"
+   ],
+   "te": [
+    "వియత్నాం"
+   ],
+   "th": [
+    "ประเทศเวียดนาม",
+    "เวียดนาม",
+    "สาธารณรัฐสังคมนิยมเวียดนาม",
+    "เหวียตนาม",
+    "เหวียดนาม",
+    "เวียด",
+    "ญวน"
+   ],
+   "tr": [
+    "Vietnam",
+    "Vietnam Sosyalist Cumhuriyeti"
+   ],
+   "uk": [
+    "В'єтнам",
+    "Соціалістична Республіка В'єтнам"
+   ],
+   "ur": [
+    "ویتنام"
+   ],
+   "uz": [
+    "Vyetnam"
+   ],
+   "vi": [
+    "Việt Nam",
+    "Cộng hòa Xã hội chủ nghĩa Việt Nam",
+    "CHXHCN Việt Nam"
+   ],
+   "zh": [
+    "越南",
+    "越南社會主義共和國",
+    "越南社会主义共和国"
+   ],
+   "zh-hant": [
+    "越南",
+    "越南社會主義共和國"
    ]
   },
   "white-house": {
