@@ -112,11 +112,22 @@ TOKEN = re.compile(r"[^\W\d_]+", re.UNICODE)
 # leaves the vocabulary while still being named, which is a real limitation and is
 # stated rather than hidden.
 POLITICAL_OCCUPATIONS = {
-    "politician", "statesperson", "diplomat", "head of state", "head of government",
+    "politician",
+    "statesperson",
+    "diplomat",
+    "head of state",
+    "head of government",
 }
 GOVERNMENT_POSITION_TYPES = {
-    "special envoy", "civil servant", "president", "prime minister", "minister",
-    "ambassador", "head of state", "head of government", "public office",
+    "special envoy",
+    "civil servant",
+    "president",
+    "prime minister",
+    "minister",
+    "ambassador",
+    "head of state",
+    "head of government",
+    "public office",
 }
 
 KEEP_TYPES = {
