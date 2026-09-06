@@ -544,3 +544,24 @@ class TestTheFeedSaysWhenASplitIsFirstShown:
         feed = _feed("20260906T120000Z", [story], [], {})
         xml.dom.minidom.parseString(feed)
         assert "&amp;" in feed and "&lt;named&gt;" in feed
+
+
+def test_run_does_not_rebind_the_series_path_before_it_reads_it():
+    """A loop variable named `series` shadowed the parameter of the same name.
+
+    The write block then called `Path(series)` on a dict, and the first production
+    dispatch after the series landed died with every stage finished. `run` is not
+    unit-tested end to end, so this pins the one thing that would have caught it: no
+    assignment to `series` between the signature and the read.
+    """
+    import inspect
+    import re
+
+    from tensionr.stories import run as module
+
+    source = inspect.getsource(module.run)
+    body = source.split("def run(", 1)[1]
+    read_at = body.index("if series and Path(series).exists()")
+    before = body[:read_at]
+    assert not re.search(r"\bfor [^:\n]*\bseries\b[^:\n]*:", before)
+    assert not re.search(r"^\s*series\s*=", before, re.M)
