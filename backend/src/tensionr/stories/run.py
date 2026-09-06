@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # append-only (#10). The three outputs below sit on either side of that line:
 # `state` is a cache the next run overwrites, `stories` is what the site reads, and
 # `record` is written once and never rewritten.
+SERIES = "series.json"
 STATE, STORIES, RECORD, CAPTURE, INDEX = (
     "state.json",
     "stories.json",
@@ -161,7 +162,86 @@ def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
                 "urls": [r["url"] for r in story.get("evidence", []) if r.get("url")],
             }
         )
-    return {"run": stamp, "stories": rows}
+    return {"run": stamp, "stories": rows, "actors": _by_country(stories)}
+
+
+def _by_country(stories: list[dict[str, Any]]) -> dict[str, dict[str, list[int]]]:
+    """Named over evaluable, per actor and per polity, summed across every story.
+
+    The run's answer to "how did outlets in each country name each actor", which no
+    output carried until now. It is what a series over time is drawn from, and at 36
+    actors and about 70 polities it is a few thousand integers per run. A source that
+    covered three stories is counted three times, deliberately: the question is how
+    much of the coverage used the name, not how many outlets did, and `actorBoard` on
+    the page already sums the same way.
+    """
+    out: dict[str, dict[str, list[int]]] = {}
+    for story in stories:
+        for figure in story.get("figures", []):
+            actor = figure["actor"]
+            for polity, (named, evaluable) in figure.get("by_polity", {}).items():
+                cell = out.setdefault(actor, {}).setdefault(polity, [0, 0])
+                cell[0] += named
+                cell[1] += evaluable
+    return {a: dict(sorted(p.items())) for a, p in sorted(out.items())}
+
+
+# How far back the accumulated series reaches. Each run adds a few thousand integers,
+# so a quarter is around a megabyte on the ref the site reads. Beyond it the per-run
+# indexes on `history` still carry every run's aggregate for anyone who wants more.
+SERIES_DAYS = 90
+
+
+def _accumulate(
+    previous: dict[str, Any] | None,
+    stamp: str,
+    aggregate: dict[str, dict[str, list[int]]],
+    *,
+    days: int = SERIES_DAYS,
+) -> dict[str, Any]:
+    """The rolling series: previous runs plus this one, windowed.
+
+    Kept on the `data` ref and carried run to run, the way `state.json` is, because
+    the engine only ever sees nine days of indexes and a series has to reach further
+    than that. Shaped for the page rather than for the engine: actor, then polity,
+    then a list of [run, named, evaluable] in run order, so a sparkline per country is
+    one lookup and no reshaping.
+
+    Idempotent on the stamp. A rerun of the same instant replaces its own point rather
+    than adding a second, and a rerun of an earlier instant lands in order.
+    """
+    series: dict[str, dict[str, list[list[Any]]]] = {}
+    for actor, polities in (previous or {}).get("actors", {}).items():
+        for polity, points in polities.items():
+            series.setdefault(actor, {})[polity] = [
+                pt for pt in points if pt[0] != stamp
+            ]
+    for actor, polities in aggregate.items():
+        for polity, (named, evaluable) in polities.items():
+            series.setdefault(actor, {}).setdefault(polity, []).append(
+                [stamp, named, evaluable]
+            )
+
+    cutoff = _shift(stamp, -days * 24)
+    for actor in list(series):
+        for polity in list(series[actor]):
+            kept = sorted(
+                (pt for pt in series[actor][polity] if pt[0] >= cutoff),
+                key=lambda pt: pt[0],
+            )
+            if kept:
+                series[actor][polity] = kept
+            else:
+                del series[actor][polity]
+        if not series[actor]:
+            del series[actor]
+    return {"run": stamp, "days": days, "actors": series}
+
+
+def _shift(stamp: str, hours: int) -> str:
+    """A run stamp moved by `hours`, as a comparable stamp."""
+    t = dt.datetime.strptime(stamp, "%Y%m%dT%H%M%SZ") + dt.timedelta(hours=hours)
+    return t.strftime("%Y%m%dT%H%M%SZ")
 
 
 def _stamp_before(history: list[dict[str, Any]], hours: int) -> str | None:
@@ -262,7 +342,14 @@ def _publishable(figures: list[dict[str, Any]]) -> list[dict[str, Any]]:
     this writes 0.7 MB. How many actors the run considered is in the report, so a short
     list stays a stated fact rather than a silent truncation.
     """
-    return [f for f in figures if f.get("measurable") is not False]
+    # `by_polity` travels to the index, where it is summed across stories into the
+    # run's per-country aggregate. On the published figure it would be the same 30-odd
+    # rows repeated for every story the page never breaks down, so it stays behind.
+    return [
+        {k: v for k, v in f.items() if k != "by_polity"}
+        for f in figures
+        if f.get("measurable") is not False
+    ]
 
 
 def _feature(
@@ -345,6 +432,7 @@ def run(
     polities: Path,
     state: Path | None = None,
     history: Path | None = None,
+    series: Path | None = None,
     featured: int = 5,
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
@@ -523,8 +611,19 @@ def run(
         ),
         "utf-8",
     )
-    (out / INDEX).write_text(
-        json.dumps(_index(stamp, stories), ensure_ascii=False), "utf-8"
+    index = _index(stamp, stories)
+    (out / INDEX).write_text(json.dumps(index, ensure_ascii=False), "utf-8")
+    previous_series = None
+    if series and Path(series).exists():
+        try:
+            previous_series = json.loads(Path(series).read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            logger.warning("unreadable series, starting one afresh: %s", series)
+    (out / SERIES).write_text(
+        json.dumps(
+            _accumulate(previous_series, stamp, index["actors"]), ensure_ascii=False
+        ),
+        "utf-8",
     )
     (out / CAPTURE).write_text(
         json.dumps(

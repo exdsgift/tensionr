@@ -1,6 +1,13 @@
 """The capture: what is kept, and what is not kept twice."""
 
-from tensionr.stories.run import _capture, _feature, _index, _publishable
+from tensionr.stories.run import (
+    _accumulate,
+    _by_country,
+    _capture,
+    _feature,
+    _index,
+    _publishable,
+)
 
 RECORDS = [
     {
@@ -412,3 +419,69 @@ class TestOnlyFiguresThatAreFigures:
 
     def test_nothing_measurable_is_an_empty_list_not_a_missing_key(self):
         assert _publishable([f for f in self.figures() if not f["measurable"]]) == []
+
+
+class TestTheSeriesAccumulates:
+    """Per actor and per polity over runs, carried on the data ref like the state.
+
+    The engine only ever sees nine days of indexes, and a series has to reach further
+    than that, so it is accumulated run to run rather than rebuilt. It is shaped for
+    the page: actor, polity, then [run, named, evaluable] in run order, so a sparkline
+    per country is one lookup.
+    """
+
+    def test_a_first_run_starts_the_series(self):
+        out = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        assert out["actors"] == {"putin": {"Italy": [["20260906T120000Z", 3, 5]]}}
+
+    def test_a_later_run_appends_in_order(self):
+        first = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        second = _accumulate(first, "20260906T160000Z", {"putin": {"Italy": [4, 6]}})
+        assert second["actors"]["putin"]["Italy"] == [
+            ["20260906T120000Z", 3, 5],
+            ["20260906T160000Z", 4, 6],
+        ]
+
+    def test_rerunning_the_same_instant_replaces_its_own_point(self):
+        first = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        again = _accumulate(first, "20260906T120000Z", {"putin": {"Italy": [9, 9]}})
+        assert again["actors"]["putin"]["Italy"] == [["20260906T120000Z", 9, 9]]
+
+    def test_a_run_that_arrives_out_of_order_lands_in_order(self):
+        late = _accumulate(None, "20260906T160000Z", {"putin": {"Italy": [4, 6]}})
+        fixed = _accumulate(late, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        assert [pt[0] for pt in fixed["actors"]["putin"]["Italy"]] == [
+            "20260906T120000Z",
+            "20260906T160000Z",
+        ]
+
+    def test_the_window_drops_what_is_older_than_it(self):
+        old = _accumulate(None, "20260501T000000Z", {"putin": {"Italy": [1, 1]}})
+        now = _accumulate(
+            old, "20260906T120000Z", {"putin": {"Italy": [3, 5]}}, days=90
+        )
+        assert [pt[0] for pt in now["actors"]["putin"]["Italy"]] == ["20260906T120000Z"]
+
+    def test_a_polity_with_nothing_left_disappears_rather_than_lingering_empty(self):
+        old = _accumulate(None, "20260501T000000Z", {"putin": {"Italy": [1, 1]}})
+        now = _accumulate(old, "20260906T120000Z", {"iran": {"Spain": [2, 2]}}, days=90)
+        assert "putin" not in now["actors"]
+
+    def test_the_run_aggregate_sums_across_stories(self):
+        stories = [
+            {
+                "figures": [
+                    {"actor": "putin", "by_polity": {"Italy": [1, 2], "Spain": [0, 1]}}
+                ]
+            },
+            {"figures": [{"actor": "putin", "by_polity": {"Italy": [2, 3]}}]},
+        ]
+        assert _by_country(stories) == {"putin": {"Italy": [3, 5], "Spain": [0, 1]}}
+
+    def test_the_published_figure_leaves_the_table_behind(self):
+        # It goes to the index and is summed there; on stories.json it would repeat
+        # thirty rows per story that the page never breaks down.
+        kept = _publishable(
+            [{"actor": "x", "measurable": True, "by_polity": {"A": [1, 1]}}]
+        )
+        assert "by_polity" not in kept[0]

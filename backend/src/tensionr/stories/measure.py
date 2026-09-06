@@ -113,6 +113,21 @@ def measure_story(
         named = sum(1 for m in evaluable if m == PRESENT)
         unresolved = len(marks) - len(evaluable)
 
+        # The same counts, per polity of publication. This is what a series over time
+        # is built from, and it was not being kept anywhere: the country test had it for
+        # the band actor of a banded story and threw it away, and no other figure had
+        # it at all. Only polities that could evaluate the actor appear, so a row that
+        # was unresolved everywhere leaves nothing behind rather than a table of zeros.
+        by_polity: dict[str, list[int]] = {}
+        for r, (_, mark) in zip(kept, marks, strict=True):
+            polity = r.get("polity")
+            if not polity or mark == UNRESOLVED:
+                continue
+            cell = by_polity.setdefault(polity, [0, 0])
+            cell[1] += 1
+            if mark == PRESENT:
+                cell[0] += 1
+
         # M varies by actor within one story: alias coverage differs by script, and
         # excluding the undecidable is the only option that neither manufactures an
         # omission nor asserts a presence.
@@ -132,6 +147,7 @@ def measure_story(
                     else None
                 ),
                 "measurable": measurable,
+                "by_polity": by_polity,
             }
         )
 

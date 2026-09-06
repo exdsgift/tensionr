@@ -193,3 +193,30 @@ def test_evidence_never_reports_two_states_where_the_resolver_gave_three():
     rows = [row("a.example", "\u0637\u0647\u0631\u0627\u0646", language="ar")]
     resolve = resolver({"\u0637\u0647\u0631\u0627\u0646|iran": UNRESOLVED})
     assert evidence(rows, ["iran"], resolve)[0]["marks"]["iran"] == UNRESOLVED
+
+
+def test_every_figure_carries_its_counts_per_polity():
+    """What a series over time is drawn from, and what nothing kept until now.
+
+    The country test had this table for the band actor of a banded story and threw
+    it away; no other figure had it at all. Only polities that could evaluate the
+    actor appear, so a row unresolved everywhere leaves nothing rather than zeros.
+    """
+    rows = [
+        row("a1.test", "a1", language="en", polity="A"),
+        row("a2.test", "a2", language="en", polity="A"),
+        row("b1.test", "b1", language="en", polity="B"),
+        row("u1.test", "u1", language="xx", polity="C"),
+    ]
+    # The helper answers ABSENT to anything it was not told, so the unresolved row
+    # has to be stated: it is the case the table must leave nothing behind for.
+    marks = {
+        "a1|iran": PRESENT,
+        "a2|iran": ABSENT,
+        "b1|iran": PRESENT,
+        "u1|iran": UNRESOLVED,
+    }
+    out = measure_story(
+        rows, ["iran"], resolver(marks), min_evaluable=1, min_polities=1
+    )
+    assert out["figures"][0]["by_polity"] == {"A": [1, 2], "B": [1, 1]}

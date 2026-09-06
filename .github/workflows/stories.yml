@@ -71,6 +71,11 @@ jobs:
           if git fetch --quiet --no-tags --depth=1 origin data \
              && git show FETCH_HEAD:data/state.json > out/state.json 2>/dev/null; then
             echo "carried over $(wc -c < out/state.json) bytes of state"
+            # The series is accumulated run to run the same way. Missing on a first
+            # run, and the engine starts one from this run rather than failing.
+            git show FETCH_HEAD:data/series.json > out/series.json 2>/dev/null \
+              && echo "carried over $(wc -c < out/series.json) bytes of series" \
+              || rm -f out/series.json
           else
             rm -f out/state.json
             echo "no previous state — this run reconciles against nothing"
@@ -116,13 +121,14 @@ jobs:
           timeout 2400 uv run --project backend python -m tensionr.stories \
             --out out \
             --state out/state.json \
+            --series out/series.json \
             --history history \
             --aliases data/actors/aliases.json \
             --polities data/polities/domains.json
 
       - name: Validate output
         run: |
-          for f in stories state record capture index; do
+          for f in stories state record capture index series; do
             jq empty "out/$f.json" && echo "out/$f.json is valid JSON"
           done
 
@@ -132,8 +138,9 @@ jobs:
         id: publish
         run: |
           mkdir -p data
-          cp out/stories.json out/state.json data/
-          .github/scripts/publish.sh state data data/stories.json data/state.json \
+          cp out/stories.json out/state.json out/series.json data/
+          .github/scripts/publish.sh state data \
+            data/stories.json data/state.json data/series.json \
             | tee publish.log
           grep -q 'nothing to push' publish.log \
             && echo "changed=false" >> "$GITHUB_OUTPUT" \
