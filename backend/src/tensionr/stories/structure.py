@@ -48,7 +48,6 @@ than print a bare "not significant".
 
 from __future__ import annotations
 
-import math
 from typing import Any
 
 import numpy as np
@@ -60,6 +59,18 @@ from tensionr.stories.marks import PRESENT, UNRESOLVED
 # of chance, it only fails to find it within the rounds it ran.
 ROUNDS = 2000
 
+# A permutation that reproduces the observed contingency table has, in exact
+# arithmetic, exactly the observed statistic, and a permutation test must count it as
+# tying rather than as beaten or not. Floating point does not agree: summing the same
+# terms in a different order moves the value by an ulp, and on a small table that
+# decides a lot of rows. Measured on a 24-source, 4-polity table, 128 of 2,000
+# permutations tied the observed value and 72 of them landed on the other side of a
+# bare `>=` when the summation order changed, moving the published p from 0.6962 to
+# 0.6602. The comparison is therefore made with a tolerance far above the arithmetic
+# noise and far below the granularity of the statistic itself, which on tables this
+# size is around 1e-3.
+TIE = 1e-12
+
 # Below this the test is reported but marked unpowered. Taken from the simulation above:
 # fifty sources is where an 80/20 split becomes reliably detectable with a handful of
 # polities.
@@ -67,30 +78,35 @@ POWERED_SOURCES = 50
 POWERED_POLITIES = 4
 
 
-def _mutual_information(polity: np.ndarray, mark: np.ndarray) -> float:
+def _mutual_information(
+    group: np.ndarray, sizes: np.ndarray, mark: np.ndarray
+) -> float:
     """Mutual information between polity and the naming mark, in bits.
 
-    Used only as the statistic the permutation ranks; it is never published, because at
-    these sample sizes its value is mostly a property of the table's shape.
+    `group` is each row's polity as a dense index and `sizes` the count per polity.
+    Both are properties of the polity column alone, which the permutation never
+    touches: only `mark` is shuffled. Passing them in rather than deriving them is
+    what takes the 2,000 rounds from seconds to milliseconds, since the previous
+    version called `np.unique` and built one boolean mask per polity per round, and
+    a story can span 55 polities.
+
+    Used only as the statistic the permutation ranks; it is never published, because
+    at these sample sizes its value is mostly a property of the table's shape.
     """
     n = len(mark)
     if n == 0:
         return 0.0
+    named = int(mark.sum())
+    if named == 0 or named == n:
+        return 0.0
+
+    hits = np.bincount(group, weights=mark, minlength=len(sizes))
+    misses = sizes - hits
     total = 0.0
-    named = mark.sum()
-    for share in (named / n, 1 - named / n):
-        if share <= 0:
-            return 0.0
-    for group in np.unique(polity):
-        rows = polity == group
-        size = rows.sum()
-        hits = mark[rows].sum()
-        for count, marginal in ((hits, named), (size - hits, n - named)):
-            if count == 0 or marginal == 0:
-                continue
-            total += (count / n) * math.log2(
-                (count / n) / ((size / n) * (marginal / n))
-            )
+    for count, marginal in ((hits, named), (misses, n - named)):
+        joint = count[count > 0] / n
+        shares = sizes[count > 0] / n
+        total += float((joint * np.log2(joint / (shares * (marginal / n)))).sum())
     return max(0.0, total)
 
 
@@ -127,12 +143,17 @@ def structure(
     if groups < 2 or named == 0 or named == len(mark):
         return None
 
-    observed = _mutual_information(polity, mark)
+    # The polity column is fixed under the null, so its dense grouping and its counts
+    # are computed once and reused for every round.
+    _, group = np.unique(polity, return_inverse=True)
+    sizes = np.bincount(group).astype(np.float64)
+
+    observed = _mutual_information(group, sizes, mark)
     rng = np.random.default_rng(seed)
     beaten = sum(
         1
         for _ in range(rounds)
-        if _mutual_information(polity, rng.permutation(mark)) >= observed
+        if _mutual_information(group, sizes, rng.permutation(mark)) >= observed - TIE
     )
     # Yeh's bound: a permutation test cannot report zero, and reporting zero would claim
     # a certainty the rounds do not support.

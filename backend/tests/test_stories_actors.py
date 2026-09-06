@@ -153,3 +153,35 @@ def test_the_pre_49_flat_table_is_refused_rather_than_loaded():
 def test_languages_for_reports_what_an_actor_can_be_read_in(table):
     assert table.languages_for("trump") == {"en", "ar"}
     assert table.languages_for("not-in-table") == set()
+
+
+def test_the_title_memo_cannot_leak_between_rows():
+    """`resolve` caches the title's script and folded form across the actor loop.
+
+    The loop asks about one headline for every actor in turn, so the cache is there to
+    stop thirteen of fourteen calls redoing the same NFKD pass. It is keyed by the
+    title, and this is what would catch it if it ever stopped being: the answers to an
+    interleaved sequence must match the answers to the same calls made in isolation.
+    """
+    spec = {
+        "iran": {"en": ["Iran", "Tehran"]},
+        "trump": {"en": ["Trump", "Donald Trump"]},
+    }
+    table = AliasTable(spec)
+    titles = [
+        "Iran responds to Washington",
+        "Trump halts the strikes",
+        "Tehran and Trump trade blame",
+        "A story about neither",
+    ]
+    alone = {
+        (t, a): AliasTable(spec).resolve(t, a, "ENGLISH")
+        for t in titles
+        for a in ("iran", "trump")
+    }
+    interleaved = {
+        (t, a): table.resolve(t, a, "ENGLISH") for t in titles for a in ("iran", "trump")
+    }
+    assert interleaved == alone
+    assert alone[(titles[2], "iran")] == PRESENT
+    assert alone[(titles[3], "trump")] == ABSENT
