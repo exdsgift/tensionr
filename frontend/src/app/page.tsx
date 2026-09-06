@@ -19,6 +19,7 @@ import {
   SiteFooter,
   TopBar,
 } from "@/components/page-parts";
+import { LatentMap, type LatentStory } from "@/components/latent-map";
 import { RightNow } from "@/components/right-now";
 import { StoryRows, type StoryRowView } from "@/components/story-rows";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -66,6 +67,23 @@ export default function Ledger() {
   const empty = { markers: [], plotted: 0, carried: 0 };
   const widePanel = hero ? panel(hero, coordinates, wide, heroActor) : empty;
   const narrowPanel = hero ? panel(hero, coordinates, narrow, heroActor) : empty;
+
+  // Where the five sit relative to one another in the embedding space that grouped
+  // them. Each story carries its own series, so this does not depend on the page and
+  // the engine agreeing about order. Absent when the engine judged the projection
+  // would not have been honest about adjacency, which is a refusal rather than a gap.
+  const latent = report.latent ?? null;
+  const latentStories: LatentStory[] = featured
+    .map((story, index) => ({ story, rank: index + 1 }))
+    .filter(({ story }) => story.latent)
+    .map(({ story, rank }) => ({
+      rank,
+      headline: story.headline.slice(0, 110),
+      actor: actorName(story.band[0], labels),
+      points: story.latent!.points,
+      shown: story.latent!.shown,
+      articles: story.latent!.articles,
+    }));
 
   const views: StoryRowView[] = featured.map((story) => ({
     id: story.id,
@@ -263,6 +281,12 @@ export default function Ledger() {
             </Alert>
           )}
         </section>
+
+        {/* Immediately after the five, because it is about the five and nothing else:
+            the space it draws is the one they were grouped in. */}
+        {latent && latentStories.length >= 2 ? (
+          <LatentMap stories={latentStories} facts={latent} />
+        ) : null}
 
         {/* After the stories, not before: the five are what the reader came for, and
             the corpus behind them is what qualifies them. */}

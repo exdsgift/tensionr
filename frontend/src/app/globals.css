@@ -548,6 +548,83 @@
 
   .lang-n { color: var(--muted-foreground); font-variant-numeric: tabular-nums }
 
+  /* The five featured stories on the plane the engine grouped them in.
+
+     NOT DRAWN FROM --chart-1..5. That ramp is identical in both themes here (0.87
+     down to 0.269 at zero chroma), which measured against the plot background gives
+     1.36:1 for chart-1 in the light theme and 1.94, 1.45 and 1.00 for chart-3, -4 and
+     -5 in the dark one: chart-5 is exactly --muted, so it is not low contrast, it is
+     invisible. Five data series cannot come from it. WCAG 1.4.11 wants 3:1 for a
+     graphical object needed to understand the content, and a dot on this figure is
+     one.
+
+     The ramp is therefore --foreground at five opacities, which inverts with the
+     theme by construction. Measured over the plot background: 18.15, 12.58, 7.33,
+     4.30 and 3.11 in light, and 14.48, 10.83, 7.82, 5.41 and 4.12 in dark. Tone is
+     the secondary cue in any case; the numbered tag at each group's centre is the
+     primary one, because colour alone would fail WCAG 1.4.1 in any palette. */
+  .lm-card { margin-top: 1.25rem }
+  .lm-sub {
+    margin: .35rem 0 0; font-size: .78rem; line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+  .lm-figure { margin: 0 }
+  .lm-svg {
+    display: block; width: 100%; max-width: 21rem; margin: 0 auto;
+    aspect-ratio: 1 / 1; height: auto;
+    background: var(--muted); border-radius: var(--radius);
+  }
+  .lm-dots { stroke: var(--foreground); stroke-linecap: round }
+  /* Scoped to the figure. The same class names sit on the key's swatches, where a
+     blanket opacity would fade the group's number along with its ring and leave the
+     fifth one below the contrast the number is there to guarantee. */
+  .lm-svg .lm-t1 { opacity: 1 }
+  .lm-svg .lm-t2 { opacity: .85 }
+  .lm-svg .lm-t3 { opacity: .70 }
+  .lm-svg .lm-t4 { opacity: .55 }
+  .lm-svg .lm-t5 { opacity: .45 }
+  .lm-tag circle { fill: var(--background); stroke: var(--foreground); stroke-width: 1.2 }
+  .lm-tag text {
+    fill: var(--foreground); font-size: .68rem; font-weight: 600;
+    text-anchor: middle; font-variant-numeric: tabular-nums;
+  }
+  .lm-caption {
+    margin: .6rem 0 0; font-size: .72rem; line-height: 1.55;
+    color: var(--muted-foreground);
+  }
+  .lm-caption b { color: var(--foreground); font-weight: 600 }
+
+  .lm-key { list-style: none; margin: .9rem 0 0; padding: 0; display: grid; gap: .45rem }
+  .lm-key li {
+    display: grid; grid-template-columns: 1.4rem 1fr auto; gap: .55rem;
+    align-items: center; font-size: .76rem;
+  }
+  /* The swatch repeats both cues: the number, and the tone as a filled ring. The
+     ring is the dot's own opacity so the key cannot drift from the figure. */
+  .lm-swatch {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.4rem; height: 1.4rem; border-radius: 999px;
+    border: 2px solid var(--foreground); background: var(--muted);
+    color: var(--foreground); font-size: .66rem; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Mixed against --muted, which is the figure's own background, so the ring is the
+     colour the dots actually render as rather than an approximation of it. The
+     number keeps full contrast because only the border is mixed. */
+  .lm-swatch.lm-t2 { border-color: color-mix(in oklab, var(--foreground) 85%, var(--muted)) }
+  .lm-swatch.lm-t3 { border-color: color-mix(in oklab, var(--foreground) 70%, var(--muted)) }
+  .lm-swatch.lm-t4 { border-color: color-mix(in oklab, var(--foreground) 55%, var(--muted)) }
+  .lm-swatch.lm-t5 { border-color: color-mix(in oklab, var(--foreground) 45%, var(--muted)) }
+  .lm-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.4 }
+  .lm-n {
+    color: var(--muted-foreground); font-size: .7rem; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .lm-note {
+    margin: .7rem 0 0; font-size: .72rem; line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+
   /* The line of a story's division across the runs that carried it. */
   .line { margin-top: .5rem }
   .line-svg { display: block; width: 132px; height: 30px; overflow: visible }
