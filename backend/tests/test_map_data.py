@@ -7,6 +7,7 @@ the type system or the schema notices that — only a check that the two files d
 the same planet does.
 """
 
+import gzip
 import json
 from pathlib import Path
 
@@ -77,17 +78,44 @@ COASTAL = [
 
 
 def polities_in_the_domain_table() -> set[str]:
-    return {
+    """Every polity name any of the three sources can return.
+
+    The bulk lookup is one of them since it landed, and it names 242 polities against
+    the hand table's 100. Leaving it out here would make the two checks below assert
+    something that stopped being true: that the hand table is the whole vocabulary.
+    """
+    named = {
         value for key in ("domains", "tlds") for value in DOMAINS[key].values() if value
     }
+    bulk = DATA / "polities" / "gdelt-domains.json.gz"
+    if bulk.exists():
+        payload = json.loads(gzip.decompress(bulk.read_bytes()).decode("utf-8"))
+        named |= set(payload.get("names", []))
+    return named
 
 
 def test_every_polity_the_table_can_name_can_be_placed_on_the_map():
-    """A polity with no coordinate is counted but never drawn, so the gap is silent."""
-    assert polities_in_the_domain_table() <= set(COORDINATES["polities"])
+    """A polity with no coordinate is counted but never drawn, so the gap is silent.
+
+    Not asserted for the bulk lookup: it names 242 polities and this project has
+    coordinates for the ones its corpus actually carries. The map already publishes
+    "N of M countries drawn", so an unplaced polity is stated rather than hidden, and
+    demanding a coordinate for Wallis and Futuna before a single outlet there is read
+    would be busywork dressed as rigour.
+    """
+    hand = {
+        value for key in ("domains", "tlds") for value in DOMAINS[key].values() if value
+    }
+    assert hand <= set(COORDINATES["polities"])
 
 
 def test_no_coordinate_names_a_polity_the_table_cannot_produce():
+    """The other direction, which is the one that catches a typo.
+
+    A coordinate for a name nothing can return is dead weight at best and, if it is a
+    misspelling of a real polity, a mark that will never be drawn while the polity it
+    was meant for goes unplaced.
+    """
     assert set(COORDINATES["polities"]) <= polities_in_the_domain_table()
 
 
