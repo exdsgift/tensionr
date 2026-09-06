@@ -298,6 +298,11 @@ def _feed(
 
     A static file, because the whole site is. It lives beside stories.json on the data
     ref and is served at /data/feed.xml with no script and no service behind it.
+
+    Atom (RFC 4287) requires an author on the feed or on every entry, and the first
+    version shipped without one: well-formed, parsed by lenient readers, refused by
+    validators and by strict ones. The requirement is now pinned by a test rather than
+    remembered.
     """
     previous = None
     for past in sorted(history, key=lambda h: h.get("run", ""), reverse=True):
@@ -345,7 +350,7 @@ def _feed(
     <title>{esc(s.get("headline") or name)}</title>
     <id>tag:tensionr,{when:%Y-%m-%d}:{esc(s["id"])}</id>
     <updated>{iso}</updated>
-    <link rel="alternate" href="{esc(site)}actor/{esc(actor)}/"/>
+    <link rel="alternate" type="text/html" href="{esc(site)}actor/{esc(actor)}/"/>
     <category term="{esc(actor)}" label="{esc(name)}"/>
     <summary>{esc(summary)}</summary>
   </entry>"""
@@ -355,10 +360,11 @@ def _feed(
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>tensionr: splits shown to follow a country line</title>
   <subtitle>One entry when a story's naming split is first shown to align with the country of publication. Nothing else is an event.</subtitle>
-  <link rel="alternate" href="{esc(site)}"/>
-  <link rel="self" href="{esc(site)}data/feed.xml"/>
+  <link rel="alternate" type="text/html" href="{esc(site)}"/>
+  <link rel="self" type="application/atom+xml" href="{esc(site)}data/feed.xml"/>
   <id>tag:tensionr,2026:shown</id>
   <updated>{iso}</updated>
+  <author><name>tensionr</name><uri>{esc(site)}</uri></author>
 {body}
 </feed>
 """
