@@ -19,6 +19,12 @@ name: Checks
 #
 # No type checker on the Python side: explicitly deferred on #6. TypeScript is checked
 # by `next build`, which fails on a type error.
+#
+# Actions are pinned to exact releases rather than to a moving major tag, for the same
+# reason ruff is pinned through uv.lock: CI must not change what it enforces on a day
+# nobody touched it. It is also the only thing that works here - astral-sh/setup-uv
+# stopped publishing a moving major tag after v7 while its releases went on to v10, so
+# `@v10` resolves to nothing and the job fails at "Set up job" before it runs a line.
 
 on:
   pull_request:
@@ -39,10 +45,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: "backend/uv.lock"
@@ -61,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       # publish.sh decides where irrecoverable data lands, and it is shell rather than
       # Python, so pytest never sees it. It gets its own suite, run against a
@@ -74,10 +80,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: "backend/uv.lock"
@@ -102,10 +108,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Set up Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: "24"
           cache: npm

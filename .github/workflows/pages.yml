@@ -101,7 +101,7 @@ jobs:
       site_base_url: ${{ steps.pages_state.outputs.html_url }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       # assemble-site.sh builds each tree's frontend, so this job needs a Node
       # toolchain even though it never runs npm itself. The cache is keyed on this
@@ -109,7 +109,7 @@ jobs:
       # branches nearly always share dependencies with master, so the cache hits, and
       # a branch that genuinely changes them just installs from the registry.
       - name: Set up Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: "24"
           cache: npm
@@ -176,7 +176,7 @@ jobs:
         run: .github/scripts/assemble-site.sh _site
 
       - name: Upload the Pages artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: _site
 
@@ -259,4 +259,4 @@ jobs:
     steps:
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v5.0.1
