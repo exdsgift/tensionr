@@ -180,7 +180,9 @@ def test_the_title_memo_cannot_leak_between_rows():
         for a in ("iran", "trump")
     }
     interleaved = {
-        (t, a): table.resolve(t, a, "ENGLISH") for t in titles for a in ("iran", "trump")
+        (t, a): table.resolve(t, a, "ENGLISH")
+        for t in titles
+        for a in ("iran", "trump")
     }
     assert interleaved == alone
     assert alone[(titles[2], "iran")] == PRESENT
