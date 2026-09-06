@@ -67,7 +67,14 @@ def _parse(payload: bytes) -> tuple[list[dict[str, Any]], int, int]:
                     "domain": urlparse(url).netloc.lower().removeprefix("www."),
                     "language": record.get("lang", "unknown"),
                     "seen_at": record.get("date", ""),
-                    "embedding": embedding,
+                    # Narrowed here rather than in `vectors`, because the whole window
+                    # is parsed before anything asks for a matrix. As a Python list of
+                    # floats one embedding costs 16,504 bytes against 2,176 as a float32
+                    # row: at a measured 128,189-article window that is 2.0 GiB held
+                    # through fetch, on a runner with 16 GiB that has killed runs.
+                    # float32 is not a loss of precision here - GDELT publishes these to
+                    # six decimals and they are consumed only as cosine similarities.
+                    "embedding": np.asarray(embedding, dtype=np.float32),
                 }
             )
     return records, seen, unparsed
@@ -117,9 +124,19 @@ def fetch(count: int, *, now: dt.datetime | None = None) -> dict[str, Any]:
 
 
 def vectors(records: list[dict[str, Any]]) -> np.ndarray:
-    """L2-normalised embedding matrix for the records, in their given order."""
+    """L2-normalised embedding matrix for the records, in their given order.
+
+    Consumes the embeddings: each record's `embedding` is dropped once its row is in
+    the matrix. Nothing downstream reads the field - the records go on to carry the
+    domain, language and marks, and only this function ever looked at the vector - so
+    keeping both is keeping a second copy of the largest thing in the run. That copy
+    is 280 MB at a 128,189-article window, and it would stay alive for the whole of
+    grouping and measurement, which is exactly when the edge list needs the room.
+    """
     if not records:
         return np.zeros((0, EMBEDDING_DIM), dtype=np.float32)
-    matrix = np.asarray([r["embedding"] for r in records], dtype=np.float32)
+    matrix = np.empty((len(records), EMBEDDING_DIM), dtype=np.float32)
+    for row, record in zip(matrix, records, strict=True):
+        row[:] = record.pop("embedding")
     matrix /= np.linalg.norm(matrix, axis=1, keepdims=True) + 1e-9
     return matrix

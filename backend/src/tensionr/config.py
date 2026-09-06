@@ -41,6 +41,15 @@ WINDOW_SLOTS = 48
 # constant would over-merge a quarter of the corpus on some days. What is fixed
 # is the criterion — the largest component may not exceed this share.
 EDGE_FLOOR = 0.55
+# The floor the first pass builds at. Every edge below the threshold finally chosen is
+# discarded by all three consumers - the threshold search stops at percolation,
+# `components` filters, and the second stage skips them when bucketing - so they exist
+# only to let the search descend further than it ever does. Measured on real windows,
+# 89% to 92% of the edges built at 0.55 were below the threshold that run chose, and
+# the thresholds themselves came out at 0.70, 0.74, 0.75, 0.76 and 0.79. 0.65 clears
+# the lowest of those with margin. When the search does reach this floor the window is
+# rebuilt at EDGE_FLOOR, so the answer is the same either way and only the cost moves.
+EDGE_FLOOR_TRIAL = 0.65
 THRESHOLD_HI = 0.95
 THRESHOLD_STEP = 0.01
 THEME_MAX_SHARE = 0.05
