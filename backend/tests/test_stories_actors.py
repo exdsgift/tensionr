@@ -230,3 +230,29 @@ class TestTheLengthFloorIsMeasuredOnWhatMatches:
     def test_an_alias_that_folds_to_nothing_is_refused(self):
         assert usable_alias("...") is False
         assert usable_alias("!!") is False
+
+
+class TestWhichSpellingTheHeadlineUsed:
+    """The alias fold makes the count one count; this keeps the choice it erases.
+
+    On this corpus `kyiv` arrived on 317 domains and `kiev` on 175, both one actor.
+    Whether a source named the city is one decision; which name it chose is another,
+    made in the same headline, and it was being thrown away.
+    """
+
+    def table(self):
+        return AliasTable({"kyiv": {"en": ["Kyiv", "Kiev"]}})
+
+    def test_it_names_the_alias_that_matched(self):
+        assert self.table().spelling("Kyiv under fire", "kyiv", "ENGLISH") == "Kyiv"
+        assert self.table().spelling("Kiev under fire", "kyiv", "ENGLISH") == "Kiev"
+
+    def test_it_agrees_with_resolve_about_absence(self):
+        t = self.table()
+        assert t.resolve("Odesa under fire", "kyiv", "ENGLISH") == ABSENT
+        assert t.spelling("Odesa under fire", "kyiv", "ENGLISH") is None
+
+    def test_and_about_the_unanswerable(self):
+        t = self.table()
+        assert t.resolve("Київ", "kyiv", "UKRAINIAN") == UNRESOLVED
+        assert t.spelling("Київ", "kyiv", "UKRAINIAN") is None

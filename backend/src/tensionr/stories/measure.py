@@ -161,7 +161,10 @@ def measure_story(
 
 
 def evidence(
-    rows: list[dict[str, Any]], actors: list[str], resolve: Resolver
+    rows: list[dict[str, Any]],
+    actors: list[str],
+    resolve: Resolver,
+    spelling: Resolver | None = None,
 ) -> list[dict[str, Any]]:
     """One row per surviving publisher, with its mark for each actor asked about.
 
@@ -191,6 +194,19 @@ def evidence(
             "marks": {
                 a: resolve(r.get("title", ""), a, r.get("language")) for a in actors
             },
+            # Which spelling the headline used, for the actors this row is published
+            # for. Folding spellings together is what makes the count one count; this
+            # keeps the choice the fold erases.
+            **(
+                {
+                    "wrote": {
+                        a: spelling(r.get("title", ""), a, r.get("language"))
+                        for a in actors
+                    }
+                }
+                if spelling
+                else {}
+            ),
         }
         for r in kept
     ]

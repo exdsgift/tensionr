@@ -631,7 +631,9 @@ def run(
         # Only a story that publishes a band carries its sources: the page shows the
         # evidence behind the figures it prints, and nothing else needs it.
         if band:
-            story["evidence"] = measure.evidence(rows, band, table.resolve)
+            story["evidence"] = measure.evidence(
+                rows, band, table.resolve, spelling=table.spelling
+            )
             # Whether the split runs along the polity of publication, or is a coin.
             # `division` cannot tell those apart - it peaks at one half, which is
             # exactly what a fair coin gives - and on a published run it was ranking

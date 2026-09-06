@@ -126,6 +126,7 @@ class AliasTable:
         # so the table was rebuilt 127,274 times per run to answer questions about
         # data that never changes after construction.
         self._needles: dict[str, dict[str, tuple[str, ...]]] = {}
+        self._spelling: dict[str, dict[str, tuple[str, ...]]] = {}
         for actor, by_language in actors.items():
             if not isinstance(by_language, dict):
                 # The pre-#49 file was a flat list per actor, with the language of each
@@ -161,6 +162,11 @@ class AliasTable:
                     for alias in aliases
                 )
                 for script, aliases in by_script.items()
+            }
+            # The raw alias behind each needle, index for index, so a match can say
+            # which spelling the headline used and not only that one did.
+            self._spelling[actor] = {
+                script: tuple(aliases) for script, aliases in by_script.items()
             }
 
     @property
@@ -206,6 +212,36 @@ class AliasTable:
 
         folded = _title_folded(title)
         return PRESENT if any(n in folded for n in needles) else ABSENT
+
+    def spelling(self, title: str, actor: str, language: str | None) -> str | None:
+        """Which alias the headline used, or None where `resolve` would not say present.
+
+        The alias mechanism exists to fold spellings together: Иран, إيران and Iran are
+        one actor so the count can be one count. That erases a second thing a headline
+        decides, and on this corpus it was in plain sight: the term `kyiv` arrived on
+        317 domains and `kiev` on 175, both resolving to Q1899, and once folded the
+        choice between them was gone. Which spelling a source chose is a framing
+        decision made in the headline, on data the engine already holds, and this is
+        how it is kept.
+
+        Same needles and same order as `resolve`, so the two can never disagree about
+        whether a name was there.
+        """
+        code = code_for(language)
+        if code is None or code not in self._by_language.get(actor, ()):
+            return None
+        script = _title_script(title)
+        needles = self._needles.get(actor, {}).get(script)
+        if not needles:
+            return None
+        spellings = self._spelling[actor][script]
+        haystack = (
+            title.lower() if script in _SUBSTRING_SCRIPTS else _title_folded(title)
+        )
+        for needle, raw in zip(needles, spellings, strict=True):
+            if needle in haystack:
+                return raw
+        return None
 
 
 def coverage(

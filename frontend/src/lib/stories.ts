@@ -29,6 +29,12 @@ export interface EvidenceRow {
   language?: string;
   title: string;
   marks: Record<string, Mark>;
+  /**
+   * Which alias the headline used, per band actor, or null where it named none. Absent
+   * on evidence written before the engine kept it. Kyiv and Kiev fold into one actor
+   * for the count; this is where the choice between them survives.
+   */
+  wrote?: Record<string, string | null>;
 }
 
 export interface Figure {
