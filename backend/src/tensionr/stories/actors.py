@@ -3,6 +3,7 @@
 import logging
 import re
 import unicodedata
+from functools import lru_cache
 from typing import Any
 
 from tensionr.stories.languages import code_for
@@ -25,6 +26,10 @@ MIN_ALIAS_CHARS = {
 # Aliases that look like identifiers rather than names. This may only be applied to
 # ASCII strings: run against Arabic or CJK it rejects ordinary words (#22).
 CODE_SHAPE = re.compile(r"^[A-Z0-9][A-Z0-9._/-]*$")
+
+# No spaces between words in CJK, and Arabic attaches clitics, so a boundary match
+# would miss most real mentions and these two match on the raw lowercased substring.
+_SUBSTRING_SCRIPTS = ("arabic", "cjk")
 
 _RANGES = (
     ("cyrillic", 0x0400, 0x04FF),
@@ -80,6 +85,15 @@ def _fold(text: str) -> str:
     )
 
 
+# `resolve` is asked about the same headline once per actor, in turn: on the published
+# run that is 127,274 calls over 14 actors, so thirteen of every fourteen recomputed a
+# per-character script scan and an NFKD normalisation the first had already done. Both
+# are pure functions of the title. The window is comfortably wider than the actor list,
+# so the repeat is always a hit and the entry is evicted as soon as the row moves on.
+_title_script = lru_cache(maxsize=32)(script_of)
+_title_folded = lru_cache(maxsize=32)(_fold)
+
+
 class AliasTable:
     """Actor keys to aliases, indexed by the script each alias is written in.
 
@@ -92,6 +106,11 @@ class AliasTable:
         self._by_script: dict[str, dict[str, list[str]]] = {}
         self._by_language: dict[str, set[str]] = {}
         self._dropped: list[tuple[str, str]] = []
+        # The comparison forms, prepared once. `resolve` used to fold or lowercase
+        # every alias in the bucket on every call, and the buckets run to 89 aliases,
+        # so the table was rebuilt 127,274 times per run to answer questions about
+        # data that never changes after construction.
+        self._needles: dict[str, dict[str, tuple[str, ...]]] = {}
         for actor, by_language in actors.items():
             if not isinstance(by_language, dict):
                 # The pre-#49 file was a flat list per actor, with the language of each
@@ -114,6 +133,20 @@ class AliasTable:
                     )
                     if alias not in bucket:
                         bucket.append(alias)
+
+        # A bucket is keyed by the script its aliases are written in, and `resolve`
+        # only ever reaches the bucket whose script matches the title's, so each
+        # bucket needs exactly one of the two comparison forms rather than both.
+        for actor, by_script in self._by_script.items():
+            self._needles[actor] = {
+                script: tuple(
+                    alias.lower()
+                    if script in _SUBSTRING_SCRIPTS
+                    else _fold(alias).strip()
+                    for alias in aliases
+                )
+                for script, aliases in by_script.items()
+            }
 
     @property
     def dropped(self) -> list[tuple[str, str]]:
@@ -147,19 +180,17 @@ class AliasTable:
         code = code_for(language)
         if code is None or code not in self._by_language.get(actor, ()):
             return UNRESOLVED
-        script = script_of(title)
-        aliases = self._by_script.get(actor, {}).get(script)
-        if not aliases:
+        script = _title_script(title)
+        needles = self._needles.get(actor, {}).get(script)
+        if not needles:
             return UNRESOLVED
 
-        if script in ("arabic", "cjk"):
-            # No spaces between words in CJK, and Arabic attaches clitics, so a
-            # boundary match would miss most real mentions.
+        if script in _SUBSTRING_SCRIPTS:
             lowered = title.lower()
-            return PRESENT if any(a.lower() in lowered for a in aliases) else ABSENT
+            return PRESENT if any(n in lowered for n in needles) else ABSENT
 
-        folded = _fold(title)
-        return PRESENT if any(_fold(a).strip() in folded for a in aliases) else ABSENT
+        folded = _title_folded(title)
+        return PRESENT if any(n in folded for n in needles) else ABSENT
 
 
 def coverage(

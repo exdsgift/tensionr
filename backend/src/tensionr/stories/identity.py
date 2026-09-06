@@ -64,21 +64,42 @@ def reconcile(
     current = [set(c) for c in clusters]
     prior = {sid: set(urls) for sid, urls in known.items()}
 
-    # every (cluster, known story) pair that overlaps enough to be the same story
+    # Every (cluster, known story) pair that overlaps enough to be the same story.
+    #
+    # Found through an index rather than by comparing every pair. Containment is a
+    # positive fraction, so a pair that shares no article cannot reach the threshold
+    # however it is set, and those are almost all of them: on the published run, 1,410
+    # clusters against 1,341 open stories is 1.9 million set intersections built to
+    # keep a few hundred. The index sees every candidate the scan saw.
+    #
+    # Candidates are put back into `prior` order before use. The tie-break below is
+    # `max`, which returns the first of the equal-largest, so the order candidates
+    # arrive in is part of the answer and not an implementation detail.
+    rank = {sid: position for position, sid in enumerate(prior)}
+    by_url: dict[str, list[str]] = {}
+    for sid, urls in prior.items():
+        for url in urls:
+            by_url.setdefault(url, []).append(sid)
+
     matches: dict[int, list[str]] = {i: [] for i in range(len(current))}
     for i, cluster in enumerate(current):
-        for sid, urls in prior.items():
-            if _containment(cluster, urls) >= containment:
-                matches[i].append(sid)
+        nearby: set[str] = set()
+        for url in cluster:
+            nearby.update(by_url.get(url, ()))
+        matches[i] = sorted(
+            (sid for sid in nearby if _containment(cluster, prior[sid]) >= containment),
+            key=rank.__getitem__,
+        )
 
     assignments: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
     used: set[str] = set()
+    prior_ids = set(prior)  # fixed for the loop; it was rebuilt once per new story
 
     for i, cluster in enumerate(current):
         candidates = [s for s in matches[i] if s not in used]
         if not candidates:
-            sid = story_id(sorted(cluster), used | set(prior))
+            sid = story_id(sorted(cluster), used | prior_ids)
             assignments.append({"id": sid, "urls": sorted(cluster)})
             # a cluster whose only candidates were taken is a split, not a birth
             if matches[i]:
