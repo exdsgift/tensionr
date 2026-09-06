@@ -29,6 +29,12 @@ export interface EvidenceRow {
   language?: string;
   title: string;
   marks: Record<string, Mark>;
+  /**
+   * Which alias the headline used, per band actor, or null where it named none. Absent
+   * on evidence written before the engine kept it. Kyiv and Kiev fold into one actor
+   * for the count; this is where the choice between them survives.
+   */
+  wrote?: Record<string, string | null>;
 }
 
 export interface Figure {
@@ -161,6 +167,38 @@ function readJson<T>(...parts: string[]): T {
   return JSON.parse(readFileSync(path.join(DATA, ...parts), "utf-8")) as T;
 }
 
+/**
+ * How outlets in each country named each actor, day by day.
+ *
+ * Accumulated by the engine on the `data` ref, ninety days deep. `index` is the sorted
+ * list of days; each point is `[day_index, named, evaluable]`; `runs` lists every run
+ * folded in. Points on days up to `rebuilt_before` were recomputed from banded stories
+ * only, with today's alias table; later days are the engine's own, summed across every
+ * story. The two are not the same quantity and a page drawing both has to say so.
+ */
+export interface Series {
+  run: string;
+  days: number;
+  runs: string[];
+  index: string[];
+  actors: Record<string, Record<string, [number, number, number][]>>;
+  rebuilt_before?: string;
+  rebuilt_note?: string;
+}
+
+/**
+ * Absent on a checkout that predates the series, and on the first deploy after it
+ * lands before the engine has run once. Neither is a broken build: the actor and
+ * country pages render, and say that there is nothing to draw yet.
+ */
+export function loadSeries(): Series | null {
+  try {
+    return readJson<Series>("series.json");
+  } catch {
+    return null;
+  }
+}
+
 export function loadRun(): Run {
   try {
     return readJson<Run>("stories.json");
@@ -217,6 +255,8 @@ export function loadLabels(): Record<string, string> {
     return {};
   }
 }
+
+export { slug } from "@/lib/slug";
 
 export function actorName(
   actor: string,

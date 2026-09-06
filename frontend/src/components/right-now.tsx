@@ -16,6 +16,8 @@
  * are worth seeing next to each other, and neither is the other's summary.
  */
 
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -28,6 +30,7 @@ import {
 } from "@/components/ui/table";
 
 export interface ActorRow {
+  key: string;
   actor: string;
   named: number;
   evaluable: number;
@@ -93,7 +96,10 @@ export function RightNow({
                 const rate = a.evaluable ? a.named / a.evaluable : 0;
                 return (
                   <TableRow key={a.actor}>
-                    <TableCell className="rn-actor">{a.actor}</TableCell>
+                    <TableCell className="rn-actor">
+                      {/* Every row now leads to the actor across countries and runs. */}
+                      <Link href={`/actor/${a.key}/`}>{a.actor}</Link>
+                    </TableCell>
                     <TableCell className="rn-n">
                       <b>{a.named.toLocaleString("en-US")}</b> of{" "}
                       {a.evaluable.toLocaleString("en-US")}
@@ -129,7 +135,14 @@ export function RightNow({
             )}{" "}
             A source that covered three stories is counted three times, because the
             question is how much of the coverage named an actor rather than how many
-            outlets did.
+            outlets did.{" "}
+            <a
+              className="rn-propose"
+              href="https://github.com/exdsgift/tensionr/issues/new?template=propose-an-actor.yml"
+            >
+              Propose an actor
+            </a>
+            .
           </p>
         </CardContent>
       </Card>

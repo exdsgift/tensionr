@@ -50,6 +50,38 @@ function refuseStaleOutput(outDir) {
 }
 
 const OUT = path.join(import.meta.dirname, "..", "out", "index.html");
+
+/**
+ * The generated pages too. Each must carry a heading and real prose once scripts are
+ * stripped; a page that is a shell around a client render would pass every other check
+ * and be blank to a reader with scripting off.
+ */
+{
+  const root = path.join(import.meta.dirname, "..", "out");
+  const pages = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory() && e.name !== "_next") walk(full);
+      else if (e.name === "index.html" && full !== OUT) pages.push(full);
+    }
+  };
+  walk(root);
+  const failed = [];
+  for (const page of pages) {
+    const text = readFileSync(page, "utf-8")
+      .replace(/<script[\s\S]*?<\/script>/g, "")
+      .replace(/<[^>]+>/g, " ");
+    const hasHeading = /<h1[\s>]/.test(readFileSync(page, "utf-8"));
+    const words = text.split(/\s+/).filter(Boolean).length;
+    if (!hasHeading || words < 40) failed.push(`${path.relative(root, page)} (${words} words, h1: ${hasHeading})`);
+  }
+  if (failed.length) {
+    console.error(`${failed.length} generated pages are empty with scripts stripped:\n  ${failed.join("\n  ")}`);
+    process.exit(1);
+  }
+  console.log(`${pages.length} generated pages carry a heading and prose with scripts stripped`);
+}
 const DATA = path.join(import.meta.dirname, "..", "..", "data", "stories.json");
 
 refuseStaleOutput(path.dirname(OUT));

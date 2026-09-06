@@ -387,7 +387,12 @@ export function runIso(run: Run): string {
 
 /** "5 Sep · 04:48 UTC" — the run this page describes. */
 export function runStamp(run: Run): string {
-  const t = parseStamp(run.run);
+  return stampText(run.run);
+}
+
+/** The same rendering for any run stamp, where there is no Run object to hand. */
+export function stampText(stamp: string): string {
+  const t = parseStamp(stamp);
   const month = t.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
@@ -461,6 +466,8 @@ export function actorBoard(
    */
   limit = 10,
 ): {
+  /** The vocabulary key, which is what the actor page is addressed by. */
+  key: string;
   actor: string;
   named: number;
   evaluable: number;
@@ -491,7 +498,66 @@ export function actorBoard(
     }
   }
   return [...totals]
-    .map(([actor, row]) => ({ actor: actorName(actor, labels), ...row }))
+    .map(([actor, row]) => ({ key: actor, actor: actorName(actor, labels), ...row }))
     .sort((a, b) => b.named - a.named || a.actor.localeCompare(b.actor))
     .slice(0, limit);
+}
+
+
+/**
+ * Which spellings of the lead actor competed within one language.
+ *
+ * The alias table folds spellings together so the count can be one count, and that
+ * erases a second thing a headline decides. On this corpus it was in plain sight: the
+ * term `kyiv` arrived on 317 domains and `kiev` on 175, both one actor.
+ *
+ * WITHIN A LANGUAGE, OR IT IS TRANSLATION
+ *
+ * The first draft pooled spellings across languages and reported that Spanish sources
+ * wrote Ucrania and Greek ones Ουκρανία. That is not a choice anyone made; it is the
+ * language the outlet publishes in, and the replication of the framing experiment
+ * found exactly this confound eating a result whole. So spellings are compared only
+ * against other spellings in the same language, and a language where every source
+ * spelled the name the same way says nothing here, because it is not a finding either.
+ */
+export function spellings(story: Story): SpellingGroup[] | null {
+  const actor = story.band[0];
+  if (!story.evidence.some((r) => r.wrote !== undefined)) return null;
+  const fold = (t: string) =>
+    t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const byLanguage = new Map<string, Map<string, { label: string; sources: number; countries: Set<string> }>>();
+  for (const row of story.evidence) {
+    const used = row.wrote?.[actor];
+    if (!used) continue;
+    const language = titleCase(row.language ?? "unknown");
+    const forms = byLanguage.get(language) ?? new Map();
+    byLanguage.set(language, forms);
+    const key = fold(used);
+    const cell = forms.get(key) ?? { label: used, sources: 0, countries: new Set<string>() };
+    cell.sources += 1;
+    if (row.polity) cell.countries.add(row.polity);
+    forms.set(key, cell);
+  }
+  // A spelling used by one source is not a competing form, it is usually a headline
+  // GDELT filed under the wrong language: built against a real run, the English group
+  // listed Ucraïna and أوكرانيا at one source each. Two sources is the floor, for the
+  // form and then for the language to have anything left to compare.
+  const groups: SpellingGroup[] = [];
+  for (const [language, forms] of byLanguage) {
+    const kept = [...forms.values()].filter((c) => c.sources >= 2);
+    if (kept.length < 2) continue;
+    groups.push({
+      language,
+      forms: kept
+        .map((c) => ({ spelling: c.label, sources: c.sources, countries: c.countries.size }))
+        .sort((a, b) => b.sources - a.sources),
+    });
+  }
+  groups.sort((a, b) => b.forms.reduce((n, f) => n + f.sources, 0) - a.forms.reduce((n, f) => n + f.sources, 0));
+  return groups.length ? groups : null;
+}
+
+export interface SpellingGroup {
+  language: string;
+  forms: { spelling: string; sources: number; countries: number }[];
 }

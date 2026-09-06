@@ -29,6 +29,7 @@ import {
   selectionNote,
   series,
   sincePrevious,
+  spellings,
   splitSentence,
   thousands,
 } from "./prose";
@@ -437,5 +438,49 @@ describe("runIso", () => {
     // script that turns it into an age in the reader's own clock.
     expect(runStamp(run)).toBe("5 Sep · 04:48 UTC");
     expect(runIso(run)).toBe("2026-09-05T04:48:30.000Z");
+  });
+});
+
+describe("spellings", () => {
+  const base = { domain: "d.test", polity: "Italy", marks: { kyiv: "present" } };
+  const row = (language: string, wrote: string | null, polity = "Italy") => ({
+    ...base,
+    polity,
+    language,
+    title: "t",
+    wrote: { kyiv: wrote },
+  });
+  const storyWith = (evidence: ReturnType<typeof row>[]) =>
+    ({ ...story(), band: ["kyiv"], evidence }) as unknown as Story;
+
+  it("reports spellings that compete within one language", () => {
+    const s = storyWith([
+      row("ENGLISH", "Kyiv", "United States"),
+      row("ENGLISH", "Kyiv", "United Kingdom"),
+      row("ENGLISH", "Kiev", "India"),
+      row("ENGLISH", "Kiev", "Pakistan"),
+    ]);
+    const groups = spellings(s);
+    expect(groups?.[0].language).toBe("English");
+    expect(groups?.[0].forms.map((f) => f.spelling)).toEqual(["Kyiv", "Kiev"]);
+    expect(groups?.[0].forms[0].countries).toBe(2);
+  });
+
+  it("does not call a translation a choice", () => {
+    // One spelling per language is the language, not a decision. The replication of
+    // the framing experiment found exactly this confound eating a result whole.
+    const s = storyWith([row("ENGLISH", "Kyiv"), row("SPANISH", "Kiev")]);
+    expect(spellings(s)).toBeNull();
+  });
+
+  it("does not list a spelling one source used", () => {
+    // Usually a headline GDELT filed under the wrong language, not a choice.
+    const s = storyWith([row("ENGLISH", "Kyiv"), row("ENGLISH", "Kyiv"), row("ENGLISH", "Ucraïna")]);
+    expect(spellings(s)).toBeNull();
+  });
+
+  it("is silent where the engine has not kept the spelling", () => {
+    const s = { ...story(), band: ["kyiv"] } as Story;
+    expect(spellings(s)).toBeNull();
   });
 });

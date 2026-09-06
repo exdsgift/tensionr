@@ -28,7 +28,11 @@
  * the component says that instead.
  */
 
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
+import type { SpellingGroup } from "@/lib/prose";
+import { slug } from "@/lib/slug";
 import {
   Table,
   TableBody,
@@ -89,9 +93,11 @@ function verdict(s: Structure) {
 export function ByCountry({
   structure,
   actor,
+  spellings = null,
 }: {
   structure: Structure;
   actor: string;
+  spellings?: SpellingGroup[] | null;
 }) {
   const v = verdict(structure);
   const shown = structure.by_polity.filter(
@@ -108,6 +114,27 @@ export function ByCountry({
         <Badge variant={v.tone === "found" ? "default" : "outline"}>{v.label}</Badge>
       </h3>
       <p className="bycountry-say">{v.say}</p>
+      {spellings ? (
+        // A second decision the headline makes, kept where the alias fold would erase
+        // it: not whether the sources named it, but which name they chose. Compared only
+        // within a language, because across languages the difference is translation.
+        <p className="bycountry-spell">
+          {spellings.map((g, gi) => (
+            <span key={g.language}>
+              {gi ? " " : ""}
+              In {g.language}, written as{" "}
+              {g.forms.map((f, i) => (
+                <span key={f.spelling}>
+                  {i ? ", " : ""}
+                  <b>{f.spelling}</b> by {f.sources}
+                  {f.countries > 1 ? ` in ${f.countries} countries` : ""}
+                </span>
+              ))}
+              .
+            </span>
+          ))}
+        </p>
+      ) : null}
 
       {shown.length ? (
         <Table
@@ -131,7 +158,9 @@ export function ByCountry({
               const rate = r.named / r.evaluable;
               return (
                 <TableRow key={r.polity}>
-                  <TableCell className="bycountry-name">{r.polity}</TableCell>
+                  <TableCell className="bycountry-name">
+                    <Link href={`/country/${slug(r.polity)}/`}>{r.polity}</Link>
+                  </TableCell>
                   <TableCell className="bycountry-n">
                     <b>{r.named}</b> of {r.evaluable}
                   </TableCell>

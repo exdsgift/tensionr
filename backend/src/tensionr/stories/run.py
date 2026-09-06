@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 # append-only (#10). The three outputs below sit on either side of that line:
 # `state` is a cache the next run overwrites, `stories` is what the site reads, and
 # `record` is written once and never rewritten.
+SERIES = "series.json"
+FEED = "feed.xml"
 STATE, STORIES, RECORD, CAPTURE, INDEX = (
     "state.json",
     "stories.json",
@@ -161,7 +163,205 @@ def _index(stamp: str, stories: list[dict[str, Any]]) -> dict[str, Any]:
                 "urls": [r["url"] for r in story.get("evidence", []) if r.get("url")],
             }
         )
-    return {"run": stamp, "stories": rows}
+    return {"run": stamp, "stories": rows, "actors": _by_country(stories)}
+
+
+def _by_country(stories: list[dict[str, Any]]) -> dict[str, dict[str, list[int]]]:
+    """Named over evaluable, per actor and per polity, summed across every story.
+
+    The run's answer to "how did outlets in each country name each actor", which no
+    output carried until now. It is what a series over time is drawn from, and at 36
+    actors and about 70 polities it is a few thousand integers per run. A source that
+    covered three stories is counted three times, deliberately: the question is how
+    much of the coverage used the name, not how many outlets did, and `actorBoard` on
+    the page already sums the same way.
+    """
+    out: dict[str, dict[str, list[int]]] = {}
+    for story in stories:
+        for figure in story.get("figures", []):
+            actor = figure["actor"]
+            for polity, (named, evaluable) in figure.get("by_polity", {}).items():
+                cell = out.setdefault(actor, {}).setdefault(polity, [0, 0])
+                cell[0] += named
+                cell[1] += evaluable
+    return {a: dict(sorted(p.items())) for a, p in sorted(out.items())}
+
+
+# How far back the accumulated series reaches. A day is a few thousand integers, so
+# ninety days is a few megabytes on the ref the site reads. Beyond it the per-run
+# indexes on `history` still carry every run's aggregate for anyone who wants more.
+SERIES_DAYS = 90
+
+
+def _accumulate(
+    previous: dict[str, Any] | None,
+    stamp: str,
+    aggregate: dict[str, dict[str, list[int]]],
+    *,
+    days: int = SERIES_DAYS,
+) -> dict[str, Any]:
+    """The rolling series: previous runs plus this one, by day, windowed.
+
+    Kept on the `data` ref and carried run to run, the way `state.json` is, because
+    the engine only ever sees nine days of indexes and a series has to reach further
+    than that.
+
+    BY DAY, NOT BY RUN, AND WITH THE DATES IN ONE TABLE
+
+    The first shape of this file kept one point per run with its stamp repeated on
+    every point. Backfilled over 93 runs it came to 10.2 MB, and 6.1 MB of that was
+    the same sixteen-character stamps written 355,218 times. A day is also the more
+    honest unit for a line: GitHub delivers three to six runs a day, so per-run points
+    over-weight busy days for no reason a reader would want.
+
+    So `index` is the sorted list of days, each point is `[day_index, named,
+    evaluable]`, and a run's counts are added into its day. `runs` lists every stamp
+    already folded in, which is what makes a rerun of the same instant a no-op rather
+    than a double count.
+    """
+    prev = previous or {}
+    if stamp in set(prev.get("runs", [])):
+        return prev
+
+    day = f"{stamp[0:4]}-{stamp[4:6]}-{stamp[6:8]}"
+    old_index: list[str] = list(prev.get("index", []))
+    # Rebuild as {actor: {polity: {day: [named, evaluable]}}}, which is easy to add to,
+    # then re-index at the end.
+    table: dict[str, dict[str, dict[str, list[int]]]] = {}
+    for actor, polities in prev.get("actors", {}).items():
+        for polity, points in polities.items():
+            cell = table.setdefault(actor, {}).setdefault(polity, {})
+            for i, named, evaluable in points:
+                cell[old_index[i]] = [named, evaluable]
+    for actor, polities in aggregate.items():
+        for polity, (named, evaluable) in polities.items():
+            cell = table.setdefault(actor, {}).setdefault(polity, {})
+            got = cell.setdefault(day, [0, 0])
+            got[0] += named
+            got[1] += evaluable
+
+    cutoff = _shift(stamp, -days * 24)[:8]
+    cutoff = f"{cutoff[0:4]}-{cutoff[4:6]}-{cutoff[6:8]}"
+    all_days = sorted(
+        {d for a in table.values() for c in a.values() for d in c if d >= cutoff}
+    )
+    at = {d: i for i, d in enumerate(all_days)}
+    actors: dict[str, dict[str, list[list[int]]]] = {}
+    for actor, polities in table.items():
+        for polity, cell in polities.items():
+            pts = [[at[d], n, e] for d, (n, e) in sorted(cell.items()) if d in at]
+            if pts:
+                actors.setdefault(actor, {})[polity] = pts
+
+    runs = sorted(
+        r for r in {*prev.get("runs", []), stamp} if r[:8] >= cutoff.replace("-", "")
+    )
+    out: dict[str, Any] = {
+        "run": stamp,
+        "days": days,
+        "runs": runs,
+        "index": all_days,
+        "actors": actors,
+    }
+    for key in ("rebuilt_before", "rebuilt_note"):
+        if key in prev:
+            out[key] = prev[key]
+    return out
+
+
+def _shift(stamp: str, hours: int) -> str:
+    """A run stamp moved by `hours`, as a comparable stamp."""
+    t = dt.datetime.strptime(stamp, "%Y%m%dT%H%M%SZ") + dt.timedelta(hours=hours)
+    return t.strftime("%Y%m%dT%H%M%SZ")
+
+
+def _feed(
+    stamp: str,
+    stories: list[dict[str, Any]],
+    history: list[dict[str, Any]],
+    labels: dict[str, str],
+    *,
+    site: str = "https://exdsgift.github.io/tensionr/",
+) -> str:
+    """An Atom feed of the stories that entered the shown band this run.
+
+    Monitoring means being told when something changes, and the one change this
+    project can vouch for is a story whose split was just shown to follow a country
+    line. Nothing else here is an event: division moves every run, and a feed of that
+    would be noise a reader would unsubscribe from in a day.
+
+    An entry is written when a story is shown now and was not shown in the most recent
+    previous run that recorded a verdict. Indexes older than the verdict field have no
+    opinion, and a story they carried is treated as not previously shown rather than as
+    unknown; on the first run after this lands that means one batch of entries for
+    everything shown, which is the honest starting point rather than a silent one.
+
+    A static file, because the whole site is. It lives beside stories.json on the data
+    ref and is served at /data/feed.xml with no script and no service behind it.
+    """
+    previous = None
+    for past in sorted(history, key=lambda h: h.get("run", ""), reverse=True):
+        if any("structure" in row for row in past.get("stories", [])):
+            previous = past
+            break
+    shown_before = {
+        row["id"]
+        for row in (previous or {}).get("stories", [])
+        if (row.get("structure") or {}).get("p", 1.0) <= 0.05
+    }
+    entered = [
+        s
+        for s in stories
+        if s.get("band")
+        and (s.get("structure") or {}).get("p", 1.0) <= 0.05
+        and s["id"] not in shown_before
+    ]
+    when = dt.datetime.strptime(stamp, "%Y%m%dT%H%M%SZ").replace(tzinfo=dt.UTC)
+    iso = when.isoformat().replace("+00:00", "Z")
+
+    def esc(text: str) -> str:
+        return (
+            str(text)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
+
+    entries = []
+    for s in sorted(entered, key=lambda x: -(x.get("span_division") or 0)):
+        actor = s["band"][0]
+        name = labels.get(actor, actor)
+        found = s["structure"]
+        figure = next((f for f in s["figures"] if f["actor"] == actor), {})
+        named, evaluable = figure.get("named", 0), figure.get("evaluable", 0)
+        summary = (
+            f"{named} of {evaluable} sources named {name}, and which ones did follows "
+            f"where they publish: p = {found['p']} across {found['sources']} sources "
+            f"in {found['polities']} countries."
+        )
+        entries.append(
+            f"""  <entry>
+    <title>{esc(s.get("headline") or name)}</title>
+    <id>tag:tensionr,{when:%Y-%m-%d}:{esc(s["id"])}</id>
+    <updated>{iso}</updated>
+    <link rel="alternate" href="{esc(site)}actor/{esc(actor)}/"/>
+    <category term="{esc(actor)}" label="{esc(name)}"/>
+    <summary>{esc(summary)}</summary>
+  </entry>"""
+        )
+    body = "\n".join(entries)
+    return f"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>tensionr: splits shown to follow a country line</title>
+  <subtitle>One entry when a story's naming split is first shown to align with the country of publication. Nothing else is an event.</subtitle>
+  <link rel="alternate" href="{esc(site)}"/>
+  <link rel="self" href="{esc(site)}data/feed.xml"/>
+  <id>tag:tensionr,2026:shown</id>
+  <updated>{iso}</updated>
+{body}
+</feed>
+"""
 
 
 def _stamp_before(history: list[dict[str, Any]], hours: int) -> str | None:
@@ -247,6 +447,20 @@ def _band(story: dict[str, Any]) -> int:
     return REFUTED
 
 
+def _labels(aliases: Path) -> dict[str, str]:
+    """Actor key to display label, from the seeds beside the alias table.
+
+    The feed prints names, not keys, and the label whose Wikidata id was checked by
+    hand is the only name this project should print. A missing seeds file is a feed
+    with cruder names, not a failed run.
+    """
+    try:
+        seeds = json.loads((Path(aliases).parent / "seeds.json").read_text("utf-8"))
+        return {k: v.get("label", k) for k, v in seeds.get("actors", {}).items()}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
 def _publishable(figures: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """The figures worth writing down, which is the ones that are figures.
 
@@ -262,7 +476,14 @@ def _publishable(figures: list[dict[str, Any]]) -> list[dict[str, Any]]:
     this writes 0.7 MB. How many actors the run considered is in the report, so a short
     list stays a stated fact rather than a silent truncation.
     """
-    return [f for f in figures if f.get("measurable") is not False]
+    # `by_polity` travels to the index, where it is summed across stories into the
+    # run's per-country aggregate. On the published figure it would be the same 30-odd
+    # rows repeated for every story the page never breaks down, so it stays behind.
+    return [
+        {k: v for k, v in f.items() if k != "by_polity"}
+        for f in figures
+        if f.get("measurable") is not False
+    ]
 
 
 def _feature(
@@ -345,6 +566,7 @@ def run(
     polities: Path,
     state: Path | None = None,
     history: Path | None = None,
+    series: Path | None = None,
     featured: int = 5,
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
@@ -409,7 +631,9 @@ def run(
         # Only a story that publishes a band carries its sources: the page shows the
         # evidence behind the figures it prints, and nothing else needs it.
         if band:
-            story["evidence"] = measure.evidence(rows, band, table.resolve)
+            story["evidence"] = measure.evidence(
+                rows, band, table.resolve, spelling=table.spelling
+            )
             # Whether the split runs along the polity of publication, or is a coin.
             # `division` cannot tell those apart - it peaks at one half, which is
             # exactly what a fair coin gives - and on a published run it was ranking
@@ -523,8 +747,23 @@ def run(
         ),
         "utf-8",
     )
-    (out / INDEX).write_text(
-        json.dumps(_index(stamp, stories), ensure_ascii=False), "utf-8"
+    index = _index(stamp, stories)
+    (out / INDEX).write_text(json.dumps(index, ensure_ascii=False), "utf-8")
+    previous_series = None
+    if series and Path(series).exists():
+        try:
+            previous_series = json.loads(Path(series).read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            logger.warning("unreadable series, starting one afresh: %s", series)
+    (out / FEED).write_text(
+        _feed(stamp, stories, past, _labels(aliases)),
+        "utf-8",
+    )
+    (out / SERIES).write_text(
+        json.dumps(
+            _accumulate(previous_series, stamp, index["actors"]), ensure_ascii=False
+        ),
+        "utf-8",
     )
     (out / CAPTURE).write_text(
         json.dumps(

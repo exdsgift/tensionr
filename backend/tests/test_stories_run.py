@@ -1,6 +1,14 @@
 """The capture: what is kept, and what is not kept twice."""
 
-from tensionr.stories.run import _capture, _feature, _index, _publishable
+from tensionr.stories.run import (
+    _accumulate,
+    _by_country,
+    _capture,
+    _feature,
+    _feed,
+    _index,
+    _publishable,
+)
 
 RECORDS = [
     {
@@ -412,3 +420,127 @@ class TestOnlyFiguresThatAreFigures:
 
     def test_nothing_measurable_is_an_empty_list_not_a_missing_key(self):
         assert _publishable([f for f in self.figures() if not f["measurable"]]) == []
+
+
+class TestTheSeriesAccumulates:
+    """Per actor and per polity by day, carried on the data ref like the state.
+
+    The engine only ever sees nine days of indexes, and a series has to reach further
+    than that, so it is accumulated run to run rather than rebuilt. By day and not by
+    run: the first shape kept a point per run with its stamp on every point, and
+    backfilled over 93 runs it was 10.2 MB, 6.1 MB of which was the same stamps written
+    355,218 times.
+    """
+
+    def test_a_first_run_starts_the_series_on_its_day(self):
+        out = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        assert out["index"] == ["2026-09-06"]
+        assert out["actors"] == {"putin": {"Italy": [[0, 3, 5]]}}
+        assert out["runs"] == ["20260906T120000Z"]
+
+    def test_a_second_run_on_the_same_day_adds_into_it(self):
+        first = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        second = _accumulate(first, "20260906T160000Z", {"putin": {"Italy": [4, 6]}})
+        assert second["index"] == ["2026-09-06"]
+        assert second["actors"]["putin"]["Italy"] == [[0, 7, 11]]
+
+    def test_a_run_on_the_next_day_opens_a_new_point_in_order(self):
+        first = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        second = _accumulate(first, "20260907T020000Z", {"putin": {"Italy": [1, 2]}})
+        assert second["index"] == ["2026-09-06", "2026-09-07"]
+        assert second["actors"]["putin"]["Italy"] == [[0, 3, 5], [1, 1, 2]]
+
+    def test_rerunning_the_same_instant_is_a_no_op_not_a_double_count(self):
+        first = _accumulate(None, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        again = _accumulate(first, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        assert again == first
+
+    def test_a_run_that_arrives_out_of_order_lands_in_its_day(self):
+        late = _accumulate(None, "20260907T160000Z", {"putin": {"Italy": [4, 6]}})
+        fixed = _accumulate(late, "20260906T120000Z", {"putin": {"Italy": [3, 5]}})
+        assert fixed["index"] == ["2026-09-06", "2026-09-07"]
+        assert fixed["actors"]["putin"]["Italy"] == [[0, 3, 5], [1, 4, 6]]
+
+    def test_the_window_drops_days_older_than_it(self):
+        old = _accumulate(None, "20260501T000000Z", {"putin": {"Italy": [1, 1]}})
+        now = _accumulate(
+            old, "20260906T120000Z", {"putin": {"Italy": [3, 5]}}, days=90
+        )
+        assert now["index"] == ["2026-09-06"]
+        assert now["runs"] == ["20260906T120000Z"]
+
+    def test_a_polity_with_nothing_left_disappears_rather_than_lingering_empty(self):
+        old = _accumulate(None, "20260501T000000Z", {"putin": {"Italy": [1, 1]}})
+        now = _accumulate(old, "20260906T120000Z", {"iran": {"Spain": [2, 2]}}, days=90)
+        assert "putin" not in now["actors"]
+
+    def test_the_run_aggregate_sums_across_stories(self):
+        stories = [
+            {
+                "figures": [
+                    {"actor": "putin", "by_polity": {"Italy": [1, 2], "Spain": [0, 1]}}
+                ]
+            },
+            {"figures": [{"actor": "putin", "by_polity": {"Italy": [2, 3]}}]},
+        ]
+        assert _by_country(stories) == {"putin": {"Italy": [3, 5], "Spain": [0, 1]}}
+
+    def test_the_published_figure_leaves_the_table_behind(self):
+        # It goes to the index and is summed there; on stories.json it would repeat
+        # thirty rows per story that the page never breaks down.
+        kept = _publishable(
+            [{"actor": "x", "measurable": True, "by_polity": {"A": [1, 1]}}]
+        )
+        assert "by_polity" not in kept[0]
+
+
+class TestTheFeedSaysWhenASplitIsFirstShown:
+    """One entry when a story enters the shown band, and nothing else.
+
+    Division moves every run and a feed of that would be noise. The one change this
+    project can vouch for is a story whose split was just shown to follow a country
+    line, so that is the only event.
+    """
+
+    def test_a_story_shown_now_and_not_before_is_an_entry(self):
+        now = [_banded("a", 0.9, p=0.001)]
+        past = [
+            {
+                "run": "20260906T080000Z",
+                "stories": [{"id": "a", "structure": {"p": 0.6}}],
+            }
+        ]
+        actor = now[0]["band"][0]
+        feed = _feed("20260906T120000Z", now, past, {actor: "Actor X"})
+        assert feed.count("<entry>") == 1
+        assert "Actor X" in feed
+
+    def test_a_story_already_shown_is_not_repeated(self):
+        now = [_banded("a", 0.9, p=0.001)]
+        past = [
+            {
+                "run": "20260906T080000Z",
+                "stories": [{"id": "a", "structure": {"p": 0.01}}],
+            }
+        ]
+        assert "<entry>" not in _feed("20260906T120000Z", now, past, {})
+
+    def test_an_untold_or_refuted_story_is_never_an_entry(self):
+        now = [_banded("a", 0.9), _banded("b", 0.8, p=0.7)]
+        assert "<entry>" not in _feed("20260906T120000Z", now, [], {})
+
+    def test_history_without_verdicts_has_no_opinion(self):
+        # Indexes from before the verdict field cannot say a story was shown, so the
+        # first run after this lands emits a batch: the honest start, not a silent one.
+        now = [_banded("a", 0.9, p=0.001)]
+        past = [{"run": "20260906T080000Z", "stories": [{"id": "a"}]}]
+        assert _feed("20260906T120000Z", now, past, {}).count("<entry>") == 1
+
+    def test_the_feed_is_well_formed_and_escapes_the_headline(self):
+        import xml.dom.minidom
+
+        story = _banded("a", 0.9, p=0.001)
+        story["headline"] = 'Q&A: "who" <named> it'
+        feed = _feed("20260906T120000Z", [story], [], {})
+        xml.dom.minidom.parseString(feed)
+        assert "&amp;" in feed and "&lt;named&gt;" in feed

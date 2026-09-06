@@ -45,6 +45,13 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help=f"previous run's {STATE}; absent on a first run, and that is not an error",
     )
+    parser.add_argument(
+        "--series",
+        type=Path,
+        default=None,
+        help="previous run's series.json, carried on the data ref like the state; "
+        "absent on a first run, and the series starts from this run",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -59,6 +66,7 @@ def main(argv: list[str] | None = None) -> int:
         polities=args.polities,
         state=args.state,
         history=args.history,
+        series=args.series,
     )
 
     # A run that measured nothing is not a failure — GDELT can publish a thin window —
