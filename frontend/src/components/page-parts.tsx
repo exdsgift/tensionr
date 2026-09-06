@@ -100,29 +100,6 @@ export function Hook({
   );
 }
 
-export interface Tile {
-  label: string;
-  value: string;
-}
-
-/**
- * Five tiles. There were six: an "Aggregate index" hardcoded to "not computable yet",
- * which occupied a tile to say there was no number. The absence is stated in the
- * footer, where the methodology is, and does not need a tile of its own.
- */
-export function AggregateStrip({ tiles }: { tiles: Tile[] }) {
-  return (
-    <div className="agg">
-      {tiles.map((t) => (
-        <div key={t.label}>
-          <span className="lab">{t.label}</span>
-          <span className="v">{t.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /**
  * The methods section, as one paragraph.
  *

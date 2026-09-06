@@ -55,7 +55,7 @@ export interface StoryRowView {
   leadActor: string;
   reading: { before: string; balanced: string | null; split: string | null };
   bandNote: string | null;
-  note: { collapsed: string; unresolved: string; links: string };
+  note: { collapsed: string; unresolved: string };
 }
 
 export function StoryRows({
@@ -168,7 +168,6 @@ export function StoryRows({
                     {evidence[row.id]}
                     <p className="ev-note">
                       {row.note.collapsed} {row.note.unresolved}{" "}
-                      {row.note.links}
                     </p>
                   </CollapsibleContent>
                 </Collapsible>

@@ -14,7 +14,6 @@ import { EvidenceTable } from "@/components/evidence-table";
 import { InfoPopover } from "@/components/info-popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  AggregateStrip,
   Hook,
   SiteFooter,
   TopBar,
@@ -114,16 +113,6 @@ export default function Ledger() {
     ),
   ).size;
 
-  const tiles = [
-    {
-      label: "Stories with a band",
-      value: `${report.published.with_a_band} of ${report.published.stories}`,
-    },
-    { label: "Articles in window", value: thousands(report.window.articles) },
-    { label: "Sources placed", value: percent(report.polities.rate) },
-    { label: "Window", value: `${report.window.slots} × 15 min` },
-    { label: "Since previous run", value: sincePrevious(run) },
-  ];
 
   return (
     <>
@@ -160,8 +149,6 @@ export default function Ledger() {
           />
         </section>
 
-        <AggregateStrip tiles={tiles} />
-
         <section className="rows" id="stories">
           <h2>Stories</h2>
           {/* The mechanism, in the reader's words, before the first row. Without it
@@ -170,10 +157,9 @@ export default function Ledger() {
               "actor" appeared nowhere on this page until now. */}
           <p className="how">
             Every story here is measured on one <b>actor</b>: a person, a place or an
-            organisation that some sources name and others leave out. The bar shows how
-            many named it. Its mark is the halfway point, which is the most divided a
-            story can be, so <b>a bar that stops near the mark is a story its sources
-            tell differently</b>.
+            organisation that some sources name and others leave out.{" "}
+            <b>The bar shows how many named it</b>, and the mark on it is the even
+            split, which the figure above spells out in sources.
           </p>
           <p className="span">
             {selectionNote(report, Math.min(FEATURED, rows.length))}

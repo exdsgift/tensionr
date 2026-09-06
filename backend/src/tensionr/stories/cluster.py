@@ -7,6 +7,7 @@ import numpy as np
 
 from tensionr.config import (
     EDGE_FLOOR,
+    EDGE_FLOOR_TRIAL,
     MIN_STORY_SIZE,
     MIN_THEME_SIZE,
     STORY_MAX_SHARE,
@@ -18,6 +19,66 @@ from tensionr.config import (
 logger = logging.getLogger(__name__)
 
 Edge = tuple[int, int, float]
+
+# How much of the similarity matrix to hold at once, in bytes. A row block is
+# `block x n` float32, so a fixed row count is a moving byte cost: the block of 2,000
+# this replaces was 176 MB when the window was 22k articles and 0.96 GiB once the
+# window reached 128,189, a transient nobody had accounted for. A byte budget holds
+# still as the window grows.
+SIMS_BLOCK_BYTES = 128 * 1024 * 1024
+
+
+class Edges:
+    """An edge list held as three columns rather than as a list of tuples.
+
+    Measured on this project's own corpus: an `(int, int, float)` tuple costs 144 bytes
+    once its two integers and its float are counted, against 12 for the same three
+    numbers as int32, int32 and float32 columns. The published 128,189-article window
+    produced 30,577,733 edges, so that list is 4.1 GiB as tuples and 350 MB as columns,
+    on a runner with 16 GiB that has killed six runs in forty.
+
+    The union-find still has to be handed Python integers, so a column is converted
+    back a slice at a time and never all at once, and only for the edges a caller
+    actually reaches. That is the smaller half by far: `select_threshold` stops at
+    percolation and `components` masks first, and on the same window 92% of the edges
+    were below the threshold finally chosen.
+    """
+
+    __slots__ = ("a", "b", "score")
+
+    def __init__(self, a: np.ndarray, b: np.ndarray, score: np.ndarray) -> None:
+        self.a = a
+        self.b = b
+        self.score = score
+
+    def __len__(self) -> int:
+        return int(self.score.size)
+
+    @classmethod
+    def empty(cls) -> "Edges":
+        return cls(
+            np.empty(0, np.int32), np.empty(0, np.int32), np.empty(0, np.float32)
+        )
+
+    @classmethod
+    def of(cls, rows: list[Edge]) -> "Edges":
+        """Build from `(a, b, score)` triples, for per-theme buckets and for tests."""
+        if not rows:
+            return cls.empty()
+        a, b, score = zip(*rows, strict=True)
+        return cls(
+            np.fromiter(a, np.int32, len(rows)),
+            np.fromiter(b, np.int32, len(rows)),
+            np.fromiter(score, np.float32, len(rows)),
+        )
+
+    def above(self, threshold: float) -> "Edges":
+        keep = self.score >= threshold
+        return Edges(self.a[keep], self.b[keep], self.score[keep])
+
+    def descending(self) -> "Edges":
+        order = np.argsort(self.score)[::-1]
+        return Edges(self.a[order], self.b[order], self.score[order])
 
 
 class UnionFind:
@@ -52,29 +113,40 @@ class UnionFind:
         return list(by_root.values())
 
 
-def similarity_edges(vectors: np.ndarray, *, floor: float = EDGE_FLOOR) -> list[Edge]:
+def similarity_edges(vectors: np.ndarray, *, floor: float = EDGE_FLOOR) -> Edges:
     """Cosine edges above `floor`, computed in row blocks.
 
-    The full similarity matrix is never materialised: at 22k articles it would be
-    1.9 GB, while the edge list above a useful floor is a few hundred thousand
-    tuples. Vectors are assumed L2-normalised.
+    The full similarity matrix is never materialised: at 128k articles it would be
+    65 GB, while the edge list above a useful floor is a few hundred megabytes. The
+    block is sized by `SIMS_BLOCK_BYTES` rather than by a row count, because a row
+    count is a byte cost that grows with the window.
+
+    Vectors are assumed L2-normalised.
     """
     n = len(vectors)
-    edges: list[Edge] = []
-    block = 2000
+    if n == 0:
+        return Edges.empty()
+
+    block = max(1, min(n, SIMS_BLOCK_BYTES // (n * vectors.itemsize)))
+    rows: list[np.ndarray] = []
+    cols: list[np.ndarray] = []
+    scores: list[np.ndarray] = []
+
     for start in range(0, n, block):
         sims = vectors[start : start + block] @ vectors.T
-        for offset, row in enumerate(sims):
-            i = start + offset
-            row[: i + 1] = -1.0  # upper triangle only
-            for j in np.nonzero(row >= floor)[0]:
-                edges.append((i, int(j), float(row[j])))
-        del sims
-    return edges
+        for offset in range(len(sims)):
+            sims[offset, : start + offset + 1] = -1.0  # upper triangle only
+        hit_row, hit_col = np.nonzero(sims >= floor)
+        rows.append((hit_row + start).astype(np.int32))
+        cols.append(hit_col.astype(np.int32))
+        scores.append(sims[hit_row, hit_col])
+        del sims, hit_row, hit_col
+
+    return Edges(np.concatenate(rows), np.concatenate(cols), np.concatenate(scores))
 
 
 def select_threshold(
-    edges: list[Edge],
+    edges: Edges,
     n: int,
     *,
     max_share: float,
@@ -89,14 +161,21 @@ def select_threshold(
     only ever adds edges, so one descending pass over the sorted edge list finds
     the step just before the largest component exceeds `max_share` of the window.
 
-    Returns None when no threshold in [floor, hi] satisfies the constraint — the
+    Returns None when no threshold in [floor, hi] satisfies the constraint: the
     window is dominated by near-duplicates at every resolution, and the caller has
     to say so rather than fall back to a threshold that over-merges.
+
+    The descent stops at the first candidate that percolates, so the edges below it
+    are never converted out of their columns and never touched at all.
     """
-    if n <= 1 or not edges:
+    if n <= 1 or not len(edges):
         return hi
 
-    ordered = sorted(edges, key=lambda e: e[2], reverse=True)
+    ordered = edges.descending()
+    # `searchsorted` needs an ascending array, and the scores are descending, so the
+    # search runs on their negation. `stop` is then the number of edges at or above
+    # the candidate, found in log time instead of by walking the list.
+    falling = -ordered.score
     limit = max_share * n
     uf = UnionFind(n)
     cursor = 0
@@ -105,10 +184,15 @@ def select_threshold(
 
     for k in range(steps + 1):
         candidate = hi - k * step
-        while cursor < len(ordered) and ordered[cursor][2] >= candidate:
-            a, b, _ = ordered[cursor]
-            uf.union(a, b)
-            cursor += 1
+        stop = int(np.searchsorted(falling, -candidate, side="right"))
+        if stop > cursor:
+            for a, b in zip(
+                ordered.a[cursor:stop].tolist(),
+                ordered.b[cursor:stop].tolist(),
+                strict=True,
+            ):
+                uf.union(a, b)
+            cursor = stop
         if uf.largest > limit:
             break
         chosen = candidate
@@ -116,12 +200,16 @@ def select_threshold(
     return None if chosen is None else round(chosen, 4)
 
 
-def components(edges: list[Edge], n: int, threshold: float) -> list[list[int]]:
-    """Connected components using only edges at or above `threshold`."""
+def components(edges: Edges, n: int, threshold: float) -> list[list[int]]:
+    """Connected components using only edges at or above `threshold`.
+
+    Masked in numpy before anything is converted to Python, so the discarded edges
+    cost one pass over a float32 column rather than one Python comparison each.
+    """
+    kept = edges.above(threshold)
     uf = UnionFind(n)
-    for a, b, score in edges:
-        if score >= threshold:
-            uf.union(a, b)
+    for a, b in zip(kept.a.tolist(), kept.b.tolist(), strict=True):
+        uf.union(a, b)
     return uf.groups()
 
 
@@ -158,8 +246,33 @@ def two_stage(
     if n == 0:
         return empty
 
-    edges = similarity_edges(vectors)
-    theme_threshold = select_threshold(edges, n, max_share=theme_max_share)
+    # Built at the trial floor first. If the descent stops there the search hit the
+    # wall rather than percolation, so it might have wanted to go lower and the window
+    # is rebuilt at the real floor. Anything above the wall is unaffected: the edges
+    # the two passes share are identical, and the ones only the second pass has are
+    # below the threshold either pass would choose, where all three consumers drop
+    # them. Verified against the previous implementation on a 57,579-article window:
+    # same threshold, same themes, same story membership by hash.
+    edges = similarity_edges(vectors, floor=EDGE_FLOOR_TRIAL)
+    theme_threshold = select_threshold(
+        edges, n, max_share=theme_max_share, floor=EDGE_FLOOR_TRIAL
+    )
+    # Two ways to hit the wall rather than percolation, and the second is easy to miss:
+    # with no edges at all above the trial floor `select_threshold` returns the ceiling
+    # by its own early exit, which looks like a confident answer and would leave every
+    # article a singleton even though the window's edges were merely all below 0.65.
+    reached_the_wall = theme_threshold is not None and (
+        not len(edges) or theme_threshold <= EDGE_FLOOR_TRIAL + 1e-9
+    )
+    if reached_the_wall:
+        logger.info(
+            "threshold reached the trial floor %.2f, rebuilding from %.2f",
+            EDGE_FLOOR_TRIAL,
+            EDGE_FLOOR,
+        )
+        del edges
+        edges = similarity_edges(vectors, floor=EDGE_FLOOR)
+        theme_threshold = select_threshold(edges, n, max_share=theme_max_share)
     if theme_threshold is None:
         logger.warning(
             "no threshold keeps the largest theme under %.0f%% of %d articles",
@@ -189,13 +302,19 @@ def two_stage(
         for position, node in enumerate(theme):
             theme_of[node] = index
             local_of[node] = position
+    # Masked in numpy first. On the published window that drops 30.6 million edges to
+    # 2.4 million before a single Python object is created, where the previous loop
+    # created and discarded one tuple comparison per edge.
+    inner = edges.above(theme_threshold)
     buckets: list[list[Edge]] = [[] for _ in themes]
-    for a, b, score in edges:
-        if score < theme_threshold:
-            continue
+    for a, b, score in zip(
+        inner.a.tolist(), inner.b.tolist(), inner.score.tolist(), strict=True
+    ):
         index = theme_of.get(a)
         if index is not None and index == theme_of.get(b):
             buckets[index].append((local_of[a], local_of[b], score))
+    packed = [Edges.of(bucket) for bucket in buckets]
+    del inner, buckets
 
     # A theme this small could never have been split, whatever its contents: a valid
     # split needs some component at or above `min_story` while the largest stays under
@@ -211,16 +330,19 @@ def two_stage(
     chosen: list[float] = []
     unsplit = 0
     indivisible_kept = 0
-    for theme, inner in zip(themes, buckets, strict=True):
+    for theme, edges_in_theme in zip(themes, packed, strict=True):
         threshold = select_threshold(
-            inner, len(theme), max_share=story_max_share, floor=theme_threshold
+            edges_in_theme,
+            len(theme),
+            max_share=story_max_share,
+            floor=theme_threshold,
         )
         groups: list[list[int]] = []
         if threshold is not None:
             chosen.append(threshold)
             groups = [
                 g
-                for g in components(inner, len(theme), threshold)
+                for g in components(edges_in_theme, len(theme), threshold)
                 if len(g) >= min_story
             ]
 

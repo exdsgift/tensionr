@@ -78,6 +78,18 @@ function story(over: Partial<Story> = {}): Story {
   };
 }
 
+describe("the hero", () => {
+  // It used to restate the first row: same publishers, same polities, same split, four
+  // hundred pixels apart. Its job is to place that story among the others.
+  it("says where the story stands, not what the row below already says", () => {
+    const h = hook(story(), REPORT, {});
+    if (h.kind !== "figure") throw new Error("unreachable");
+    expect(h.say).toContain("17 of 1,267 stories");
+    expect(h.say).toContain("most divided of them");
+    expect(h.say).not.toContain("publishers");
+  });
+});
+
 describe("an empty window", () => {
   it("reads as an outcome, not as a failure, and names the run's own floors", () => {
     const h = hook(null, REPORT, {});
@@ -120,10 +132,11 @@ describe("an unresolved mark", () => {
     expect(note.unresolved.toLowerCase()).toContain("omission is the signal");
   });
 
-  it("says so plainly when there is none", () => {
-    expect(evidenceNote(story()).unresolved).toBe(
-      "No row is –: an alias exists in every script present.",
-    );
+  it("says so briefly when there is none", () => {
+    // The long warning is printed only where it applies. On a page of five stories a
+    // sentence that does not depend on the story appears five times, and the warning
+    // that matters gets read as boilerplate alongside it.
+    expect(evidenceNote(story()).unresolved).toBe("No unevaluable rows here.");
   });
 });
 
@@ -315,13 +328,31 @@ describe("cadence", () => {
 });
 
 describe("the footer", () => {
-  it("states the corpus before the sample", () => {
+  // It used to restate the run: articles, domains, hours, themes, stories, floors,
+  // placement rate. Every one of those is now in "What it took to look", so repeating
+  // them here was the third telling of the same figures on one page. What is left is
+  // the method, which does not change from run to run.
+  it("states the method, not the window", () => {
     const text = footer(REPORT);
-    expect(text).toContain("143,152 articles from 10,839 domains");
-    expect(text).toContain("over the last 12 hours");
-    expect(text).toContain("17 cleared both floors");
-    expect(text).toContain("36% of domains could be placed");
-    expect(text).toContain("counted rather than dropped");
+    expect(text).toContain("collapsed before anything was measured");
+    expect(text).toContain("Stories keep their identity between runs");
+    expect(text).toContain("Natural Earth 110m");
+  });
+
+  it("no longer repeats figures the cards already carry", () => {
+    const text = footer(REPORT);
+    for (const figure of ["143,152", "10,839", "12 hours", "36%", "17 cleared"]) {
+      expect(text).not.toContain(figure);
+    }
+  });
+
+  it("mentions dropped themes only when the run recorded any", () => {
+    expect(footer(REPORT)).toContain("361 themes were dropped whole");
+    const quiet = {
+      ...REPORT,
+      grouping: { ...REPORT.grouping, unsplit_themes: 0 },
+    };
+    expect(footer(quiet)).not.toContain("dropped whole");
   });
 });
 

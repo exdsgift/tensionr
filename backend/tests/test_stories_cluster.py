@@ -2,7 +2,9 @@
 
 import numpy as np
 
+from tensionr.config import EDGE_FLOOR, EDGE_FLOOR_TRIAL
 from tensionr.stories.cluster import (
+    Edges,
     UnionFind,
     components,
     select_threshold,
@@ -31,38 +33,44 @@ def test_union_find_reports_whether_it_merged():
 def test_threshold_excludes_the_bridge_between_two_cliques():
     # Two tight groups joined by one weak edge. A threshold that admits the bridge
     # produces one component of every node, which is the over-merge to avoid.
-    edges = [
-        (0, 1, 0.90),
-        (1, 2, 0.90),
-        (0, 2, 0.90),
-        (3, 4, 0.90),
-        (4, 5, 0.90),
-        (3, 5, 0.90),
-        (2, 3, 0.62),
-    ]
+    edges = Edges.of(
+        [
+            (0, 1, 0.90),
+            (1, 2, 0.90),
+            (0, 2, 0.90),
+            (3, 4, 0.90),
+            (4, 5, 0.90),
+            (3, 5, 0.90),
+            (2, 3, 0.62),
+        ]
+    )
     threshold = select_threshold(edges, 6, max_share=0.55)
     assert threshold > 0.62
     assert sorted(len(g) for g in components(edges, 6, threshold)) == [3, 3]
 
 
 def test_threshold_returns_the_floor_when_nothing_explodes():
-    edges = [(0, 1, 0.80)]
+    edges = Edges.of([(0, 1, 0.80)])
     assert select_threshold(edges, 100, max_share=0.5, floor=0.60) == 0.60
 
 
 def test_threshold_is_the_ceiling_without_edges():
-    assert select_threshold([], 10, max_share=0.1) == 0.95
+    assert select_threshold(Edges.empty(), 10, max_share=0.1) == 0.95
 
 
 def test_lowering_the_threshold_never_shrinks_components():
     rng = np.random.default_rng(7)
-    edges = [
-        (int(a), int(b), float(s))
-        for a, b, s in zip(
-            rng.integers(0, 30, 80), rng.integers(0, 30, 80), rng.uniform(0.5, 1.0, 80)
-        )
-        if a != b
-    ]
+    edges = Edges.of(
+        [
+            (int(a), int(b), float(s))
+            for a, b, s in zip(
+                rng.integers(0, 30, 80),
+                rng.integers(0, 30, 80),
+                rng.uniform(0.5, 1.0, 80),
+            )
+            if a != b
+        ]
+    )
     sizes = [
         max(len(g) for g in components(edges, 30, t))
         for t in (0.95, 0.85, 0.75, 0.65, 0.55)
@@ -74,7 +82,11 @@ def test_similarity_edges_only_reports_the_upper_triangle_above_the_floor():
     vectors = np.eye(4, dtype=np.float32)
     vectors[1] = vectors[0]  # a duplicate pair, cosine 1.0
     edges = similarity_edges(vectors, floor=0.9)
-    assert edges == [(0, 1, 1.0)]
+    assert (edges.a.tolist(), edges.b.tolist(), edges.score.tolist()) == (
+        [0],
+        [1],
+        [1.0],
+    )
 
 
 def test_two_stage_splits_a_theme_into_stories():
@@ -157,7 +169,7 @@ def test_two_stage_on_an_empty_window():
 
 
 def test_threshold_is_none_when_duplicates_dominate_at_every_resolution():
-    edges = [(i, j, 1.0) for i in range(6) for j in range(i + 1, 6)]
+    edges = Edges.of([(i, j, 1.0) for i in range(6) for j in range(i + 1, 6)])
     assert select_threshold(edges, 6, max_share=0.3) is None
 
 
@@ -197,3 +209,54 @@ def test_edges_are_filed_to_the_theme_that_owns_both_their_ends():
         assert len({i // 16 for i in story}) == 1
     assigned = [i for story in result["stories"] for i in story]
     assert len(assigned) == len(set(assigned))
+
+
+def _clusters(per: int, spread: float, groups: int = 10, seed: int = 11) -> np.ndarray:
+    """`groups` clusters of `per` vectors. `spread` sets how far apart they end up."""
+    rng = np.random.default_rng(seed)
+    dim = 64
+    centres = rng.normal(size=(groups, dim)).astype(np.float32)
+    rows = np.repeat(centres, per, axis=0) + spread * rng.normal(
+        size=(groups * per, dim)
+    ).astype(np.float32)
+    return rows / np.linalg.norm(rows, axis=1, keepdims=True)
+
+
+class TestTheTrialFloorNeverChangesTheAnswer:
+    """The first pass builds above `EDGE_FLOOR_TRIAL` to skip edges nothing reads.
+
+    That is only sound while a window whose percolation point falls below the trial
+    floor is rebuilt at the real floor. These pin the two ways it can fall below, and
+    the second is the one that reads as a confident answer rather than as a failure.
+    """
+
+    def test_a_window_that_percolates_above_the_trial_floor_is_answered_in_one_pass(
+        self,
+    ):
+        # Clusters near enough to start merging into one another before the floor is
+        # reached, which is what a real window does and why it chose 0.76 and 0.79.
+        # A corpus of cleanly separated clusters never percolates at all, so the
+        # search always runs to the floor: that is the case below, not this one.
+        vectors = _clusters(per=12, spread=1.0)
+        assert two_stage(vectors)["theme_threshold"] > EDGE_FLOOR_TRIAL
+
+    def test_a_window_that_percolates_below_it_is_rebuilt_and_agrees(self):
+        vectors = _clusters(per=12, spread=1.2)
+        assert len(similarity_edges(vectors, floor=EDGE_FLOOR_TRIAL)) > 0
+        direct = select_threshold(
+            similarity_edges(vectors, floor=EDGE_FLOOR), len(vectors), max_share=0.05
+        )
+        assert direct < EDGE_FLOOR_TRIAL, "fixture no longer percolates below the floor"
+        assert two_stage(vectors)["theme_threshold"] == direct
+
+    def test_a_window_with_no_edges_at_all_above_the_trial_floor_is_too(self):
+        # The trap. With nothing above 0.65 the threshold search returns the ceiling by
+        # its own early exit, which is not "no structure", it is "did not look". Left
+        # unhandled this leaves every article a singleton and publishes zero stories.
+        vectors = _clusters(per=12, spread=1.4)
+        assert len(similarity_edges(vectors, floor=EDGE_FLOOR_TRIAL)) == 0
+        assert len(similarity_edges(vectors, floor=EDGE_FLOOR)) > 0
+        direct = select_threshold(
+            similarity_edges(vectors, floor=EDGE_FLOOR), len(vectors), max_share=0.05
+        )
+        assert two_stage(vectors)["theme_threshold"] == direct
