@@ -86,8 +86,50 @@ describe("the hero", () => {
     const h = hook(story(), REPORT, {});
     if (h.kind !== "figure") throw new Error("unreachable");
     expect(h.say).toContain("17 of 1,267 stories");
-    expect(h.say).toContain("most divided of them");
     expect(h.say).not.toContain("publishers");
+  });
+
+  /**
+   * The lede has to follow the ranking or it contradicts the order under it.
+   *
+   * The page no longer leads with the widest split; it leads with the widest split the
+   * country test could speak to, and on most runs those are different stories. Measured
+   * across 25 published runs, ranking on division alone put 10 refuted stories on the
+   * page and left 39 shown ones off it. Saying "sharpest disagreement" above a story
+   * that is not the sharpest would be false in the plainest way a page can be false.
+   */
+  const structured = {
+    sources: 60,
+    polities: 8,
+    p: 0.002,
+    floor: 0.0005,
+    powered: true,
+    by_polity: [],
+  };
+
+  it("claims a country line only when the test showed one", () => {
+    const h = hook(story({ structure: structured }), REPORT, {});
+    if (h.kind !== "figure") throw new Error("unreachable");
+    expect(h.lede).toBe("Widest split that follows a country line");
+    expect(h.say).toContain("follows where their sources publish");
+  });
+
+  it("says plainly when nothing could be shown", () => {
+    const h = hook(story(), REPORT, {});
+    if (h.kind !== "figure") throw new Error("unreachable");
+    expect(h.lede).toBe("Widest split in this window");
+    expect(h.say).toContain("could be shown to split along a country line");
+  });
+
+  it("treats a test that ran and found nothing as not shown", () => {
+    // p above the threshold is not a country line, however well powered the test was.
+    const h = hook(
+      story({ structure: { ...structured, p: 0.42 } }),
+      REPORT,
+      {},
+    );
+    if (h.kind !== "figure") throw new Error("unreachable");
+    expect(h.lede).toBe("Widest split in this window");
   });
 });
 
@@ -275,8 +317,20 @@ describe("the selection note", () => {
 
   it("claims only this window when there is no history to select over", () => {
     const note = selectionNote({ ...REPORT, selection: undefined }, 5);
-    expect(note).toContain("in this window");
+    expect(note).toContain("from this window");
     expect(note).not.toContain("hours");
+  });
+
+  it("never calls the five the most divided, because they are not ordered that way", () => {
+    // The ranking puts a story shown to split along a country line above a wider one
+    // no test could speak to, so "the 5 most divided stories" became false. Both
+    // branches of this note are checked, because only one of them had said it.
+    const withSpan = REPORT.selection && { ...REPORT.selection, shown: 2 };
+    for (const selection of [undefined, withSpan]) {
+      const note = selectionNote({ ...REPORT, selection }, 5);
+      expect(note).not.toMatch(/most divided/);
+      expect(note).toContain("country line");
+    }
   });
 });
 

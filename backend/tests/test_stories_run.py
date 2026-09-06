@@ -251,3 +251,87 @@ class TestSeriesAndSelectionAreDifferentWindows:
         _feature(stories, history, count=1)
         assert "series" in stories[0]
         assert "series" not in stories[1]
+
+
+def _banded(sid: str, division: float, *, p: float | None = None, powered: bool = True):
+    """A story with a country-test verdict attached, or none at all."""
+    story = _story(sid, division)
+    if p is not None:
+        story["structure"] = {
+            "sources": 60,
+            "polities": 8,
+            "p": p,
+            "floor": 0.0005,
+            "powered": powered,
+            "by_polity": [],
+        }
+    return story
+
+
+class TestWhatGetsTheTopOfThePage:
+    """Ranked by what the country test could show, then by division inside that.
+
+    `division` is the binary entropy of the naming rate and peaks at one half, which is
+    exactly what a coin gives, so it cannot tell a story that splits *by country* from
+    one that splits at random. Measured by recomputing the test over 25 published runs
+    and 467 banded stories: of 125 featured slots, 45 were shown to split by country and
+    10 had been tested and shown not to, while 39 stories that were shown to split never
+    reached the page at all. Reordered, the same runs carry 76 and none.
+
+    Entropy is not discarded. At a division above 0.9, 42.7% of stories tested
+    structured against 2.3% below 0.3, so it is a real signal and it orders within a
+    band rather than across bands.
+    """
+
+    def test_a_shown_split_outranks_a_wider_one_that_was_only_untestable(self):
+        stories = [_banded("wide", 0.99), _banded("shown", 0.61, p=0.001)]
+        _feature(stories, [], count=2)
+        assert [s["id"] for s in sorted(stories, key=lambda s: s["rank"])] == [
+            "shown",
+            "wide",
+        ]
+
+    def test_and_a_refuted_one_comes_last_however_wide_it_is(self):
+        # Tested with power and found not to follow a country line. That is a closed
+        # question, and it loses to an open one.
+        stories = [
+            _banded("refuted", 0.99, p=0.80),
+            _banded("untold", 0.40),
+            _banded("shown", 0.30, p=0.01),
+        ]
+        _feature(stories, [], count=3)
+        assert [s["id"] for s in sorted(stories, key=lambda s: s["rank"])] == [
+            "shown",
+            "untold",
+            "refuted",
+        ]
+
+    def test_an_underpowered_test_is_untold_and_not_refuted(self):
+        # A test that could not have detected a split is not evidence there is none.
+        stories = [
+            _banded("weak", 0.40, p=0.90, powered=False),
+            _banded("strong", 0.90, p=0.90, powered=True),
+        ]
+        _feature(stories, [], count=2)
+        assert [s["id"] for s in sorted(stories, key=lambda s: s["rank"])] == [
+            "weak",
+            "strong",
+        ]
+
+    def test_division_still_orders_inside_a_band(self):
+        stories = [_banded("narrow", 0.30, p=0.01), _banded("wide", 0.95, p=0.01)]
+        _feature(stories, [], count=2)
+        assert [s["id"] for s in sorted(stories, key=lambda s: s["rank"])] == [
+            "wide",
+            "narrow",
+        ]
+
+    def test_the_run_publishes_how_many_of_the_five_it_could_speak_to(self):
+        # The page says this rather than presenting five findings when it has one.
+        stories = [
+            _banded("a", 0.90, p=0.01),
+            _banded("b", 0.80),
+            _banded("c", 0.70, p=0.60),
+        ]
+        span = _feature(stories, [], count=3)
+        assert (span["shown"], span["untold"], span["refuted"]) == (1, 1, 1)
