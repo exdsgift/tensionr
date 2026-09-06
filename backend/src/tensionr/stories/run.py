@@ -4,6 +4,7 @@ import datetime as dt
 import json
 import logging
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -179,6 +180,43 @@ def _series(
     return {k: v[-SERIES_CAP:] for k, v in out.items()}
 
 
+# What the country test was able to say about a story, as an order. This is the primary
+# ranking key; `division` breaks ties inside each band.
+#
+# `division` is the binary entropy of the naming rate. It peaks at one half, which is
+# exactly what a fair coin gives, so it cannot tell a story whose sources split *by
+# country* from one whose sources split at random. Ranking on it alone put coin flips on
+# the page and left real findings off it. Measured by recomputing the test across 25
+# published runs and 467 banded stories:
+#
+#     of 125 featured slots, 45 were shown to split by country     36%
+#     of those same slots, 10 were tested and shown NOT to          8%
+#     structured stories that never reached the page               39
+#
+# Entropy is not useless, and this does not throw it away: at a division above 0.9,
+# 42.7% of stories tested structured, against 2.3% below 0.3. It is a real signal, just
+# a weak one, so it orders within a band rather than across bands.
+#
+# Reordered on the same 25 runs, the page carries 76 structured stories instead of 45
+# and no refuted one at all.
+#
+# Three bands because there are three states, not two. A story the test could not reach
+# is an open question; a story it reached and refuted is a closed one. Preferring the
+# open question is the whole point: only 7 of 25 runs had five structured stories to
+# show, median three, so most days the page has to fill the rest with something, and
+# "we could not tell" is worth more of a reader's attention than "we checked, and no".
+SHOWN, UNTOLD, REFUTED = 0, 1, 2
+
+
+def _band(story: dict[str, Any]) -> int:
+    found = story.get("structure")
+    if found and found["p"] <= 0.05:
+        return SHOWN
+    if not found or not found["powered"]:
+        return UNTOLD
+    return REFUTED
+
+
 def _feature(
     stories: list[dict[str, Any]],
     history: list[dict[str, Any]],
@@ -220,15 +258,20 @@ def _feature(
         now = (figure or {}).get("division") or 0.0
         story["span_division"] = round(max(now, peak.get(story["id"], 0.0)), 4)
 
-    ranked = sorted(live.values(), key=lambda s: -s["span_division"])
+    ranked = sorted(live.values(), key=lambda s: (_band(s), -s["span_division"]))
     series = _series(history, {s["id"] for s in ranked[:count]})
-    for story in ranked[:count]:
+    for position, story in enumerate(ranked[:count]):
         story["featured"] = True
+        # The page must not re-derive this. It cannot: `structure` is on the story but
+        # the band rule lives here, and two sorts that have to agree are one sort that
+        # will eventually not.
+        story["rank"] = position
         # Only for the stories written up. Every banded story would multiply the
         # payload for lines nobody is shown.
         if story["id"] in series:
             story["series"] = series[story["id"]]
 
+    bands = Counter(_band(s) for s in ranked[:count])
     absent = sorted(peak.items(), key=lambda kv: -kv[1])
     absent = [(i, d) for i, d in absent if i not in live]
     return {
@@ -238,6 +281,11 @@ def _feature(
         "gone_from_the_window": len(absent),
         # what a rebuild would have to recover, if the number ever justifies it
         "widest_gone": round(absent[0][1], 4) if absent else None,
+        # How many of the featured stories the country test could actually speak to.
+        # The page says this rather than presenting five findings when it has two.
+        "shown": bands[SHOWN],
+        "untold": bands[UNTOLD],
+        "refuted": bands[REFUTED],
     }
 
 

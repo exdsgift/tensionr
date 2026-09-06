@@ -57,6 +57,12 @@ export interface Story {
   evidence: EvidenceRow[];
   /** Set by the engine when it can see a day of history. */
   featured?: boolean;
+  /**
+   * Position among the featured, set by the engine. The page does not re-derive it:
+   * the ordering rule is a property of what the country test could show, and two
+   * sorts that have to agree are one sort that will eventually not.
+   */
+  rank?: number;
   span_division?: number;
   /**
    * This story's division over the runs that carried it, oldest first, on featured
@@ -111,6 +117,10 @@ export interface Report {
     articles: number;
   } | null;
   selection?: {
+    /** How the featured stories split across what the country test could say. */
+    shown?: number;
+    untold?: number;
+    refuted?: number;
     span_hours: number;
     runs_in_span: number;
     candidates: number;
@@ -247,6 +257,11 @@ export function banded(run: Run): Story[] {
     return rows.sort(
       (a, b) =>
         Number(!a.featured) - Number(!b.featured) ||
+        // Featured stories keep the engine's order, which is not division order: a
+        // story shown to split along a country line outranks a more evenly split one
+        // that no test could speak to. Unfeatured ones fall back to division, which is
+        // all they have.
+        (a.rank ?? 0) - (b.rank ?? 0) ||
         (b.span_division ?? 0) - (a.span_division ?? 0),
     );
   }
