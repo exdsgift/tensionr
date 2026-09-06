@@ -280,6 +280,11 @@
     display: flex; align-items: baseline; gap: .3em; white-space: nowrap;
   }
   .bar .when-label, .bar .when-ago { opacity: .8 }
+  .bar .feed {
+    font-size: .72rem; color: var(--muted-foreground); text-decoration: underline;
+    text-decoration-color: var(--control-border); text-underline-offset: .15em;
+    margin-left: var(--s3);
+  }
 
   .theme-toggle {
     display: inline-grid; place-items: center;

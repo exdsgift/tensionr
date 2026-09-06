@@ -62,6 +62,11 @@ export function TopBar({
           {/* Filled in by the script below, in the reader's browser, or left empty. */}
           <span className="when-ago" id="run-ago" suppressHydrationWarning />
         </p>
+        {/* The one event this site can vouch for, as a feed any reader can subscribe
+            to. A plain link to a static file: no script, no service. */}
+        <a className="feed" href="data/feed.xml" title="Atom feed: splits shown to follow a country line">
+          feed
+        </a>
         {children}
       </div>
       <Script

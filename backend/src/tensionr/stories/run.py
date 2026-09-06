@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # `state` is a cache the next run overwrites, `stories` is what the site reads, and
 # `record` is written once and never rewritten.
 SERIES = "series.json"
+FEED = "feed.xml"
 STATE, STORIES, RECORD, CAPTURE, INDEX = (
     "state.json",
     "stories.json",
@@ -274,6 +275,95 @@ def _shift(stamp: str, hours: int) -> str:
     return t.strftime("%Y%m%dT%H%M%SZ")
 
 
+def _feed(
+    stamp: str,
+    stories: list[dict[str, Any]],
+    history: list[dict[str, Any]],
+    labels: dict[str, str],
+    *,
+    site: str = "https://exdsgift.github.io/tensionr/",
+) -> str:
+    """An Atom feed of the stories that entered the shown band this run.
+
+    Monitoring means being told when something changes, and the one change this
+    project can vouch for is a story whose split was just shown to follow a country
+    line. Nothing else here is an event: division moves every run, and a feed of that
+    would be noise a reader would unsubscribe from in a day.
+
+    An entry is written when a story is shown now and was not shown in the most recent
+    previous run that recorded a verdict. Indexes older than the verdict field have no
+    opinion, and a story they carried is treated as not previously shown rather than as
+    unknown; on the first run after this lands that means one batch of entries for
+    everything shown, which is the honest starting point rather than a silent one.
+
+    A static file, because the whole site is. It lives beside stories.json on the data
+    ref and is served at /data/feed.xml with no script and no service behind it.
+    """
+    previous = None
+    for past in sorted(history, key=lambda h: h.get("run", ""), reverse=True):
+        if any("structure" in row for row in past.get("stories", [])):
+            previous = past
+            break
+    shown_before = {
+        row["id"]
+        for row in (previous or {}).get("stories", [])
+        if (row.get("structure") or {}).get("p", 1.0) <= 0.05
+    }
+    entered = [
+        s
+        for s in stories
+        if s.get("band")
+        and (s.get("structure") or {}).get("p", 1.0) <= 0.05
+        and s["id"] not in shown_before
+    ]
+    when = dt.datetime.strptime(stamp, "%Y%m%dT%H%M%SZ").replace(tzinfo=dt.UTC)
+    iso = when.isoformat().replace("+00:00", "Z")
+
+    def esc(text: str) -> str:
+        return (
+            str(text)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
+
+    entries = []
+    for s in sorted(entered, key=lambda x: -(x.get("span_division") or 0)):
+        actor = s["band"][0]
+        name = labels.get(actor, actor)
+        found = s["structure"]
+        figure = next((f for f in s["figures"] if f["actor"] == actor), {})
+        named, evaluable = figure.get("named", 0), figure.get("evaluable", 0)
+        summary = (
+            f"{named} of {evaluable} sources named {name}, and which ones did follows "
+            f"where they publish: p = {found['p']} across {found['sources']} sources "
+            f"in {found['polities']} countries."
+        )
+        entries.append(
+            f"""  <entry>
+    <title>{esc(s.get("headline") or name)}</title>
+    <id>tag:tensionr,{when:%Y-%m-%d}:{esc(s["id"])}</id>
+    <updated>{iso}</updated>
+    <link rel="alternate" href="{esc(site)}actor/{esc(actor)}/"/>
+    <category term="{esc(actor)}" label="{esc(name)}"/>
+    <summary>{esc(summary)}</summary>
+  </entry>"""
+        )
+    body = "\n".join(entries)
+    return f"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>tensionr: splits shown to follow a country line</title>
+  <subtitle>One entry when a story's naming split is first shown to align with the country of publication. Nothing else is an event.</subtitle>
+  <link rel="alternate" href="{esc(site)}"/>
+  <link rel="self" href="{esc(site)}data/feed.xml"/>
+  <id>tag:tensionr,2026:shown</id>
+  <updated>{iso}</updated>
+{body}
+</feed>
+"""
+
+
 def _stamp_before(history: list[dict[str, Any]], hours: int) -> str | None:
     """The run stamp `hours` before the newest run in `history`, as a comparable string.
 
@@ -355,6 +445,20 @@ def _band(story: dict[str, Any]) -> int:
     if not found or not found["powered"]:
         return UNTOLD
     return REFUTED
+
+
+def _labels(aliases: Path) -> dict[str, str]:
+    """Actor key to display label, from the seeds beside the alias table.
+
+    The feed prints names, not keys, and the label whose Wikidata id was checked by
+    hand is the only name this project should print. A missing seeds file is a feed
+    with cruder names, not a failed run.
+    """
+    try:
+        seeds = json.loads((Path(aliases).parent / "seeds.json").read_text("utf-8"))
+        return {k: v.get("label", k) for k, v in seeds.get("actors", {}).items()}
+    except (OSError, json.JSONDecodeError):
+        return {}
 
 
 def _publishable(figures: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -649,6 +753,10 @@ def run(
             previous_series = json.loads(Path(series).read_text("utf-8"))
         except (OSError, json.JSONDecodeError):
             logger.warning("unreadable series, starting one afresh: %s", series)
+    (out / FEED).write_text(
+        _feed(stamp, stories, past, _labels(aliases)),
+        "utf-8",
+    )
     (out / SERIES).write_text(
         json.dumps(
             _accumulate(previous_series, stamp, index["actors"]), ensure_ascii=False

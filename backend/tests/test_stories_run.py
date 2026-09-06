@@ -5,6 +5,7 @@ from tensionr.stories.run import (
     _by_country,
     _capture,
     _feature,
+    _feed,
     _index,
     _publishable,
 )
@@ -491,3 +492,55 @@ class TestTheSeriesAccumulates:
             [{"actor": "x", "measurable": True, "by_polity": {"A": [1, 1]}}]
         )
         assert "by_polity" not in kept[0]
+
+
+class TestTheFeedSaysWhenASplitIsFirstShown:
+    """One entry when a story enters the shown band, and nothing else.
+
+    Division moves every run and a feed of that would be noise. The one change this
+    project can vouch for is a story whose split was just shown to follow a country
+    line, so that is the only event.
+    """
+
+    def test_a_story_shown_now_and_not_before_is_an_entry(self):
+        now = [_banded("a", 0.9, p=0.001)]
+        past = [
+            {
+                "run": "20260906T080000Z",
+                "stories": [{"id": "a", "structure": {"p": 0.6}}],
+            }
+        ]
+        actor = now[0]["band"][0]
+        feed = _feed("20260906T120000Z", now, past, {actor: "Actor X"})
+        assert feed.count("<entry>") == 1
+        assert "Actor X" in feed
+
+    def test_a_story_already_shown_is_not_repeated(self):
+        now = [_banded("a", 0.9, p=0.001)]
+        past = [
+            {
+                "run": "20260906T080000Z",
+                "stories": [{"id": "a", "structure": {"p": 0.01}}],
+            }
+        ]
+        assert "<entry>" not in _feed("20260906T120000Z", now, past, {})
+
+    def test_an_untold_or_refuted_story_is_never_an_entry(self):
+        now = [_banded("a", 0.9), _banded("b", 0.8, p=0.7)]
+        assert "<entry>" not in _feed("20260906T120000Z", now, [], {})
+
+    def test_history_without_verdicts_has_no_opinion(self):
+        # Indexes from before the verdict field cannot say a story was shown, so the
+        # first run after this lands emits a batch: the honest start, not a silent one.
+        now = [_banded("a", 0.9, p=0.001)]
+        past = [{"run": "20260906T080000Z", "stories": [{"id": "a"}]}]
+        assert _feed("20260906T120000Z", now, past, {}).count("<entry>") == 1
+
+    def test_the_feed_is_well_formed_and_escapes_the_headline(self):
+        import xml.dom.minidom
+
+        story = _banded("a", 0.9, p=0.001)
+        story["headline"] = 'Q&A: "who" <named> it'
+        feed = _feed("20260906T120000Z", [story], [], {})
+        xml.dom.minidom.parseString(feed)
+        assert "&amp;" in feed and "&lt;named&gt;" in feed

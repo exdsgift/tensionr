@@ -131,6 +131,8 @@ jobs:
           for f in stories state record capture index series; do
             jq empty "out/$f.json" && echo "out/$f.json is valid JSON"
           done
+          python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse('out/feed.xml')" \
+            && echo "out/feed.xml is well-formed"
 
       # The site reads stories.json; state.json is the next run's starting point. Both
       # are regenerable, so they belong on the ref that keeps no history.
@@ -138,9 +140,9 @@ jobs:
         id: publish
         run: |
           mkdir -p data
-          cp out/stories.json out/state.json out/series.json data/
+          cp out/stories.json out/state.json out/series.json out/feed.xml data/
           .github/scripts/publish.sh state data \
-            data/stories.json data/state.json data/series.json \
+            data/stories.json data/state.json data/series.json data/feed.xml \
             | tee publish.log
           grep -q 'nothing to push' publish.log \
             && echo "changed=false" >> "$GITHUB_OUTPUT" \
