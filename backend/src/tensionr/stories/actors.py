@@ -60,14 +60,29 @@ def usable_alias(alias: str) -> bool:
     """Whether an alias is specific enough to match on.
 
     Two traps from #22 are encoded here. The length floor is per script, and the
-    code-shape filter is ASCII-only — applied to other scripts it rejects real
-    words, which is how an earlier build zeroed out every CJK actor without failing.
+    code-shape filter is ASCII-only: applied to other scripts it rejects real words,
+    which is how an earlier build zeroed out every CJK actor without failing.
+
+    THE FLOOR IS MEASURED ON THE FOLDED FORM, WHICH IS THE FORM THAT MATCHES
+
+    `resolve` compares the folded alias with its padding stripped, so a needle is a
+    plain substring and matches inside a longer word. That is deliberate and it is why
+    the table works at all: #22 measured Ukrainian at 94.6% alias availability against
+    24.1% title recall, and the gap was morphology. `Italia` has to reach `Italian`.
+
+    But the floor used to be measured on the raw alias, and an abbreviation spends one
+    of its characters on a full stop that folding then removes. Five aliases in the
+    shipped table were four characters and three of signal: `Arg.`, `Esp.`, `Isr.`,
+    `Ita.` and `Ukr.`. Measured over 23,275 real titles they produced 2,439 matches
+    inside unrelated words, `arg` in "large", `esp` in "response", `ita` in "heritage",
+    which is 35% of every substring match the table made. Measuring the floor after
+    folding removes exactly those five and leaves the morphology alone.
     """
     alias = alias.strip()
     if not alias:
         return False
     script = script_of(alias)
-    if len(alias) < MIN_ALIAS_CHARS.get(script, 3):
+    if len(_fold(alias).strip()) < MIN_ALIAS_CHARS.get(script, 3):
         return False
     if alias.isascii() and CODE_SHAPE.match(alias):
         return False

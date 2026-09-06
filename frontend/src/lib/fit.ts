@@ -38,26 +38,38 @@ import type { Story } from "./stories";
 /**
  * How many bytes of gzipped evidence the page may carry.
  *
- * The content budget is 120 KB (ADR 0002) and the page without any tables measures
- * ~13 KB, so this leaves headroom for the prose growing with the run and for the
- * over-counting described above.
+ * The content budget is 160 KB (ADR 0002), and the page without any tables is the
+ * constant below, so what is left is what the tables may spend.
  */
 /**
- * Expressed in the proxy's own units, calibrated against two real runs:
+ * Expressed in the proxy's own units. Recalibrated by building the same run at four
+ * budgets and reading `check:weight`'s content figure back:
  *
- *   run    proxy     content (measured on the built page)
- *   light  20.3 KB    67.3 KB
- *   heavy  59.6 KB   147.2 KB
+ *   proxy budget     content
+ *    0.0 KB          29.3 KB     the page with no tables at all
+ *   33.0 KB          91.1 KB
+ *   66.0 KB         166.9 KB
+ *   99.0 KB         166.9 KB     saturated: every table already fits
  *
- * which fits `content ≈ 26 KB + 2.03 × proxy` — the constant is the page without any
- * tables, the slope is the markup around each row. Solving for the 160 KB content
- * budget in ADR 0002 gives 66 KB of proxy.
+ * The line is not quite straight. The slope is 1.87 over the first half and 2.30 over
+ * the second, because the later tables are the wide ones. Solving the upper segment for
+ * a 160 KB content budget gives about 63 KB of proxy, and the setting is 56.
  *
- * Recalibrate by building against a run, comparing `check:weight`'s content figure with
- * the proxy total, and re-solving. Do not adjust this by feel: the whole point is that
- * the page sheds evidence for a measured reason.
+ * The gap is not caution, it is granularity: a table is admitted whole, so between 56
+ * and 58 KB of proxy the content jumps from 149.4 KB to 162.3 KB. 56 is the largest
+ * setting that lands under the budget, and it leaves 10.6 KB of the content budget and
+ * 25 KB of the total.
+ *
+ * The previous calibration read `content ~= 26 KB + 2.03 x proxy` and was solved to
+ * 66 KB. It went stale the honest way: the constant is the page without evidence, and
+ * the page has since grown a latent map, two run cards, a country table per story and a
+ * labelled update stamp. It was CI that noticed, on a run carrying 19 banded stories
+ * and 2,369 evidence rows.
+ *
+ * Recalibrate the same way. Do not adjust this by feel: the whole point is that the
+ * page sheds evidence for a measured reason.
  */
-export const EVIDENCE_BUDGET_BYTES = 66 * 1024;
+export const EVIDENCE_BUDGET_BYTES = 56 * 1024;
 
 export interface Fitted {
   /** Story ids whose evidence table survived, in the page's own order. */

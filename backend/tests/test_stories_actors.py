@@ -187,3 +187,46 @@ def test_the_title_memo_cannot_leak_between_rows():
     assert interleaved == alone
     assert alone[(titles[2], "iran")] == PRESENT
     assert alone[(titles[3], "trump")] == ABSENT
+
+
+class TestTheLengthFloorIsMeasuredOnWhatMatches:
+    """An abbreviation spends a character on a full stop that folding removes.
+
+    `resolve` compares the folded alias with its padding stripped, so a needle is a
+    plain substring and reaches inside a longer word. That is deliberate: #22 measured
+    Ukrainian at 94.6% alias availability against 24.1% title recall, and the gap was
+    morphology, so `Italia` has to reach `Italian`.
+
+    The floor used to be measured on the raw alias. Five in the shipped table were four
+    characters and three of signal: `Arg.`, `Esp.`, `Isr.`, `Ita.`, `Ukr.`. Measured
+    over 23,275 real titles they matched `arg` inside "large", `esp` inside "response"
+    and `ita` inside "heritage", and they were **32.5% of every named mark the table
+    produced**: Argentina 449 to 47, Spain 567 to 100, Italy 1,170 to 411. On the run
+    published while this was found, one story's Israel figure was 10 of 204 and every
+    one of the ten was false.
+    """
+
+    def test_a_four_character_abbreviation_with_three_of_signal_is_refused(self):
+        assert usable_alias("Arg.") is False
+        assert usable_alias("Esp.") is False
+        assert usable_alias("Ukr.") is False
+
+    def test_four_real_characters_still_pass(self):
+        assert usable_alias("Iran") is True
+        assert usable_alias("Cuba") is True
+
+    def test_and_the_morphology_the_substring_match_exists_for_is_untouched(self):
+        # The reason a needle is a substring and not a token: inflected forms.
+        table = AliasTable({"italy": {"en": ["Italia"]}})
+        assert (
+            table.resolve("Italian GP qualifying result", "italy", "ENGLISH") == PRESENT
+        )
+
+    def test_the_floor_still_counts_characters_not_bytes_in_other_scripts(self):
+        # Two CJK characters are a whole word, which is why the floor is per script.
+        assert usable_alias("中国") is True
+        assert usable_alias("إيران") is True
+
+    def test_an_alias_that_folds_to_nothing_is_refused(self):
+        assert usable_alias("...") is False
+        assert usable_alias("!!") is False
