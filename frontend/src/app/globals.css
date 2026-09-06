@@ -314,7 +314,12 @@
     display: block; font-size: .64rem; letter-spacing: .18em;
     text-transform: uppercase; color: var(--muted-foreground);
   }
-  .fig { margin-top: .75rem }
+  /* The hero's vertical rhythm, which was flat: every gap sat between 12 and 16px, so
+     the label, the figure, the bar, its caption, the paragraph and the footer all read
+     as six unrelated things at the same distance from one another. They are three
+     groups, and the spacing says so now - inside a group `--s2`, between groups
+     `--s6`. The scale was already defined and the hero was the one block not using it. */
+  .fig { margin-top: var(--s2) }
   /* The figure is a fraction, and the denominator is deliberately quieter but
      present: it is the sample the number rests on. */
   .fig b {
@@ -330,11 +335,12 @@
     display: block; margin-top: .5rem; font-size: .66rem; letter-spacing: .14em;
     text-transform: uppercase;
   }
-  .say { font-size: .98rem; max-width: 38ch; margin-top: 1rem }
+  .say { font-size: .98rem; max-width: 38ch; margin-top: var(--s6) }
   .say em { font-style: normal; font-weight: 500 }
   .from {
-    margin-top: 1rem; padding-top: .75rem; border-top: 1px solid var(--border);
-    display: flex; flex-wrap: wrap; gap: .5rem 1.5rem;
+    margin-top: var(--s6); padding-top: var(--s3);
+    border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5);
     font-size: .75rem; color: var(--muted-foreground);
   }
   .from b { font-weight: 500; color: var(--foreground) }
@@ -547,16 +553,17 @@
   }
   .split-say {
     font-size: .76rem; color: var(--muted-foreground);
-    font-variant-numeric: tabular-nums; margin: 0;
+    font-variant-numeric: tabular-nums; margin: var(--s2) 0 0;
+    line-height: 1.5;
   }
   .split-say b { color: var(--foreground); font-weight: 600 }
   .split-rest { opacity: .85 }
   .split-div { display: block; margin-top: .15rem; font-size: .72rem }
   .split-max { opacity: .7 }
   .split-actor { color: var(--foreground) }
-  .split-even { display: block; margin-top: .15rem; font-size: .74rem; opacity: .85 }
+  .split-even { display: block; margin-top: var(--s1); font-size: .74rem; opacity: .85 }
 
-  .split-hero { margin-top: 1rem; max-width: 26rem }
+  .split-hero { margin-top: var(--s6); max-width: 26rem }
   .split-hero .split-bar { height: 10px }
   .split-hero .split-say { font-size: .85rem }
 
@@ -588,6 +595,17 @@
     margin: .35rem 0 0; font-size: .78rem; line-height: 1.5;
     color: var(--muted-foreground);
   }
+  /* Plot left, everything that explains it right, once there is room for two columns.
+     Centred at 21rem with the key stacked underneath, a wide card was half empty and
+     the eye had to cross the page and come back between a dot and its group's name. */
+  .lm-body { display: grid; gap: var(--s5) }
+  @media (min-width: 46rem) {
+    .lm-body {
+      grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+      gap: var(--s6); align-items: start;
+    }
+  }
+  .lm-side { display: grid; gap: var(--s4); align-content: start; min-width: 0 }
   .lm-figure { margin: 0 }
   .lm-svg {
     display: block; width: 100%; max-width: 21rem; margin: 0 auto;
@@ -609,15 +627,31 @@
     text-anchor: middle; font-variant-numeric: tabular-nums;
   }
   .lm-caption {
-    margin: .6rem 0 0; font-size: .72rem; line-height: 1.55;
+    margin: 0; font-size: .72rem; line-height: 1.55; max-width: 62ch;
     color: var(--muted-foreground);
   }
   .lm-caption b { color: var(--foreground); font-weight: 600 }
 
-  .lm-key { list-style: none; margin: .9rem 0 0; padding: 0; display: grid; gap: .45rem }
+  /* Capped, so the count does not drift to the far edge of a wide card: at full width
+     it sat more than a thousand pixels from the headline it belongs to, and pairing
+     them meant crossing the page and coming back. */
+  .lm-key {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s3); max-width: 64ch;
+  }
+  /* Narrow: the count goes under the headline. Beside it, a headline that wraps to
+     three lines is squeezed by a figure that needs one. */
   .lm-key li {
-    display: grid; grid-template-columns: 1.4rem 1fr auto; gap: .55rem;
-    align-items: center; font-size: .76rem;
+    display: grid; grid-template-columns: 1.4rem minmax(0, 1fr);
+    gap: var(--s1) var(--s3); align-items: start; font-size: .76rem;
+  }
+  .lm-key .lm-n { grid-column: 2 }
+  @media (min-width: 46rem) {
+    .lm-key li {
+      grid-template-columns: 1.4rem minmax(0, 1fr) auto;
+      gap: var(--s3); align-items: baseline;
+    }
+    .lm-key .lm-n { grid-column: auto }
   }
   /* The swatch repeats both cues: the number, and the tone as a filled ring. The
      ring is the dot's own opacity so the key cannot drift from the figure. */
@@ -627,6 +661,9 @@
     border: 2px solid var(--foreground); background: var(--muted);
     color: var(--foreground); font-size: .66rem; font-weight: 600;
     font-variant-numeric: tabular-nums;
+    /* Aligned to the first line of a headline that may run to three, not to the
+       middle of the block, which left it floating beside line two. */
+    align-self: start; grid-row: 1 / span 2;
   }
   /* Mixed against --muted, which is the figure's own background, so the ring is the
      colour the dots actually render as rather than an approximation of it. The
@@ -635,13 +672,13 @@
   .lm-swatch.lm-t3 { border-color: color-mix(in oklab, var(--foreground) 70%, var(--muted)) }
   .lm-swatch.lm-t4 { border-color: color-mix(in oklab, var(--foreground) 55%, var(--muted)) }
   .lm-swatch.lm-t5 { border-color: color-mix(in oklab, var(--foreground) 45%, var(--muted)) }
-  .lm-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.4 }
+  .lm-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.45 }
   .lm-n {
     color: var(--muted-foreground); font-size: .7rem; white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
   .lm-note {
-    margin: .7rem 0 0; font-size: .72rem; line-height: 1.5;
+    margin: 0; font-size: .72rem; line-height: 1.5; max-width: 62ch;
     color: var(--muted-foreground);
   }
 

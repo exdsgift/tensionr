@@ -25,6 +25,7 @@ export function SplitBar({
   actor,
   division,
   evenSplit,
+  restate = true,
   className,
 }: {
   named: number;
@@ -34,6 +35,15 @@ export function SplitBar({
   division?: number;
   /** Restate the midpoint in sources. Used where there is room to teach the reading. */
   evenSplit?: boolean;
+  /**
+   * Whether the caption opens by naming the fraction again.
+   *
+   * True in a story row, where the bar arrives with no figure above it. False in the
+   * hero, where the page has just printed `14/32` at four rems and `SOURCES NAMED
+   * SPAIN` under it: repeating "14 of 32 sources named Spain" two lines later is the
+   * same fact three times in one glance, and it was the first thing a reader noticed.
+   */
+  restate?: boolean;
   className?: string;
 }) {
   if (!evaluable) return null;
@@ -50,8 +60,19 @@ export function SplitBar({
         <span className="split-mid" />
       </div>
       <p className="split-say">
-        <b>{named}</b> of <b>{evaluable}</b> sources named <b className="split-actor">{actor}</b>
-        <span className="split-rest">, {evaluable - named} did not</span>
+        {restate ? (
+          <>
+            <b>{named}</b> of <b>{evaluable}</b> sources named{" "}
+            <b className="split-actor">{actor}</b>
+            <span className="split-rest">, {evaluable - named} did not</span>
+          </>
+        ) : (
+          // The complement, which the figure above does not give and a reader would
+          // otherwise have to subtract.
+          <span className="split-rest">
+            <b>{evaluable - named}</b> of them did not
+          </span>
+        )}
         {evenSplit ? (
           // The mark on the bar, restated in the units the reader is already holding.
           // "Halfway is the maximum" is the one thing that makes the picture readable,
