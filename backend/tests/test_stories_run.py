@@ -565,3 +565,23 @@ def test_run_does_not_rebind_the_series_path_before_it_reads_it():
     before = body[:read_at]
     assert not re.search(r"\bfor [^:\n]*\bseries\b[^:\n]*:", before)
     assert not re.search(r"^\s*series\s*=", before, re.M)
+
+
+def test_the_feed_carries_everything_atom_requires():
+    """RFC 4287: feed id, title, updated and author; entry id, title, updated.
+
+    The first version had no author. It was well-formed, lenient readers parsed it,
+    validators and strict readers refused it. Well-formed is not valid.
+    """
+    import xml.etree.ElementTree as ET
+
+    story = _banded("a", 0.9, p=0.001)
+    root = ET.fromstring(_feed("20260906T120000Z", [story], [], {}))
+    ns = {"a": "http://www.w3.org/2005/Atom"}
+    for tag in ("id", "title", "updated", "author"):
+        assert root.find(f"a:{tag}", ns) is not None, tag
+    assert root.find("a:author/a:name", ns).text
+    entry = root.find("a:entry", ns)
+    for tag in ("id", "title", "updated", "link"):
+        assert entry.find(f"a:{tag}", ns) is not None, tag
+    assert root.find("a:link[@rel='self']", ns).get("type") == "application/atom+xml"

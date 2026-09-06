@@ -15,6 +15,8 @@
 import Script from "next/script";
 import type { ReactNode } from "react";
 
+import { withBase } from "@/lib/base-path";
+
 import { SplitBar } from "@/components/split-bar";
 import { Separator } from "@/components/ui/separator";
 import type { Hook } from "@/lib/prose";
@@ -64,7 +66,7 @@ export function TopBar({
         </p>
         {/* The one event this site can vouch for, as a feed any reader can subscribe
             to. A plain link to a static file: no script, no service. */}
-        <a className="feed" href="data/feed.xml" title="Atom feed: splits shown to follow a country line">
+        <a className="feed" href={withBase("data/feed.xml")} title="Atom feed: splits shown to follow a country line">
           feed
         </a>
         {children}
@@ -187,7 +189,7 @@ export function SiteFooter({ text }: { text: string }) {
         <p>{text}</p>
         <p>
           The rows behind every figure are in{" "}
-          <a href="data/stories.json">data/stories.json</a>, the same file this page was
+          <a href={withBase("data/stories.json")}>data/stories.json</a>, the same file this page was
           built from. It needs nothing from this site to be useful.
         </p>
       </footer>
