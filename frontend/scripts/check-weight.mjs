@@ -54,7 +54,34 @@ const CONTENT_BUDGET = 160 * 1024;
 const TOTAL_BUDGET = 520 * 1024;
 
 refuseStaleOutput(OUT);
-const html = readFileSync(path.join(OUT, "index.html"), "utf-8");
+
+/**
+ * Every page, not only the home. The budget is per page, and a page nobody grades is a
+ * page that grows unnoticed: the actor and country pages are generated from data and
+ * there can be a couple of hundred of them.
+ */
+const pages = [];
+const walk = (dir) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory() && entry.name !== "_next") walk(full);
+    else if (entry.name === "index.html") pages.push(full);
+  }
+};
+walk(OUT);
+
+let worst = null;
+for (const page of pages) {
+  const result = grade(page);
+  if (!worst || result.content > worst.content) worst = { page, ...result };
+}
+console.log(`
+  ${pages.length} pages graded; the heaviest is ${path.relative(OUT, worst.page) || "index.html"}
+`);
+report(worst);
+
+function grade(file) {
+const html = readFileSync(file, "utf-8");
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
 const read = (href) => readFileSync(path.join(OUT, href.replace(/^\//, "")));
 
@@ -81,6 +108,10 @@ const payload = gz(Buffer.from(html)) - contentHtml;
 
 const content = contentHtml + css;
 const total = gz(Buffer.from(html)) + js + css + font;
+return { contentHtml, css, payload, js, font, content, total };
+}
+
+function report({ contentHtml, css, payload, js, font, content, total }) {
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 
 console.log(`  page (HTML, scripts stripped)  ${kb(contentHtml).padStart(9)}`);
@@ -109,4 +140,5 @@ if (over.length) {
   console.error("\nOver budget:\n");
   for (const line of over) console.error(`  - ${line}`);
   process.exit(1);
+}
 }

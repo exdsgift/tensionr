@@ -186,8 +186,8 @@ def _by_country(stories: list[dict[str, Any]]) -> dict[str, dict[str, list[int]]
     return {a: dict(sorted(p.items())) for a, p in sorted(out.items())}
 
 
-# How far back the accumulated series reaches. Each run adds a few thousand integers,
-# so a quarter is around a megabyte on the ref the site reads. Beyond it the per-run
+# How far back the accumulated series reaches. A day is a few thousand integers, so
+# ninety days is a few megabytes on the ref the site reads. Beyond it the per-run
 # indexes on `history` still carry every run's aggregate for anyone who wants more.
 SERIES_DAYS = 90
 
@@ -199,43 +199,73 @@ def _accumulate(
     *,
     days: int = SERIES_DAYS,
 ) -> dict[str, Any]:
-    """The rolling series: previous runs plus this one, windowed.
+    """The rolling series: previous runs plus this one, by day, windowed.
 
     Kept on the `data` ref and carried run to run, the way `state.json` is, because
     the engine only ever sees nine days of indexes and a series has to reach further
-    than that. Shaped for the page rather than for the engine: actor, then polity,
-    then a list of [run, named, evaluable] in run order, so a sparkline per country is
-    one lookup and no reshaping.
+    than that.
 
-    Idempotent on the stamp. A rerun of the same instant replaces its own point rather
-    than adding a second, and a rerun of an earlier instant lands in order.
+    BY DAY, NOT BY RUN, AND WITH THE DATES IN ONE TABLE
+
+    The first shape of this file kept one point per run with its stamp repeated on
+    every point. Backfilled over 93 runs it came to 10.2 MB, and 6.1 MB of that was
+    the same sixteen-character stamps written 355,218 times. A day is also the more
+    honest unit for a line: GitHub delivers three to six runs a day, so per-run points
+    over-weight busy days for no reason a reader would want.
+
+    So `index` is the sorted list of days, each point is `[day_index, named,
+    evaluable]`, and a run's counts are added into its day. `runs` lists every stamp
+    already folded in, which is what makes a rerun of the same instant a no-op rather
+    than a double count.
     """
-    series: dict[str, dict[str, list[list[Any]]]] = {}
-    for actor, polities in (previous or {}).get("actors", {}).items():
+    prev = previous or {}
+    if stamp in set(prev.get("runs", [])):
+        return prev
+
+    day = f"{stamp[0:4]}-{stamp[4:6]}-{stamp[6:8]}"
+    old_index: list[str] = list(prev.get("index", []))
+    # Rebuild as {actor: {polity: {day: [named, evaluable]}}}, which is easy to add to,
+    # then re-index at the end.
+    table: dict[str, dict[str, dict[str, list[int]]]] = {}
+    for actor, polities in prev.get("actors", {}).items():
         for polity, points in polities.items():
-            series.setdefault(actor, {})[polity] = [
-                pt for pt in points if pt[0] != stamp
-            ]
+            cell = table.setdefault(actor, {}).setdefault(polity, {})
+            for i, named, evaluable in points:
+                cell[old_index[i]] = [named, evaluable]
     for actor, polities in aggregate.items():
         for polity, (named, evaluable) in polities.items():
-            series.setdefault(actor, {}).setdefault(polity, []).append(
-                [stamp, named, evaluable]
-            )
+            cell = table.setdefault(actor, {}).setdefault(polity, {})
+            got = cell.setdefault(day, [0, 0])
+            got[0] += named
+            got[1] += evaluable
 
-    cutoff = _shift(stamp, -days * 24)
-    for actor in list(series):
-        for polity in list(series[actor]):
-            kept = sorted(
-                (pt for pt in series[actor][polity] if pt[0] >= cutoff),
-                key=lambda pt: pt[0],
-            )
-            if kept:
-                series[actor][polity] = kept
-            else:
-                del series[actor][polity]
-        if not series[actor]:
-            del series[actor]
-    return {"run": stamp, "days": days, "actors": series}
+    cutoff = _shift(stamp, -days * 24)[:8]
+    cutoff = f"{cutoff[0:4]}-{cutoff[4:6]}-{cutoff[6:8]}"
+    all_days = sorted(
+        {d for a in table.values() for c in a.values() for d in c if d >= cutoff}
+    )
+    at = {d: i for i, d in enumerate(all_days)}
+    actors: dict[str, dict[str, list[list[int]]]] = {}
+    for actor, polities in table.items():
+        for polity, cell in polities.items():
+            pts = [[at[d], n, e] for d, (n, e) in sorted(cell.items()) if d in at]
+            if pts:
+                actors.setdefault(actor, {})[polity] = pts
+
+    runs = sorted(
+        r for r in {*prev.get("runs", []), stamp} if r[:8] >= cutoff.replace("-", "")
+    )
+    out: dict[str, Any] = {
+        "run": stamp,
+        "days": days,
+        "runs": runs,
+        "index": all_days,
+        "actors": actors,
+    }
+    for key in ("rebuilt_before", "rebuilt_note"):
+        if key in prev:
+            out[key] = prev[key]
+    return out
 
 
 def _shift(stamp: str, hours: int) -> str:

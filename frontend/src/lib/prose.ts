@@ -387,7 +387,12 @@ export function runIso(run: Run): string {
 
 /** "5 Sep · 04:48 UTC" — the run this page describes. */
 export function runStamp(run: Run): string {
-  const t = parseStamp(run.run);
+  return stampText(run.run);
+}
+
+/** The same rendering for any run stamp, where there is no Run object to hand. */
+export function stampText(stamp: string): string {
+  const t = parseStamp(stamp);
   const month = t.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
@@ -461,6 +466,8 @@ export function actorBoard(
    */
   limit = 10,
 ): {
+  /** The vocabulary key, which is what the actor page is addressed by. */
+  key: string;
   actor: string;
   named: number;
   evaluable: number;
@@ -491,7 +498,7 @@ export function actorBoard(
     }
   }
   return [...totals]
-    .map(([actor, row]) => ({ actor: actorName(actor, labels), ...row }))
+    .map(([actor, row]) => ({ key: actor, actor: actorName(actor, labels), ...row }))
     .sort((a, b) => b.named - a.named || a.actor.localeCompare(b.actor))
     .slice(0, limit);
 }

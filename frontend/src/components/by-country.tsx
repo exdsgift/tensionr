@@ -28,7 +28,10 @@
  * the component says that instead.
  */
 
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
+import { slug } from "@/lib/slug";
 import {
   Table,
   TableBody,
@@ -131,7 +134,9 @@ export function ByCountry({
               const rate = r.named / r.evaluable;
               return (
                 <TableRow key={r.polity}>
-                  <TableCell className="bycountry-name">{r.polity}</TableCell>
+                  <TableCell className="bycountry-name">
+                    <Link href={`/country/${slug(r.polity)}/`}>{r.polity}</Link>
+                  </TableCell>
                   <TableCell className="bycountry-n">
                     <b>{r.named}</b> of {r.evaluable}
                   </TableCell>
