@@ -142,9 +142,7 @@ def similarity_edges(vectors: np.ndarray, *, floor: float = EDGE_FLOOR) -> Edges
         scores.append(sims[hit_row, hit_col])
         del sims, hit_row, hit_col
 
-    return Edges(
-        np.concatenate(rows), np.concatenate(cols), np.concatenate(scores)
-    )
+    return Edges(np.concatenate(rows), np.concatenate(cols), np.concatenate(scores))
 
 
 def select_threshold(

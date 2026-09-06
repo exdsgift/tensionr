@@ -2,7 +2,6 @@
 
 import numpy as np
 
-from tensionr.stories import cluster
 from tensionr.config import EDGE_FLOOR, EDGE_FLOOR_TRIAL
 from tensionr.stories.cluster import (
     Edges,
@@ -34,15 +33,17 @@ def test_union_find_reports_whether_it_merged():
 def test_threshold_excludes_the_bridge_between_two_cliques():
     # Two tight groups joined by one weak edge. A threshold that admits the bridge
     # produces one component of every node, which is the over-merge to avoid.
-    edges = Edges.of([
-        (0, 1, 0.90),
-        (1, 2, 0.90),
-        (0, 2, 0.90),
-        (3, 4, 0.90),
-        (4, 5, 0.90),
-        (3, 5, 0.90),
-        (2, 3, 0.62),
-    ])
+    edges = Edges.of(
+        [
+            (0, 1, 0.90),
+            (1, 2, 0.90),
+            (0, 2, 0.90),
+            (3, 4, 0.90),
+            (4, 5, 0.90),
+            (3, 5, 0.90),
+            (2, 3, 0.62),
+        ]
+    )
     threshold = select_threshold(edges, 6, max_share=0.55)
     assert threshold > 0.62
     assert sorted(len(g) for g in components(edges, 6, threshold)) == [3, 3]
