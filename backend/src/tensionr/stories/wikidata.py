@@ -7,14 +7,39 @@ from typing import Any
 
 from tensionr.config import WIKIDATA_ENTITY_URL, WIKIDATA_SEARCH_URL
 from tensionr.http_client import request_with_retry
-from tensionr.stories.actors import AliasTable, usable_alias
+from tensionr.stories.actors import AliasTable, script_of, usable_alias
 from tensionr.stories.languages import codes
 
 logger = logging.getLogger(__name__)
 
 
+def language_scripts(entities: dict[str, dict[str, Any]]) -> dict[str, str]:
+    """The script each language writes in, counted from the labels themselves.
+
+    Needed by the `mul` fallback below, and derived rather than declared: a table of
+    language codes to scripts is one more thing to keep true, while the labels already
+    say it several dozen times over.
+    """
+    tally: dict[str, dict[str, int]] = {}
+    for entity in entities.values():
+        for language, label in entity.get("labels", {}).items():
+            value = label.get("value")
+            if not value or language == "mul":
+                continue
+            counts = tally.setdefault(language, {})
+            script = script_of(value)
+            counts[script] = counts.get(script, 0) + 1
+    return {
+        language: max(counts, key=lambda s: counts[s])
+        for language, counts in tally.items()
+        if counts
+    }
+
+
 def select_aliases(
-    entity: dict[str, Any], languages: list[str] | None = None
+    entity: dict[str, Any],
+    languages: list[str] | None = None,
+    scripts: dict[str, str] | None = None,
 ) -> dict[str, list[str]]:
     """Labels and aliases per language, filtered and deduplicated within each.
 
@@ -29,13 +54,38 @@ def select_aliases(
 
     Only strings surviving `usable_alias` are kept, so the script-aware length floor and
     the ASCII-only code filter apply here rather than at match time.
+
+    THE `mul` LABEL, WHICH IS WHY TRUMP WAS INVISIBLE IN ENGLISH
+
+    Wikidata has begun storing a name that is written identically across languages once,
+    under the language code `mul`, instead of repeating it for each. Q22686 is fully
+    migrated: it carries `mul: "Donald Trump"` and Cyrillic, Chinese, Tamil and Hebrew
+    labels, and **no English, Spanish, Italian or French label at all**.
+
+    Reading only the per-language labels, this produced a table where Trump had no
+    Latin-script alias, so every English headline came back `unresolved` rather than
+    measured. Measured on the corpus: of 248 Latin-script headlines containing the word
+    Trump, the engine named him in **none**. Putin, Kushner and Witkoff were at 4%,
+    matching only where the full name appeared.
+
+    So `mul` fills in for a language that has no label of its own. Not unconditionally:
+    #49's lesson is that claiming a row is answerable when it is not manufactures false
+    omissions, and a Latin name would do exactly that to a language written in another
+    script. It is applied only where the script of the `mul` label matches the script
+    that language is written in, and that script is counted from the labels rather than
+    declared in a table.
     """
     table: dict[str, dict[str, list[str]]] = {}
+    labels = entity.get("labels", {})
+    shared = labels.get("mul", {}).get("value")
+    shared_script = script_of(shared) if shared else None
     for language in languages if languages is not None else codes():
         found: list[str] = []
-        label = entity.get("labels", {}).get(language, {}).get("value")
+        label = labels.get(language, {}).get("value")
         if label:
             found.append(label)
+        elif shared and (scripts or {}).get(language) == shared_script:
+            found.append(shared)
         for alias in entity.get("aliases", {}).get(language, []):
             value = alias.get("value")
             if value:
@@ -125,6 +175,31 @@ def build(seeds: dict[str, str]) -> dict[str, Any]:
     actually resolved to so the check can be repeated later.
     """
     records = entities(sorted(set(seeds.values())))
+
+    # A person's family name, which is what a headline actually writes.
+    #
+    # Wikidata gives a person's label as their full name, and headlines give the
+    # surname alone. Measured on the corpus: of 248 Latin-script headlines containing
+    # the word Trump, the full-name alias matched 10. Restoring evaluability without
+    # this would be worse than leaving it broken, because 213 rows that honestly said
+    # "cannot be answered" would start saying "did not name Trump" about headlines
+    # whose first word is Trump. That is #49's failure exactly.
+    #
+    # P734 is the property, and the family name is an entity with its own labels per
+    # language, so `Trump` and `Трамп` and `トランプ` all arrive in the right script
+    # rather than being split off the label as a string.
+    surnames = {
+        qid: [
+            claim.get("mainsnak", {}).get("datavalue", {}).get("value", {}).get("id")
+            for claim in entity.get("claims", {}).get("P734", [])
+        ]
+        for qid, entity in records.items()
+    }
+    family = entities(sorted({q for ids in surnames.values() for q in ids if q}))
+
+    # Counted once across every entity, because the `mul` fallback needs to know which
+    # script a language is written in and no single entity can say.
+    scripts = language_scripts({**records, **family})
     table: dict[str, dict[str, list[str]]] = {}
     audit: list[dict[str, Any]] = []
     missing: list[str] = []
@@ -134,7 +209,16 @@ def build(seeds: dict[str, str]) -> dict[str, Any]:
         if not entity or "missing" in entity:
             missing.append(actor)
             continue
-        aliases = select_aliases(entity)
+        aliases = select_aliases(entity, scripts=scripts)
+        for surname_qid in surnames.get(qid, []):
+            if not surname_qid:
+                continue
+            for language, names in select_aliases(
+                family.get(surname_qid, {}), scripts=scripts
+            ).items():
+                merged = aliases.setdefault(language, [])
+                seen = {n.casefold() for n in merged}
+                merged.extend(n for n in names if n.casefold() not in seen)
         if not aliases:
             missing.append(actor)
             continue

@@ -88,6 +88,37 @@ TOKEN = re.compile(r"[^\W\d_]+", re.UNICODE)
 # Wikidata types this project measures. Stated here so the scope is a decision on the
 # record rather than a taste applied row by row. A type cannot tell Monza the circuit
 # from Kyiv the capital, which is why the output is a proposal and not a table.
+# A person needs more than the type `human`, which every one of them has. Measured on
+# the ten the corpus proposed, this rule keeps Putin, Kushner and Witkoff and drops a
+# nurse, a country singer, a Formula One driver, a physician, a tennis player, a
+# guitarist and a film director:
+#
+#   1. an occupation (P106) that is political, OR a position held (P39) that is typed
+#      as a government office rather than as a bare `position`, AND
+#   2. no date of death (P570).
+#
+# Each half earns its place against a case the other half gets wrong. Putin's
+# occupations are judoka, intelligence agent, spy, stunt performer and only then
+# politician, so occupation alone is fragile; Witkoff's are businessperson, lawyer and
+# negotiator, and only his position, United States Special Envoy for the Middle East,
+# says what he is. Position alone admits Nanni Moretti, whose President of the Jury at
+# the Cannes Festival is a `position` and nothing more, where Putin's President of
+# Russia is also a `state position of the Russian Federation`.
+#
+# The death test is what excludes Abraham Lincoln, who arrived on 30 domains in 7
+# languages and passes every other test. This project measures how today's outlets name
+# today's actors, and a headline invoking Lincoln is a rhetorical reference rather than
+# a naming choice about a participant. The cost is that an actor who dies mid-story
+# leaves the vocabulary while still being named, which is a real limitation and is
+# stated rather than hidden.
+POLITICAL_OCCUPATIONS = {
+    "politician", "statesperson", "diplomat", "head of state", "head of government",
+}
+GOVERNMENT_POSITION_TYPES = {
+    "special envoy", "civil servant", "president", "prime minister", "minister",
+    "ambassador", "head of state", "head of government", "public office",
+}
+
 KEEP_TYPES = {
     "sovereign state",
     "country",
